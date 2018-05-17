@@ -41,7 +41,7 @@ will be set to the optimised value, and there is no need to call [`set_hyperpara
 once again.
 """
 function gp_train(gpem::GPModel;
-        optimisation_solver_type::Union{Void,Type{<:Optim.Optimizer}}=nothing,
+        optimisation_solver_type::Union{Void,Type{<:Optim.AbstractOptimizer}}=nothing,
         hp_lower::AbstractArray{Float64, 1}=zeros(0),
         hp_upper::AbstractArray{Float64, 1}=zeros(0),
         log_level::Int=0)
