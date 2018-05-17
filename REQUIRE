@@ -1,0 +1,4 @@
+julia 0.6
+Distributions
+Optim 0.10.0
+DifferentialEquations 3.1.0
