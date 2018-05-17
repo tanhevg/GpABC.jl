@@ -1,3 +1,6 @@
 language: julia
 julia:
   - 0.6.2
+after_success:
+  - julia -e 'Pkg.add("Documenter")'
+  - julia -e 'cd(Pkg.dir("GpAbc")); include(joinpath("docs", "make.jl"))'
