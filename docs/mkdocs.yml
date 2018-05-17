@@ -1,7 +1,7 @@
-site_name:        PACKAGE_NAME.jl
-repo_url:         https://github.com/USER_NAME/PACKAGE_NAME.jl
+site_name:        GpAbc.jl
+repo_url:         https://github.com/tanhevg/GpAbc.jl
 site_description: Description...
-site_author:      USER_NAME
+site_author:      tanhevg
 
 theme: readthedocs
 
