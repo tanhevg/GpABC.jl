@@ -6,11 +6,11 @@ See [Julia Manual](https://docs.julialang.org/en/stable/manual/documentation/) o
 Building documentation is a two step process.
 
 First use [Documenter](https://juliadocs.github.io/Documenter.jl/stable/) to pull
-out all the doc strings from the source into a single Markdown file. From `docs`, run the command
+out all the doc strings from the source into a single Markdown file, and generate the html. From `docs`, run the command
 
-    $ julia --color=yes make.jl
+    $ julia make.jl local
 
-This will generate `build/index.md` file. If you want to test your file only,
+This will generate the local web site. The results can be checked by opening `build/index.html` in the web browser. If you want to test one file only,
 and don't want to wait for the entire source tree to be processed, add
 
     Pages=["your_file.jl"]
@@ -19,7 +19,7 @@ under the `Modules ... ` line in `src/index.md`.
 
 To generate a LaTeX pdf, use [Pandoc](https://pandoc.org/). LaTeX must be installed on your machine.
 
-    $ pandoc build/index.md -o gauss_pro_abc_doc.tex
+    $ pandoc build/reference.md -o gauss_pro_abc_doc.tex
 
 #### LaTeX Tips:
 - [LaTeX syntax documentation](https://juliadocs.github.io/Documenter.jl/stable/man/latex/#Julia-0.5-1)
