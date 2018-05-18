@@ -1,4 +1,4 @@
 julia 0.6
 Distributions
-Optim 
-DifferentialEquations 3.1.0
+Optim
+DifferentialEquations

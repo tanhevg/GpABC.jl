@@ -17,7 +17,7 @@ using Base.Test, GpAbc, DifferentialEquations
         sum([vecnorm(x1[i, :] - x2[i, :]) for i=1:size(x1, 1)])
     end
 
-    function ODE_3GeneReg(t, x, dx, params)
+    function ODE_3GeneReg(dx, x, params, t)
         dx[1] = params[1]./(1+params[7]*x[3]) - params[4]*x[1]
         dx[2] = params[2]*params[8]*x[1]./(1+params[8]*x[1]) - params[5]*x[2]
         dx[3] = params[3]*params[9]*x[1]*params[10]*x[2]./(1+params[9]*x[1])./(1+params[10]*x[2]) - params[6]*x[3]
@@ -25,8 +25,7 @@ using Base.Test, GpAbc, DifferentialEquations
 
     function ode_simulation(ode_params)
         ode_params = [ode_params; static_params[size(ode_params,1)+1:end]]
-        prob = ODEProblem((t, x, dx)->ODE_3GeneReg(t, x, dx, ode_params),
-            x0, tspan)
+        prob = ODEProblem(ODE_3GeneReg, x0, tspan, ode_params)
         sol = solve(prob, RK4(), saveat=1.0)
         return sol.u
     end;
