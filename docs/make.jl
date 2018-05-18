@@ -20,6 +20,7 @@ if !local_build
         # deps   = Deps.pip("mkdocs", "python-markdown-math"),
         deps   = nothing,
         make   = nothing,
+        target = "build",
         repo   = "github.com/tanhevg/GpAbc.jl.git",
         julia  = "0.6.2"
     )

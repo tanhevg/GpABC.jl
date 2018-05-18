@@ -7,7 +7,6 @@ using Base.Test, GpAbc, DifferentialEquations
 #plot also steps in between if you want via: one_k_all_seq_abc_run_accepted
 
 
-using GpAbc, DifferentialEquations, PyPlot, Distributions
 simulated_dimensions = 3
 design_point_count = 200
 test_point_count = 2_000
