@@ -1,10 +1,9 @@
-# GpAbc
+# GpAbc.jl
 
 [![Latest Documentation](https://img.shields.io/badge/docs-latest-blue.svg)](https://tanhevg.github.io/GpAbc.jl/latest)
 [![Build Status](https://travis-ci.org/tanhevg/GpAbc.jl.svg?branch=master)](https://travis-ci.org/tanhevg/GpAbc.jl)
 [![codecov.io](http://codecov.io/github/tanhevg/GpAbc.jl/coverage.svg?branch=master)](http://codecov.io/github/tanhevg/GpAbc.jl?branch=master)
 
-# GpAbc.jl
 
 This Julia package allows emulating ordinary and stochastic differential equations (ODEs and SDEs) with Gaussian
 Process Regression (GPR). The package also applies this emulation technique to infer parameters of ODEs and SDEs
