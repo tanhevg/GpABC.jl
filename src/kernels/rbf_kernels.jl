@@ -9,8 +9,13 @@ end
 
 Squared exponential kernel with uniform length scale across all dimensions, ``l``.
 ```math
-K(r) = \\sigma_f^2 e^{-r/2}; r_{ij} = \\sum_{k=1}^d\\frac{(x_{ik}-z_{jk})^2}{l^2}
+\\begin{aligned}
+K(r) & = \\sigma_f^2 e^{-r/2} \\\\
+r_{ij} & = \\sum_{k=1}^d\\frac{(x_{ik}-z_{jk})^2}{l^2}
+\\end{aligned}
 ```
+
+``r_{ij}`` are computed by [`scaled_squared_distance`](@ref)
 
 # Hyperparameters
 Hyperparameters vector for this kernel must contain two elements, in the following order:
@@ -30,8 +35,13 @@ end
 
 Squared exponential kernel with distinct length scale for each dimention, ``l_k``.
 ```math
-K(r) = \\sigma_f^2 e^{-r/2}; r_{ij} = \\sum_{k=1}^d\\frac{(x_{ik}-z_{jk})^2}{l_k^2}
+\\begin{aligned}
+K(r) & = \\sigma_f^2 e^{-r/2} \\\\
+r_{ij} & = \\sum_{k=1}^d\\frac{(x_{ik}-z_{jk})^2}{l_k^2}
+\\end{aligned}
 ```
+
+``r_{ij}`` are computed by [`scaled_squared_distance`](@ref)
 
 # Hyperparameters
 The length of hyperparameters array for this kernel depends on the dimensionality

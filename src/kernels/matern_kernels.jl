@@ -21,6 +21,8 @@ r_{ij} &= \\sum_{k=1}^d\\frac{(x_{ik}-z_{jk})^2}{l^2}
 \\end{aligned}
 ```
 
+``r_{ij}`` are computed by [`scaled_squared_distance`](@ref)
+
 # Hyperparameters
 Hyperparameters vector for this kernel must contain two elements, in the following order:
 1. ``\\sigma_f``: the signal standard deviation
@@ -64,6 +66,8 @@ K_{\\nu=5}(r) &= \\sigma_f^2(1 + \\sqrt{3r} + \\frac{5}{3}r)e^{-\\sqrt{5r}}\\\\
 r_{ij} &= \\sum_{k=1}^d\\frac{(x_{ik}-z_{jk})^2}{l_k^2}
 \\end{aligned}
 ```
+
+``r_{ij}`` are computed by [`scaled_squared_distance`](@ref)
 
 # Hyperparameters
 The length of hyperparameters array for this kernel depends on the dimensionality
