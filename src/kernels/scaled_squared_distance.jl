@@ -6,6 +6,8 @@ Compute the scaled squared distance between `x` and `z`:
 ```math
 r_{ij} = \\sum_{k=1}^d\\frac{(x_{ik}-z_{jk})^2}{l_k^2}
 ```
+The gradient of this function with respect to
+length scale hyperparameter(s) is returned by [`scaled_squared_distance_grad`](@ref).
 
 # Arguments
 - `x, z`: Input data, reshaped into 2-d arrays.

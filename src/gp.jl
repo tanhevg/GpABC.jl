@@ -147,6 +147,12 @@ function set_hyperparameters(gpem::GPModel, hypers::AbstractArray{Float64, 1})
     gpem.gp_hyperparameters = hypers
 end
 
+"""
+    gp_loglikelihood_log(theta::AbstractArray{Float64, 1}, gpm::GPModel)
+
+Log likelihood function with log hyperparameters. This is the target function of the
+hyperparameters optimisation procedure. Its gradient is coputed by [`gp_loglikelihood_grad`](@ref).
+"""
 function gp_loglikelihood_log(theta::AbstractArray{Float64, 1}, gpem::GPModel)
     cache = gpem.cache
     update_cache!(gpem.kernel, cache, theta, gpem.gp_training_x, gpem.gp_training_y)
@@ -173,6 +179,12 @@ gp_loglikelihood(gpem::GPModel) = gp_loglikelihood_log(log.(gpem.gp_hyperparamet
 """
 gp_loglikelihood(theta::AbstractArray{Float64, 1}, gpem::GPModel) = gp_loglikelihood_log(log.(theta), gpem)
 
+"""
+    gp_loglikelihood_grad(theta::AbstractArray{Float64, 1}, gpem::GPModel)
+
+Gradient of the log likelihood function ([`gp_loglikelihood_log`](@ref))
+with respect to logged hyperparameters.
+"""
 function gp_loglikelihood_grad(theta::AbstractArray{Float64, 1}, gpem::GPModel)
     cache = gpem.cache
     update_cache!(gpem.kernel, cache, theta, gpem.gp_training_x, gpem.gp_training_y)

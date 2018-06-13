@@ -15,7 +15,7 @@ and don't want to wait for the entire source tree to be processed, add
 
     Pages=["your_file.jl"]
 
-under the `Modules ... ` line in `src/index.md`.
+under the `Modules ... ` line in `src/reference.md`.
 
 To generate a LaTeX pdf, use [Pandoc](https://pandoc.org/). LaTeX must be installed on your machine.
 
@@ -24,4 +24,4 @@ To generate a LaTeX pdf, use [Pandoc](https://pandoc.org/). LaTeX must be instal
 #### LaTeX Tips:
 - [LaTeX syntax documentation](https://juliadocs.github.io/Documenter.jl/stable/man/latex/#Julia-0.5-1)
 - Backslashes in LaTeX commands in docstrings must be escaped properly (double backslash, `\\`).
-- Use LaTeX commands for greek letters, not unicode symbols (`\\theta`, not `θ`)
+- Use LaTeX commands for Greek letters, not unicode symbols (`\\theta`, not `θ`)
