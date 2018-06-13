@@ -5,23 +5,39 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "Home",
     "category": "page",
-    "text": ""
+    "text": "Notation\nBasic Usage\nTraining the GP\nKernelsTODO markdown does not support include, so copy-paste content from /README.md once it is finalised"
 },
 
 {
-    "location": "#GpAbc.jl-1",
+    "location": "#Notation-1",
     "page": "Home",
-    "title": "GpAbc.jl",
+    "title": "Notation",
     "category": "section",
-    "text": "A Julia package for model parameter estimation with Approximate Bayesian Computation (ABC), using emulation with Gaussian Process regression (GPR)."
+    "text": "Throughout this manual, we denote the number of training points as n, and the number of test points as m. The number of dimensions is denoted as d. For one-dimensional case, where each individual training and test point is just a real number, both one-dimensional and two-dimensional arrays are accepted as inputs. In Basic Gaussian Process Regression Example training_x can either be a vector of size n, or an n times 1 matrix. For a multidimensional case, where test and training points are elements of a d-dimentional space, all inputs have to be row major, so training_x and test_x become an n times d and an m times d matrices, respectively."
 },
 
 {
-    "location": "#Use-cases-1",
+    "location": "#Basic-Usage-1",
     "page": "Home",
-    "title": "Use cases",
+    "title": "Basic Usage",
     "category": "section",
-    "text": "Run Gaussian Process regression\nEstimate model parameters using Rejection ABC without emulation (simulation only)\nEstimate model parameters using Rejection ABC with GPR emulation\nEstimate model parameters using Sequential Monte Carlo (SMC) ABC without emulation (simulation only)\nEstimate model parameters using ABC-SMC with GPR emulationExamples"
+    "text": "The package is built around a type GPModel, which encapsulates all the information required for training the Gaussian Process and performing the regression. In the simplest scenario the user would instantiate this type with some training data and labels, provide the hyperparameters and run the regression. By default, SquaredExponentialIsoKernel will be used. This scenario is illustrated by Basic Gaussian Process Regression Example."
+},
+
+{
+    "location": "#Training-the-GP-1",
+    "page": "Home",
+    "title": "Training the GP",
+    "category": "section",
+    "text": "Normally, kernel hyperparameters are not known in advance. In this scenario the training function gp_train should be used to find the Maximum Likelihood Estimate (MLE) of hyperparameters. This is demonstrated in Optimising Hyperparameters for GP Regression Example.GaussProABC uses Optim package for optimising the hyperparameters. By default, Conjugate Gradient bounded box optimisation is used, as long as the gradient with respect to hyperparameters is implemented for the kernel function. If the gradient implementation is not provided, Nelder Mead optimiser is used by default.The starting point of the optimisation can be specified by calling set_hyperparameters. If the starting point has not been provided, optimisation will start from all hyperparameters set to 1. Default upper and lower bounds are set to e^10 and e^10 , respectively, for each hyperparameter.For numerical stability the package uses logarithms of hyperparameters internally, when calling the log likelihood and kernel functions. Logarithmisation and exponentiation back takes place in gp_train function.The log likelihood function with log hyperparameters is implemented by gp_loglikelihood_log. This is the target function of the optimisation procedure in gp_train. There is also a version of log likelihood with actual (non-log) hyperparameters: gp_loglikelihood. The gradient of the log likelihood function with respect to logged hyperparameters is implemented by gp_loglikelihood_grad.Depending on the kernel, it is not uncommon for the log likelihood function to have multiple local optima. If a trained GP produces an unsatisfactory data fit, one possible workaround is trying to run gp_train several times with random starting points. This approach is demonstrated in Advanced Usage of gp_train example.Optim has a built in constraint of running no more than 1000 iterations of any optimisation algorithm. GpAbc relies on this feature to ensure that the training procedure does not get stuck forever. As a consequence, the optimizer might exit prematurely, before reaching the local optimum. Setting log_level argument of gp_train to a value greater than zero will make it log its actions to standard output, including whether the local minimum has been reached or not."
+},
+
+{
+    "location": "#Kernels-1",
+    "page": "Home",
+    "title": "Kernels",
+    "category": "section",
+    "text": "GpAbc ships with an extensible library of kernel functions. Each kernel is represented with a type that derives from AbstractGPKernel:SquaredExponentialIsoKernel\nSquaredExponentialArdKernel\nMaternIsoKernel\nMaternArdKernel\nExponentialIsoKernel\nExponentialArdKernelThese kernels rely on matrix of scaled squared distances between training/test inputs r_ij, which is computed by scaled_squared_distance function. The gradient vector of scaled squared distance derivatives with respect to length scale hyperparameter(s) is returned by scaled_squared_distance_grad function.The kernel covariance matrix is returned by function covariance. Optional speedups of this function covariance_diagonal and covariance_training are implemented for the pre-shipped kernels. The gradient with respect to log hyperparameters is computed by covariance_grad. The log_theta argument refers to the logarithms of kernel hyperparameters. Note that hyperparameters that do not affect the kernel (e.g. sigma_n ) are not included in log_theta.Custom kernels functions can be implemented  by adding more types that inherit from AbstractGPKernel. This is demonstrated in Using a Custom Kernel Example"
 },
 
 {
@@ -37,7 +53,55 @@ var documenterSearchIndex = {"docs": [
     "page": "Examples",
     "title": "Examples",
     "category": "section",
-    "text": "TODO"
+    "text": "Basic Gaussian Process Regression\nOptimising Hyperparameters for GP Regression\nAdvanced Usage of gp_train\nUsing a Custom Kernel"
+},
+
+{
+    "location": "examples/#example-1-1",
+    "page": "Examples",
+    "title": "Basic Gaussian Process Regression",
+    "category": "section",
+    "text": "using GpAbc, Distributions, PyPlot\n\n# prepare the data\nn = 30\nf(x) = x.ˆ2 + 10 * sin.(x) # the latent function\n\ntraining_x = sort(rand(Uniform(-10, 10), n))\ntraining_y = f(training_x)\ntraining_y += 20 * (rand(n) - 0.5) # add some noise\ntest_x = collect(linspace(min(training_x...), max(training_x...), 1000))\n\n # SquaredExponentialIsoKernel is used by default\ngpm = GPModel(training_x, training_y)\n\n# pretend we know the hyperparameters in advance\n# σ_f = 37.08; l = 1.0; σ_n = 6.58. See SquaredExponentialIsoKernel documentation for details\nset_hyperparameters(gpm, [37.08, 1.0, 6.58])\n(test_y, test_var) = gp_regression(test_x, gpm)\n\nplot(test_x, [test_y f(test)]) # ... and more sophisticated plotting"
+},
+
+{
+    "location": "examples/#example-2-1",
+    "page": "Examples",
+    "title": "Optimising Hyperparameters for GP Regression",
+    "category": "section",
+    "text": "Based on Basic Gaussian Process Regression, but with added optimisation of hyperparameters:using GaussProABC\n\n# prepare the data ...\n\ngpm = GPModel(training_x, training_y)\n\n # by default, the optimiser will start with all hyperparameters set to 1,\n # constrained between exp(-10) and exp(10)\ntheta_mle = gp_train(gpm)\n\n# optimised hyperparameters are stored in gpm, so no need to pass them again\n(test_y, test_var) = gp_regression(test_x, gpm)"
+},
+
+{
+    "location": "examples/#example-3-1",
+    "page": "Examples",
+    "title": "Advanced Usage of gp_train",
+    "category": "section",
+    "text": "using GpAbc, Optim, Distributions\n\nfunction gp_train_advanced(gpm::GPModel, attempts::Int)\n    # Initialise the bounds, with special treatment for the second hyperparameter\n    p = get_hyperparameters_size(gpm)\n    bound_template = ones(p)\n    upper_bound = bound_template * 10\n    upper_bound[2] = 2\n    lower_bound = bound_template * -10\n    lower_bound[2] = -1\n\n    # Starting point will be sampled from a Multivariate Uniform distribution\n    start_point_distr = MvUniform(lower_bound, upper_bound)\n\n    # Run several attempts of training and store the\n    # minimiser hyperparameters and the value of log likelihood function\n    hypers = Array{Float64}(attempts, p)\n    likelihood_values = Array{Float64}(attempts)\n    for i=1:attempts\n        set_hyperparameters(gpm, exp.(rand(start_point_distr)))\n        hypers[i, :] = gp_train(gpm,\n            optimisation_solver_type=SimulatedAnnealing, # note the solver type\n            hp_lower=lower_bound, hp_upper=upper_bound, log_level=1)\n        likelihood_values[i] = gp_loglikelihood(gpm)\n    end\n    # Retain the hyperparameters where the maximum log likelihood function is attained\n    gpm.gp_hyperparameters = hypers[indmax(likelihood_values), :]\nend"
+},
+
+{
+    "location": "examples/#example-4-1",
+    "page": "Examples",
+    "title": "Using a Custom Kernel",
+    "category": "section",
+    "text": "The methods below should be implemented for the custom kernel, unless indicated as optional. Please see reference documentation for detailed description of each method and parameter.using GpAbc\nimport GpAbc.covariance, GpAbc.get_hyperparameters_size\n\n\"\"\"\n   This is the new kernel that we are adding\n\"\"\"\ntype MyCustomkernel <: AbstractGPKernel\n\n    # optional cache of matrices that could be re-used between calls to\n    # covariance_training and covariance_grad, keyed by hyperparameters\n    cache::MyCustomCache\nend\n\n\"\"\"\n    Report the number of hyperparameters required by the new kernel\n\"\"\"\nfunction get_hyperparameters_size(ker::MyCustomkernel, training_data::AbstractArray{Float64, 2})\n    # ...\nend\n\n\"\"\"\n    Covariance function of the new kernel.\n\n    Return the covariance matrix. Assuming x is an n by d matrix, and z is an m by d matrix,\n    this should return an n by m matrix. Use `scaled_squared_distance` helper function here.\n\"\"\"\nfunction covariance(ker::MyCustomkernel, log_theta::AbstractArray{Float64, 1},\n    x::AbstractArray{Float64, 2}, z::AbstractArray{Float64, 2})\n    # ...\nend\n\n\"\"\"\n    Optional speedup of `covariance` function, that is invoked when the calling code is\n    only interested in variance (i.e. diagonal elements of the covariance) of the kernel.\n\"\"\"\nfunction covariance_diagonal(ker::MyCustomkernel, log_theta::AbstractArray{Float64, 1},\n    x::AbstractArray{Float64, 2})\n    # ...\nend\n\n\"\"\"\n   Optional speedup of `covariance` function that is invoked during training of the GP.\n   Intermediate matrices that are re-used between this function and `covariance_grad` could\n   be cached in `ker.cache`\n\"\"\"\nfunction covariance_training(ker::MyCustomkernel, log_theta::AbstractArray{Float64, 1},\n    training_x::AbstractArray{Float64, 2})\n    # ...\nend\n\n\"\"\"\n    Optional gradient of `covariance` function with respect to hyperparameters, required\n    for optimising with `ConjugateGradient` method. If not provided, `NelderMead` optimiser\n    will be used.\n\n    Use `scaled_squared_distance_grad` helper function here.\n\"\"\"\nfunction covariance_grad(ker::MyCustomkernel, log_theta::AbstractArray{Float64, 1},\n    x::AbstractArray{Float64, 2}, R::AbstractArray{Float64, 2})\n    # ...\nend\n\ngpm = GPModel(training_x, training_y, MyCustomkernel())\ntheta_mle = gp_train(gpm)\n(test_y, test_var) = gp_regression(test_x, gpm)"
+},
+
+{
+    "location": "reference/#",
+    "page": "Reference",
+    "title": "Reference",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "reference/#Index-1",
+    "page": "Reference",
+    "title": "Index",
+    "category": "section",
+    "text": "Modules = [GpAbc]"
 },
 
 {
@@ -85,7 +149,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Reference",
     "title": "GpAbc.MaternArdKernel",
     "category": "type",
-    "text": "MaternArdKernel <: AbstractGPKernel\n\nMatérn kernel with distinct length scale for each dimention, l_k. Parameter nu (nu) is passed in constructor. Currently, only values of nu=1, nu=3 and nu=5 are supported.\n\nbeginaligned\nK_nu=1(r) = sigma_f^2e^-sqrtr\nK_nu=3(r) = sigma_f^2(1 + sqrt3r)e^-sqrt3r\nK_nu=5(r) = sigma_f^2(1 + sqrt3r + frac53r)e^-sqrt5r\nr_ij = sum_k=1^dfrac(x_ik-z_jk)^2l_k^2\nendaligned\n\nHyperparameters\n\nThe length of hyperparameters array for this kernel depends on the dimensionality of the data. Assuming each data point is a vector in a d-dimensional space, this kernel needs d+1 hyperparameters, in the following order:\n\nsigma_f: the signal standard deviation\nl_1 ldots l_d: the length scales for each dimension\n\n\n\n"
+    "text": "MaternArdKernel <: AbstractGPKernel\n\nMatérn kernel with distinct length scale for each dimention, l_k. Parameter nu (nu) is passed in constructor. Currently, only values of nu=1, nu=3 and nu=5 are supported.\n\nbeginaligned\nK_nu=1(r) = sigma_f^2e^-sqrtr\nK_nu=3(r) = sigma_f^2(1 + sqrt3r)e^-sqrt3r\nK_nu=5(r) = sigma_f^2(1 + sqrt3r + frac53r)e^-sqrt5r\nr_ij = sum_k=1^dfrac(x_ik-z_jk)^2l_k^2\nendaligned\n\nr_ij are computed by scaled_squared_distance\n\nHyperparameters\n\nThe length of hyperparameters array for this kernel depends on the dimensionality of the data. Assuming each data point is a vector in a d-dimensional space, this kernel needs d+1 hyperparameters, in the following order:\n\nsigma_f: the signal standard deviation\nl_1 ldots l_d: the length scales for each dimension\n\n\n\n"
 },
 
 {
@@ -93,7 +157,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Reference",
     "title": "GpAbc.MaternIsoKernel",
     "category": "type",
-    "text": "MaternIsoKernel <: AbstractGPKernel\n\nMatérn kernel with uniform length scale across all dimensions, l. Parameter nu (nu) is passed in constructor. Currently, only values of nu=1, nu=3 and nu=5 are supported.\n\nbeginaligned\nK_nu=1(r) = sigma_f^2e^-sqrtr\nK_nu=3(r) = sigma_f^2(1 + sqrt3r)e^-sqrt3r\nK_nu=5(r) = sigma_f^2(1 + sqrt3r + frac53r)e^-sqrt5r\nr_ij = sum_k=1^dfrac(x_ik-z_jk)^2l^2\nendaligned\n\nHyperparameters\n\nHyperparameters vector for this kernel must contain two elements, in the following order:\n\nsigma_f: the signal standard deviation\nl: the length scale\n\n\n\n"
+    "text": "MaternIsoKernel <: AbstractGPKernel\n\nMatérn kernel with uniform length scale across all dimensions, l. Parameter nu (nu) is passed in constructor. Currently, only values of nu=1, nu=3 and nu=5 are supported.\n\nbeginaligned\nK_nu=1(r) = sigma_f^2e^-sqrtr\nK_nu=3(r) = sigma_f^2(1 + sqrt3r)e^-sqrt3r\nK_nu=5(r) = sigma_f^2(1 + sqrt3r + frac53r)e^-sqrt5r\nr_ij = sum_k=1^dfrac(x_ik-z_jk)^2l^2\nendaligned\n\nr_ij are computed by scaled_squared_distance\n\nHyperparameters\n\nHyperparameters vector for this kernel must contain two elements, in the following order:\n\nsigma_f: the signal standard deviation\nl: the length scale\n\n\n\n"
 },
 
 {
@@ -101,7 +165,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Reference",
     "title": "GpAbc.SquaredExponentialArdKernel",
     "category": "type",
-    "text": "SquaredExponentialArdKernel <: AbstractGPKernel\n\nSquared exponential kernel with distinct length scale for each dimention, l_k.\n\nK(r) = sigma_f^2 e^-r2 r_ij = sum_k=1^dfrac(x_ik-z_jk)^2l_k^2\n\nHyperparameters\n\nThe length of hyperparameters array for this kernel depends on the dimensionality of the data. Assuming each data point is a vector in a d-dimensional space, this kernel needs d+1 hyperparameters, in the following order:\n\nsigma_f: the signal standard deviation\nl_1 ldots l_d: the length scales for each dimension\n\n\n\n"
+    "text": "SquaredExponentialArdKernel <: AbstractGPKernel\n\nSquared exponential kernel with distinct length scale for each dimention, l_k.\n\nbeginaligned\nK(r)  = sigma_f^2 e^-r2 \nr_ij  = sum_k=1^dfrac(x_ik-z_jk)^2l_k^2\nendaligned\n\nr_ij are computed by scaled_squared_distance\n\nHyperparameters\n\nThe length of hyperparameters array for this kernel depends on the dimensionality of the data. Assuming each data point is a vector in a d-dimensional space, this kernel needs d+1 hyperparameters, in the following order:\n\nsigma_f: the signal standard deviation\nl_1 ldots l_d: the length scales for each dimension\n\n\n\n"
 },
 
 {
@@ -109,7 +173,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Reference",
     "title": "GpAbc.SquaredExponentialIsoKernel",
     "category": "type",
-    "text": "SquaredExponentialIsoKernel <: AbstractGPKernel\n\nSquared exponential kernel with uniform length scale across all dimensions, l.\n\nK(r) = sigma_f^2 e^-r2 r_ij = sum_k=1^dfrac(x_ik-z_jk)^2l^2\n\nHyperparameters\n\nHyperparameters vector for this kernel must contain two elements, in the following order:\n\nsigma_f: the signal standard deviation\nl: the length scale\n\n\n\n"
+    "text": "SquaredExponentialIsoKernel <: AbstractGPKernel\n\nSquared exponential kernel with uniform length scale across all dimensions, l.\n\nbeginaligned\nK(r)  = sigma_f^2 e^-r2 \nr_ij  = sum_k=1^dfrac(x_ik-z_jk)^2l^2\nendaligned\n\nr_ij are computed by scaled_squared_distance\n\nHyperparameters\n\nHyperparameters vector for this kernel must contain two elements, in the following order:\n\nsigma_f: the signal standard deviation\nl: the length scale\n\n\n\n"
 },
 
 {
@@ -185,6 +249,22 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "reference/#GpAbc.gp_loglikelihood_grad-Tuple{AbstractArray{Float64,1},GpAbc.GPModel}",
+    "page": "Reference",
+    "title": "GpAbc.gp_loglikelihood_grad",
+    "category": "method",
+    "text": "gp_loglikelihood_grad(theta::AbstractArray{Float64, 1}, gpem::GPModel)\n\nGradient of the log likelihood function (gp_loglikelihood_log) with respect to logged hyperparameters.\n\n\n\n"
+},
+
+{
+    "location": "reference/#GpAbc.gp_loglikelihood_log-Tuple{AbstractArray{Float64,1},GpAbc.GPModel}",
+    "page": "Reference",
+    "title": "GpAbc.gp_loglikelihood_log",
+    "category": "method",
+    "text": "gp_loglikelihood_log(theta::AbstractArray{Float64, 1}, gpm::GPModel)\n\nLog likelihood function with log hyperparameters. This is the target function of the hyperparameters optimisation procedure. Its gradient is coputed by gp_loglikelihood_grad.\n\n\n\n"
+},
+
+{
     "location": "reference/#GpAbc.gp_regression-Tuple{GpAbc.GPModel}",
     "page": "Reference",
     "title": "GpAbc.gp_regression",
@@ -221,7 +301,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Reference",
     "title": "GpAbc.scaled_squared_distance",
     "category": "method",
-    "text": "scaled_squared_distance(log_ell::AbstractArray{Float64, 1},\n    x::AbstractArray{Float64, 2}, z::AbstractArray{Float64, 2})\n\nCompute the scaled squared distance between x and z:\n\nr_ij = sum_k=1^dfrac(x_ik-z_jk)^2l_k^2\n\nArguments\n\nx, z: Input data, reshaped into 2-d arrays. x must have dimensions n times d; z must have dimensions m times d.\nlog_ell: logarithm of length scale(s). Can either be an array of size one (isotropic), or an array of size d (ARD)\n\nReturn\n\nAn n times m matrix of scaled squared distances\n\n\n\n"
+    "text": "scaled_squared_distance(log_ell::AbstractArray{Float64, 1},\n    x::AbstractArray{Float64, 2}, z::AbstractArray{Float64, 2})\n\nCompute the scaled squared distance between x and z:\n\nr_ij = sum_k=1^dfrac(x_ik-z_jk)^2l_k^2\n\nThe gradient of this function with respect to length scale hyperparameter(s) is returned by scaled_squared_distance_grad.\n\nArguments\n\nx, z: Input data, reshaped into 2-d arrays. x must have dimensions n times d; z must have dimensions m times d.\nlog_ell: logarithm of length scale(s). Can either be an array of size one (isotropic), or an array of size d (ARD)\n\nReturn\n\nAn n times m matrix of scaled squared distances\n\n\n\n"
 },
 
 {
@@ -241,11 +321,11 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "reference/#",
+    "location": "reference/#GpAbc-1",
     "page": "Reference",
-    "title": "Reference",
-    "category": "page",
-    "text": "Modules = [GpAbc]"
+    "title": "GpAbc",
+    "category": "section",
+    "text": "Modules = [GpAbc]\nOrder   = [:type, :function, :method]"
 },
 
 ]}
