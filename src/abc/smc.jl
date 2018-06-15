@@ -7,7 +7,7 @@ function generate_kernels(
         priors::Vector{D},
         ) where {
         F<:AbstractFloat,
-        D<:Distributions.ContinuousUnivariateDistribution,
+        D<:ContinuousUnivariateDistribution,
         }
     n_particles = size(population, 1)
     n_params = size(population, 2)
@@ -16,12 +16,12 @@ function generate_kernels(
     lowers = minimum.(priors)
     uppers = maximum.(priors)
 
-    CUD = Distributions.ContinuousUnivariateDistribution
+    CUD = ContinuousUnivariateDistribution
     kernels = Matrix{CUD}(n_particles, n_params)
     for j in 1:n_params
         means = population[j,:]
         for i in 1:n_particles
-            kernels[i, j] = Distributions.TruncatedNormal(means[j],
+            kernels[i, j] = TruncatedNormal(means[j],
                                                           stds[j]*sqrt(2),
                                                           lowers[j],
                                                           uppers[j],
@@ -39,7 +39,7 @@ function generate_parameters(
         old_weights::StatsBase.Weights,
         kernels::Matrix{D2},
         ) where {
-        D1, D2<:Distributions.ContinuousUnivariateDistribution,
+        D1, D2<:ContinuousUnivariateDistribution,
         F<:AbstractFloat,
         }
 
@@ -56,7 +56,7 @@ function generate_parameters(
 
     numerator = 1.0
     for i in 1:n_params
-        numerator *= Distributions.pdf(priors[i], perturbed_parameters[i])
+        numerator *= pdf(priors[i], perturbed_parameters[i])
     end
 
     denominator = 0.0
@@ -64,7 +64,7 @@ function generate_parameters(
         # calculate the total kernel
         kernel = 1.0
         for j in 1:n_params
-            kernel *= Distributions.pdf(kernels[k,j], perturbed_parameters[j])
+            kernel *= pdf(kernels[k,j], perturbed_parameters[j])
         end
         denominator += old_weights[k] * kernel
 

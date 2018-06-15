@@ -11,7 +11,7 @@ struct SimulatedABCRejectionInput <: ABCRejectionInput
     n_params::Int64
     n_particles::Int64
     threshold::Float64
-    priors::Vector{Distributions.ContinuousUnivariateDistribution}
+    priors::Vector{ContinuousUnivariateDistribution}
     distance_function::Function
     data_generating_function::Function
 end
@@ -20,7 +20,7 @@ struct EmulatedABCRejectionInput <: ABCRejectionInput
 	n_params::Int64
 	n_particles::Int64
 	threshold::Float64
-	priors::Vector{Distributions.ContinuousUnivariateDistribution}
+	priors::Vector{ContinuousUnivariateDistribution}
 	distance_prediction_function::Function
 	batch_size::Int64
     max_iter::Int
@@ -30,7 +30,7 @@ struct SimulatedABCSMCInput <: ABCSMCInput
     n_params::Int64
     n_particles::Int64
     threshold_schedule::Vector{Float64}
-    priors::Vector{Distributions.ContinuousUnivariateDistribution}
+    priors::Vector{ContinuousUnivariateDistribution}
     distance_function::Function
     data_generating_function::Function
 end
@@ -39,7 +39,7 @@ struct EmulatedABCSMCInput <: ABCSMCInput
     n_params::Int64
     n_particles::Int64
     threshold_schedule::Vector{Float64}
-    priors::Vector{Distributions.ContinuousUnivariateDistribution}
+    priors::Vector{ContinuousUnivariateDistribution}
     distance_prediction_function::Function
     batch_size::Int64
     max_iter::Int
@@ -58,7 +58,7 @@ mutable struct SimulatedABCSMCTracker <: ABCSMCTracker
     population::Vector{Matrix{Float64}}
     distances::Vector{Vector{Float64}}
     weights::Vector{StatsBase.Weights}
-    priors::Vector{Distributions.ContinuousUnivariateDistribution}
+    priors::Vector{ContinuousUnivariateDistribution}
     distance_function::Function
     data_generating_function::Function
 end
@@ -71,7 +71,7 @@ mutable struct EmulatedABCSMCTracker <: ABCSMCTracker
     population::Vector{Matrix{Float64}}
     distances::Vector{Vector{Float64}}
     weights::Vector{StatsBase.Weights}
-    priors::Vector{Distributions.ContinuousUnivariateDistribution}
+    priors::Vector{ContinuousUnivariateDistribution}
     distance_prediction_function::Function
 end
 

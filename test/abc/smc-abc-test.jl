@@ -1,4 +1,4 @@
-using Base.Test, GpAbc, DifferentialEquations, Distances
+using Base.Test, GpAbc, DifferentialEquations, Distances, Distributions
 
 @testset "SMC ABC Test" begin
     #
@@ -7,7 +7,7 @@ using Base.Test, GpAbc, DifferentialEquations, Distances
     n_var_params = 2
     n_particles = 1000
     threshold_schedule = [3.0, 2.0, 1.0]
-    priors = [Distributions.Uniform(0., 5.), Distributions.Uniform(0., 5.)]
+    priors = [Uniform(0., 5.), Uniform(0., 5.)]
     distance_metric = euclidean
     progress_every = 1000
 

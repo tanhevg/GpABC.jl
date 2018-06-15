@@ -4,7 +4,7 @@
 function generate_parameters(
         priors::Vector{D},
         ) where {
-        D<:Distributions.ContinuousUnivariateDistribution
+        D<:ContinuousUnivariateDistribution
         }
     n_dims = length(priors)
     parameters = zeros(n_dims)
@@ -12,7 +12,7 @@ function generate_parameters(
     weight = 1.
     for i in 1:n_dims
         @inbounds parameters[i] = rand(priors[i])
-        weight *= Distributions.pdf(priors[i], parameters[i])
+        weight *= pdf(priors[i], parameters[i])
     end
 
     return parameters, weight
@@ -25,7 +25,7 @@ function generate_parameters(
         priors::Vector{D},
         batch_size::Int,
         ) where {
-        D<:Distributions.ContinuousUnivariateDistribution
+        D<:ContinuousUnivariateDistribution
         }
     n_dims = length(priors)
     parameters = zeros(batch_size, n_dims)
@@ -34,7 +34,7 @@ function generate_parameters(
     for j in 1:n_dims
         for i in 1:batch_size
             @inbounds parameters[i,j] = rand(priors[j])
-            weights[i] *= Distributions.pdf(priors[j], parameters[j])
+            weights[i] *= pdf(priors[j], parameters[j])
         end
     end
 
@@ -168,7 +168,7 @@ function ABCrejection(
             accepted_distances[n_accepted+1:n_accepted + n_accepted_batch] = distances[accepted_batch_idxs]
             weights[n_accepted+1:n_accepted + n_accepted_batch] = weight_batch[accepted_batch_idxs]
             n_accepted += n_accepted_batch
-            
+
         end
 
         if write_progress && (batch_no % progress_every == 0)

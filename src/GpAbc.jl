@@ -14,11 +14,6 @@ export
 	scaled_squared_distance, scaled_squared_distance_grad,
 	get_hyperparameters_size, set_hyperparameters,
     gp_train,
-	# multiple_training_abc,
-	# multiple_training_seq_abc,
-	# smc,
-	# get_head_of_ref_table,
-	# rejection_abc,
 
 	ABCrejection,
 	initialiseABCSMC, iterateABCSMC!, ABCSMC,
@@ -31,10 +26,14 @@ export
 	SimulatedABCSMCTracker, EmulatedABCSMCTracker,
 	read_rejection_output, read_smc_output;
 
+	# multiple_training_abc,
+	# multiple_training_seq_abc,
+	# smc,
+	# get_head_of_ref_table,
+	# rejection_abc,
+
 using Optim, Distributions
 
-# import Distances
-import Distributions
 import StatsBase
 
 import Base: write
