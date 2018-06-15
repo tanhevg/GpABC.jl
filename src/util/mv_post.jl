@@ -17,6 +17,6 @@ function _rand!(s::PosteSampler{T}, x:::AbstractArray{T,2}) where {T}
 end
 
 
-M = randn(1000,4)
-prior_design=PosteSampler(M)
-rand(PosteSampler,M)
+# M = randn(1000,4)
+# prior_design=PosteSampler(M)
+# rand(PosteSampler,M)
