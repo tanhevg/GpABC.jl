@@ -289,14 +289,6 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "reference/#GpAbc.rejection_abc-Tuple{Function,Function}",
-    "page": "Reference",
-    "title": "GpAbc.rejection_abc",
-    "category": "method",
-    "text": "test_prior - A no-argument function, returns a sample from test prior, that is ready to be fed into summary_statistics_function. Returns an array of size (n, d), n rows and d columns, where n is the number of points, and d is the dimentionality of the data\n\nsummary_statistics_function - A function that takes in a test sample, and returns a 1D vector of summary statistics. In our case this returns a vector of norms to the observed data, as emulated by the GP.\n\nobserved_summary_statistic - Summary statistic of the observed data. In our case this is zero\n\nSee abc_test.jl for usage example\n\n\n\n"
-},
-
-{
     "location": "reference/#GpAbc.scaled_squared_distance-Tuple{AbstractArray{Float64,1},AbstractArray{Float64,2},AbstractArray{Float64,2}}",
     "page": "Reference",
     "title": "GpAbc.scaled_squared_distance",
