@@ -30,7 +30,7 @@ set_hyperparameters(gpm, [37.08, 1.0, 6.58])
 plot(test_x, [test_y f(test)]) # ... and more sophisticated plotting
 ```
 
-### [Optimising Hyperparameters for GP Regression](@id example-2)
+### <a name="readme-example-1"></a>[Optimising Hyperparameters for GP Regression](@id example-2)
 
 Based on [Basic Gaussian Process Regression](@ref example-1), but with added optimisation
 of hyperparameters:
@@ -83,7 +83,7 @@ function gp_train_advanced(gpm::GPModel, attempts::Int)
 end
 ```
 
-### [Using a Custom Kernel](@id example-4)
+### <a name="readme-example-2"></a>[Using a Custom Kernel](@id example-4)
 
 The methods below should be implemented for the custom kernel, unless indicated as optional.
 Please see reference documentation for detailed description of each method and parameter.

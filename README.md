@@ -25,7 +25,7 @@ Pkg.add("GpAbc")
 ## Use cases
 Although the primary objective of this package is parameter estimation of ODEs and SDEs
 with ABC-SMC, using GPR emulation, each of the intermediate steps can be run independently:
-* Run Gaussian Process regression ([Example 1](https://tanhevg.github.io/GpAbc.jl/latest/examples/#example-2), [Example 2](https://tanhevg.github.io/GpAbc.jl/latest/examples/#example-4))
+* Run Gaussian Process regression ([Example 1](https://tanhevg.github.io/GpAbc.jl/latest/examples/#readme-example-1), [Example 2](https://tanhevg.github.io/GpAbc.jl/latest/examples/#readme-example-2))
 * Estimate model parameters using Rejection ABC without emulation (simulation only) [ **TODO link to example** ]
 * Estimate model parameters using Rejection ABC with GPR emulation [ **TODO link to example** ]
 * Estimate model parameters using Sequential Monte Carlo (SMC) ABC without emulation  (simulation only) [ **TODO link to example** ]
