@@ -22,7 +22,7 @@ abstract type AbstractGaussianProcess end;
 """
     GPModel
 
-The main type that is used by most functions withing the package.
+The main type that is used by most functions within the package.
 
 All data matrices are row-major.
 

@@ -44,7 +44,7 @@ end
 #
 # Note - have removed simulation_args... should pass an anonymous function that returns
 # simulation results with the parameters as the only argument to SimulatedABCRejectionInput
-# as data_generating_function
+# as simulator_function
 #
 
 #
@@ -66,11 +66,16 @@ function ABCrejection(
     accepted_distances = zeros(input.n_particles)
     weights = ones(input.n_particles)
 
+    # Summary statistic initialisation
+    summary_statistic = build_summary_statistic(input.summary_statistic)
+    reference_data_sum_stat = summary_statistic(reference_data)
+
     # simulate
     while n_accepted < input.n_particles
         parameters, weight = generate_parameters(input.priors)
-        simulated_data = input.data_generating_function(parameters)
-        distance = input.distance_function(reference_data, simulated_data)
+        simulated_data = input.simulator_function(parameters)
+        simulated_data_sum_stat = summary_statistic(simulated_data)
+        distance = input.distance_function(reference_data_sum_stat, simulated_data_sum_stat)
         n_tries += 1
 
         if distance <= input.threshold

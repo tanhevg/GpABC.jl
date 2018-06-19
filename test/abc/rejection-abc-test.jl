@@ -61,6 +61,7 @@ using Base.Test, GpAbc, DifferentialEquations, Distances, Distributions
                             n_particles,
                             threshold,
                             priors,
+                            "keep_all",
                             distance_metric,
                             simulator_function)
 
@@ -72,12 +73,17 @@ using Base.Test, GpAbc, DifferentialEquations, Distances, Distributions
         simulator_function, distance_metric,
         reference_data)
 
-        X = zeros(n_design_points, length(priors))
+        n_var_params = length(priors)
+
+        X = zeros(n_design_points, n_var_params)
         y = zeros(n_design_points)
+
+        for j in 1:n_var_params
+            X[:,j] = rand(priors[j], n_design_points)
+        end
+
         for i in 1:n_design_points
-            dp = [rand(d) for d in priors]
-            X[i,:] = dp
-            y[i] = distance_metric(simulator_function(dp), reference_data)
+            y[i] = distance_metric(simulator_function(X[i,:]), reference_data)
         end
 
         return X, y
