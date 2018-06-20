@@ -101,7 +101,7 @@ using Base.Test, GpAbc, DifferentialEquations, Distances, Distributions
           batch_size,
           max_iter)
 
-    emu_result = ABCrejection(emu_rej_input, reference_data, progress_every=5)
+    emu_result = ABCrejection(emu_rej_input, reference_data, write_progress=false)
     @test size(emu_result.population, 1) > 0
 
 end
