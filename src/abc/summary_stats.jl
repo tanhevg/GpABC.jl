@@ -10,7 +10,7 @@ function build_summary_statistic(summary_statistic_string::String)
     elseif summary_statistic_string == "keep_all"
         return keep_all_summary_statistic
     else
-        error("$(summary_statistic) is not a valid summary statistic")
+        error("$(summary_statistic_string) is not a valid summary statistic")
     end
 
 end

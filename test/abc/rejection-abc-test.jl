@@ -6,7 +6,6 @@ using Base.Test, GpAbc, DifferentialEquations, Distances, Distributions
     #
     n_var_params = 2
     n_particles = 1000
-    threshold = 0.5
     priors = [Uniform(0., 5.), Uniform(0., 5.)]
     distance_metric = euclidean
     progress_every = 1000
@@ -57,11 +56,45 @@ using Base.Test, GpAbc, DifferentialEquations, Distances, Distributions
     reference_data = GeneReg(true_params, Tspan, x0, solver, saveat)
     simulator_function(var_params) = GeneReg(vcat(var_params, true_params[n_var_params+1:end]), Tspan, x0, solver, saveat)
 
+    #
+    # Test using keep all as summary statistic
+    #
     sim_rej_input = SimulatedABCRejectionInput(n_var_params,
                             n_particles,
-                            threshold,
+                            0.5,
                             priors,
                             "keep_all",
+                            distance_metric,
+                            simulator_function)
+
+    sim_result = ABCrejection(sim_rej_input, reference_data, write_progress=false)
+    @test size(sim_result.population, 1) > 0
+
+    #
+    # Test using mean and variance as summary statistic
+    #
+    sim_rej_input = SimulatedABCRejectionInput(n_var_params,
+                            n_particles,
+                            3.0,
+                            priors,
+                            ["mean", "variance"],
+                            distance_metric,
+                            simulator_function)
+
+    sim_result = ABCrejection(sim_rej_input, reference_data, write_progress=false)
+    @test size(sim_result.population, 1) > 0
+
+    #
+    # Test using custom summary statistic
+    #
+    function sum_stat(data::AbstractArray{Float64,2})
+        return std(data, 2)[:]
+    end
+    sim_rej_input = SimulatedABCRejectionInput(n_var_params,
+                            n_particles,
+                            3.0,
+                            priors,
+                            sum_stat,
                             distance_metric,
                             simulator_function)
 
@@ -101,7 +134,7 @@ using Base.Test, GpAbc, DifferentialEquations, Distances, Distributions
 
     emu_rej_input = EmulatedABCRejectionInput(n_var_params,
           n_particles,
-          threshold,
+          0.5,
           priors,
           predict_distance,
           batch_size,
