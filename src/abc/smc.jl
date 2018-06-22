@@ -98,13 +98,18 @@ function initialiseABCSMC(
         write_progress = true,
         progress_every = 1000,
         )
+
+    # construct summary statistic function to be used in all runs
+    built_summary_statistic = build_summary_statistic(input.summary_statistic)
+
     # the first run is an ABC rejection simulation
     rejection_input = SimulatedABCRejectionInput(input.n_params,
                                         input.n_particles,
                                         input.threshold_schedule[1],
                                         input.priors,
+                                        built_summary_statistic,
                                         input.distance_function,
-                                        input.data_generating_function,
+                                        input.simulator_function,
                                         )
 
     rejection_output = ABCrejection(rejection_input,
@@ -122,8 +127,9 @@ function initialiseABCSMC(
                              [rejection_output.distances],
                              [rejection_output.weights],
                              input.priors,
+                             built_summary_statistic,
                              input.distance_function,
-                             input.data_generating_function,
+                             input.simulator_function,
                              )
 
     return tracker
@@ -194,6 +200,8 @@ function iterateABCSMC!(
 
     kernels = generate_kernels(tracker.population[end-1], tracker.priors)
 
+    reference_data_sum_stat = tracker.summary_statistic(reference_data)
+
     # simulate
     while tracker.n_accepted[end] < n_toaccept
         parameters, weight = generate_parameters(tracker.priors,
@@ -202,8 +210,9 @@ function iterateABCSMC!(
                                                  kernels,
                                                  )
 
-        simulated_data = tracker.data_generating_function(parameters)
-        distance = tracker.distance_function(reference_data, simulated_data)
+        simulated_data = tracker.simulator_function(parameters)
+        simulated_data_sum_stat = tracker.summary_statistic(simulated_data)
+        distance = tracker.distance_function(reference_data_sum_stat, simulated_data_sum_stat)
         tracker.n_tries[end] += 1
 
         if distance <= threshold
