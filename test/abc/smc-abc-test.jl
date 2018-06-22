@@ -72,13 +72,14 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
     @test size(sim_abcsmc_res.population, 1) > 0
 
     #
-    # Test using mean and variance as summary statistic
+    # Test using built-in summary statistics
     #
     sim_abcsmc_input = SimulatedABCSMCInput(n_var_params,
         n_particles,
         3.0 * threshold_schedule,
         priors,
-        ["mean", "variance"],
+        ["mean", "variance", "max", "min", "range", "median",
+        "q1", "q3", "iqr"],
         distance_metric,
         simulator_function)
 
@@ -101,27 +102,6 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
 
     sim_abcsmc_res = ABCSMC(sim_abcsmc_input, reference_data, write_progress = false)
     @test size(sim_abcsmc_res.population, 1) > 0
-
-    function get_training_data(n_design_points,
-        priors,
-        simulator_function, distance_metric,
-        reference_data)
-
-        n_var_params = length(priors)
-
-        X = zeros(n_design_points, n_var_params)
-        y = zeros(n_design_points)
-        
-        for j in 1:n_var_params
-            X[:,j] = rand(priors[j], n_design_points)
-        end
-
-        for i in 1:n_design_points
-            y[i] = distance_metric(simulator_function(X[i,:]), reference_data)
-        end
-
-        return X, y
-    end
 
     X, y = get_training_data(n_design_points, priors, simulator_function, distance_metric, reference_data)
 

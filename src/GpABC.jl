@@ -32,7 +32,7 @@ export
 	# get_head_of_ref_table,
 	# rejection_abc,
 
-using Optim, Distributions
+using Optim, Distributions, Distances, DifferentialEquations
 
 import StatsBase
 
@@ -52,6 +52,9 @@ include("abc/io.jl")
 include("abc/rejection.jl")
 include("abc/smc.jl")
 include("abc/summary_stats.jl")
+include("abc/simulation.jl")
+include("abc/emulation.jl")
+include("util/emulation_helpers.jl")
 
 
 # include("abc.jl")
