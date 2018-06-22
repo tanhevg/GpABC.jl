@@ -1,10 +1,10 @@
 ### Index
 ```@index
-Modules = [GpAbc]
+Modules = [GpABC]
 ```
 
-### GpAbc
+### GpABC
 ```@autodocs
-Modules = [GpAbc]
+Modules = [GpABC]
 Order   = [:type, :function, :method]
 ```

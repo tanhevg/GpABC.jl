@@ -1,4 +1,4 @@
-using Base.Test, GpAbc, DifferentialEquations, Distances, Distributions
+using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
 
 @testset "Rejection ABC Test" begin
     #
