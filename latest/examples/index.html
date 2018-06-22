@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Examples · GpAbc.jl</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link href="../assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>GpAbc.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../">Home</a></li><li class="current"><a class="toctext" href>Examples</a><ul class="internal"></ul></li><li><a class="toctext" href="../reference/">Reference</a></li></ul></nav><article id="docs"><header><nav><ul><li><a href>Examples</a></li></ul><a class="edit-page" href="https://github.com/tanhevg/GpAbc.jl/blob/master/docs/src/examples.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Examples</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Examples-1" href="#Examples-1">Examples</a></h1><ul><li><p><a href="#example-1-1">Basic Gaussian Process Regression</a></p></li><li><p><a href="#example-2-1">Optimising Hyperparameters for GP Regression</a></p></li><li><p><a href="#example-3-1">Advanced Usage of gp_train</a></p></li><li><p><a href="#example-4-1">Using a Custom Kernel</a></p></li></ul><h3><a class="nav-anchor" id="example-1-1" href="#example-1-1">Basic Gaussian Process Regression</a></h3><pre><code class="language-julia">using GpAbc, Distributions, PyPlot
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Examples · GpABC.jl</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link href="../assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>GpABC.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../">Home</a></li><li class="current"><a class="toctext" href>Examples</a><ul class="internal"></ul></li><li><a class="toctext" href="../reference/">Reference</a></li></ul></nav><article id="docs"><header><nav><ul><li><a href>Examples</a></li></ul><a class="edit-page" href="https://github.com/tanhevg/GpABC.jl/blob/master/docs/src/examples.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Examples</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Examples-1" href="#Examples-1">Examples</a></h1><ul><li><p><a href="#example-1-1">Basic Gaussian Process Regression</a></p></li><li><p><a href="#example-2-1">Optimising Hyperparameters for GP Regression</a></p></li><li><p><a href="#example-3-1">Advanced Usage of gp_train</a></p></li><li><p><a href="#example-4-1">Using a Custom Kernel</a></p></li></ul><h3><a class="nav-anchor" id="example-1-1" href="#example-1-1">Basic Gaussian Process Regression</a></h3><pre><code class="language-julia">using GpABC, Distributions, PyPlot
 
 # prepare the data
 n = 30
@@ -18,7 +18,7 @@ gpm = GPModel(training_x, training_y)
 set_hyperparameters(gpm, [37.08, 1.0, 6.58])
 (test_y, test_var) = gp_regression(test_x, gpm)
 
-plot(test_x, [test_y f(test)]) # ... and more sophisticated plotting</code></pre><h3><a class="nav-anchor" id="example-2-1" href="#example-2-1">Optimising Hyperparameters for GP Regression</a></h3><p>Based on <a href="#example-1-1">Basic Gaussian Process Regression</a>, but with added optimisation of hyperparameters:</p><pre><code class="language-julia">using GaussProABC
+plot(test_x, [test_y f(test)]) # ... and more sophisticated plotting</code></pre><h3><a class="nav-anchor" id="example-2-1" href="#example-2-1">Optimising Hyperparameters for GP Regression</a></h3><p>Based on <a href="#example-1-1">Basic Gaussian Process Regression</a>, but with added optimisation of hyperparameters:</p><pre><code class="language-julia">using GpABC
 
 # prepare the data ...
 
@@ -29,7 +29,7 @@ gpm = GPModel(training_x, training_y)
 theta_mle = gp_train(gpm)
 
 # optimised hyperparameters are stored in gpm, so no need to pass them again
-(test_y, test_var) = gp_regression(test_x, gpm)</code></pre><h3><a class="nav-anchor" id="example-3-1" href="#example-3-1">Advanced Usage of gp_train</a></h3><pre><code class="language-julia">using GpAbc, Optim, Distributions
+(test_y, test_var) = gp_regression(test_x, gpm)</code></pre><h3><a class="nav-anchor" id="example-3-1" href="#example-3-1">Advanced Usage of gp_train</a></h3><pre><code class="language-julia">using GpABC, Optim, Distributions
 
 function gp_train_advanced(gpm::GPModel, attempts::Int)
     # Initialise the bounds, with special treatment for the second hyperparameter
@@ -56,8 +56,9 @@ function gp_train_advanced(gpm::GPModel, attempts::Int)
     end
     # Retain the hyperparameters where the maximum log likelihood function is attained
     gpm.gp_hyperparameters = hypers[indmax(likelihood_values), :]
-end</code></pre><h3><a class="nav-anchor" id="example-4-1" href="#example-4-1">Using a Custom Kernel</a></h3><p>The methods below should be implemented for the custom kernel, unless indicated as optional. Please see reference documentation for detailed description of each method and parameter.</p><pre><code class="language-julia">using GpAbc
-import GpAbc.covariance, GpAbc.get_hyperparameters_size
+end</code></pre><h3><a class="nav-anchor" id="example-4-1" href="#example-4-1">Using a Custom Kernel</a></h3><p>The methods below should be implemented for the custom kernel, unless indicated as optional. Please see reference documentation for detailed description of each method and parameter.</p><pre><code class="language-julia">using GpABC
+import GpABC.covariance, GpABC.get_hyperparameters_size, GpABC.covariance_diagonal,
+    GpABC.covariance_training, GpABC.covariance_grad
 
 &quot;&quot;&quot;
    This is the new kernel that we are adding
@@ -119,5 +120,5 @@ function covariance_grad(ker::MyCustomkernel, log_theta::AbstractArray{Float64, 
 end
 
 gpm = GPModel(training_x, training_y, MyCustomkernel())
-theta_mle = gp_train(gpm)
+theta = gp_train(gpm)
 (test_y, test_var) = gp_regression(test_x, gpm)</code></pre><footer><hr/><a class="previous" href="../"><span class="direction">Previous</span><span class="title">Home</span></a><a class="next" href="../reference/"><span class="direction">Next</span><span class="title">Reference</span></a></footer></article></body></html>
