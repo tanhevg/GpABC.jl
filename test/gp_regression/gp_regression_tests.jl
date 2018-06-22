@@ -1,12 +1,12 @@
-using Base.Test, GpAbc
-import GpAbc.covariance, GpAbc.get_hyperparameters_size
+using Base.Test, GpABC
+import GpABC.covariance, GpABC.get_hyperparameters_size
 
 struct NoGradKernel <: AbstractGPKernel
-    rbf_iso_kernel::GpAbc.SquaredExponentialIsoKernel
+    rbf_iso_kernel::GpABC.SquaredExponentialIsoKernel
 end
 
 function NoGradKernel()
-    NoGradKernel(GpAbc.SquaredExponentialIsoKernel())
+    NoGradKernel(GpABC.SquaredExponentialIsoKernel())
 end
 
 function get_hyperparameters_size(ker::NoGradKernel, x::AbstractArray{Float64, 2})

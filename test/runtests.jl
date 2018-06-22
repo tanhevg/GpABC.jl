@@ -1,5 +1,5 @@
 using Base.Test
-@testset "GpAbc Full Test Suite" begin
+@testset "GpABC Full Test Suite" begin
 include("kernels/abstract_kernel_tests.jl")
 include("kernels/scaled_squared_distance_test.jl")
 include("kernels/rbf_kernel_tests.jl")

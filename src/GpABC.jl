@@ -1,4 +1,4 @@
-module GpAbc
+module GpABC
 
 export
 	AbstractGPKernel,

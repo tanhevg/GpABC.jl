@@ -1,4 +1,4 @@
-using Base.Test, GpAbc, DifferentialEquations
+using Base.Test, GpABC, DifferentialEquations
 
 # Just a basic test that verifies that all functions compile and return correctly shaped arrays
 @testset "ABC smc test" begin

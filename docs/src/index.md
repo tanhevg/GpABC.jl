@@ -51,7 +51,7 @@ multiple local optima. If a trained GP produces an unsatisfactory data fit, one
 possible workaround is trying to run [`gp_train`](@ref) several times with random starting points. This approach is demonstrated in [Advanced Usage of gp_train example](@ref example-3).
 
 `Optim` has a built in constraint of running no more than 1000 iterations of any optimisation
-algorithm. `GpAbc` relies on this feature to ensure that the training procedure
+algorithm. `GpABC` relies on this feature to ensure that the training procedure
 does not get stuck forever. As a consequence, the optimizer might exit prematurely,
 before reaching the local optimum. Setting `log_level` argument of [`gp_train`](@ref) to a value
 greater than zero will make it log its actions to standard output, including
@@ -59,7 +59,7 @@ whether the local minimum has been reached or not.
 
 ## Kernels
 
-`GpAbc` ships with an extensible library of kernel functions. Each kernel is represented with a type that derives from [`AbstractGPKernel`](@ref):
+`GpABC` ships with an extensible library of kernel functions. Each kernel is represented with a type that derives from [`AbstractGPKernel`](@ref):
 * [`SquaredExponentialIsoKernel`](@ref)
 * [`SquaredExponentialArdKernel`](@ref)
 * [`MaternIsoKernel`](@ref)
