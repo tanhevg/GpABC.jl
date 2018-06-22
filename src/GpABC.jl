@@ -51,6 +51,7 @@ include("util/latin_hypercube_sampler.jl")
 include("abc/io.jl")
 include("abc/rejection.jl")
 include("abc/smc.jl")
+include("abc/summary_stats.jl")
 
 
 # include("abc.jl")

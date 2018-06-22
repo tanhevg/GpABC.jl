@@ -5,15 +5,14 @@ abstract type ABCInput end
 
 abstract type ABCRejectionInput <: ABCInput end
 
-abstract type ABCSMCInput <: ABCInput end
-
 struct SimulatedABCRejectionInput <: ABCRejectionInput
     n_params::Int64
     n_particles::Int64
     threshold::Float64
     priors::Vector{ContinuousUnivariateDistribution}
+    summary_statistic::Union{String,Vector{String},Function}
     distance_function::Function
-    data_generating_function::Function
+    simulator_function::Function
 end
 
 struct EmulatedABCRejectionInput <: ABCRejectionInput
@@ -26,13 +25,16 @@ struct EmulatedABCRejectionInput <: ABCRejectionInput
     max_iter::Int
 end
 
+abstract type ABCSMCInput <: ABCInput end
+
 struct SimulatedABCSMCInput <: ABCSMCInput
     n_params::Int64
     n_particles::Int64
     threshold_schedule::Vector{Float64}
     priors::Vector{ContinuousUnivariateDistribution}
+    summary_statistic::Union{String,Vector{String},Function}
     distance_function::Function
-    data_generating_function::Function
+    simulator_function::Function
 end
 
 struct EmulatedABCSMCInput <: ABCSMCInput
@@ -59,8 +61,9 @@ mutable struct SimulatedABCSMCTracker <: ABCSMCTracker
     distances::Vector{Vector{Float64}}
     weights::Vector{StatsBase.Weights}
     priors::Vector{ContinuousUnivariateDistribution}
+    summary_statistic::Function
     distance_function::Function
-    data_generating_function::Function
+    simulator_function::Function
 end
 
 mutable struct EmulatedABCSMCTracker <: ABCSMCTracker
@@ -74,7 +77,6 @@ mutable struct EmulatedABCSMCTracker <: ABCSMCTracker
     priors::Vector{ContinuousUnivariateDistribution}
     distance_prediction_function::Function
 end
-
 
 #
 # Output types
