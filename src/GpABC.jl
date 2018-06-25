@@ -52,6 +52,7 @@ include("abc/io.jl")
 include("abc/rejection.jl")
 include("abc/smc.jl")
 include("abc/summary_stats.jl")
+include("abc/plot_recipe.jl")
 
 
 # include("abc.jl")
