@@ -8,7 +8,7 @@
 ### [Basic Gaussian Process Regression](@id example-1)
 
 ```julia
-using GpAbc, Distributions, PyPlot
+using GpABC, Distributions, PyPlot
 
 # prepare the data
 n = 30
@@ -36,7 +36,7 @@ Based on [Basic Gaussian Process Regression](@ref example-1), but with added opt
 of hyperparameters:
 
 ```julia
-using GaussProABC
+using GpABC
 
 # prepare the data ...
 
@@ -53,7 +53,7 @@ theta_mle = gp_train(gpm)
 ### [Advanced Usage of gp_train](@id example-3)
 
 ```julia
-using GpAbc, Optim, Distributions
+using GpABC, Optim, Distributions
 
 function gp_train_advanced(gpm::GPModel, attempts::Int)
     # Initialise the bounds, with special treatment for the second hyperparameter
@@ -89,8 +89,9 @@ The methods below should be implemented for the custom kernel, unless indicated 
 Please see reference documentation for detailed description of each method and parameter.
 
 ```julia
-using GpAbc
-import GpAbc.covariance, GpAbc.get_hyperparameters_size
+using GpABC
+import GpABC.covariance, GpABC.get_hyperparameters_size, GpABC.covariance_diagonal,
+    GpABC.covariance_training, GpABC.covariance_grad
 
 """
    This is the new kernel that we are adding
@@ -152,6 +153,6 @@ function covariance_grad(ker::MyCustomkernel, log_theta::AbstractArray{Float64, 
 end
 
 gpm = GPModel(training_x, training_y, MyCustomkernel())
-theta_mle = gp_train(gpm)
+theta = gp_train(gpm)
 (test_y, test_var) = gp_regression(test_x, gpm)
 ```
