@@ -54,8 +54,4 @@ include("abc/smc.jl")
 include("abc/summary_stats.jl")
 include("abc/plot_recipe.jl")
 
-
-# include("abc.jl")
-# include("multiple_training_abc.jl")
-
 end;
