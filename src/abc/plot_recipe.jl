@@ -18,6 +18,8 @@ using RecipesBase
                         subplot := (i - 1) * length(params) + j
                         if i == j
                               seriestype := :histogram
+                              xlabel --> "Parameter $(par1)"
+                              yaxis := false
                               bins := 50
                               if isa(abco.population, Vector)
                                     data = abco.population[end][:, par1]
@@ -26,22 +28,26 @@ using RecipesBase
                               end # if Vector
                         elseif j < i
                               seriestype := :scatter
+                              markerstrokecolor --> false
+                              xlabel --> "Parameter $(par2)"
+                              ylabel --> "Parameter $(par1)"
                               if isa(abco.population, Vector)
-                                    x = Vector(length(runs))
-                                    y = Vector(length(runs))
-                                    for (r, run) in enumerate(runs)
-                                          pop = abco.population[run]
-                                          x[r] = pop[:, par1]
-                                          y[r] = pop[:, par2]
+                                    x = Vector()
+                                    y = Vector()
+                                    for r in runs
+                                          pop = abco.population[r]
+                                          append!(x, [pop[:, par2]])
+                                          append!(y, [pop[:, par1]])
                                     end # for r
                                     data = (x, y)
                               else
-                                    data = (abco.population[:, par1], abco.population[:, par2])
+                                    data = (abco.population[:, par2], abco.population[:, par1])
                               end # if Vector
                         else
                               data = [0]
-                              foreground_color_subplot := false
                               grid := false
+                              xaxis := false
+                              yaxis := false
                         end # if/elseif
                         data
                   end # @series
