@@ -58,9 +58,10 @@ include("abc/summary_stats.jl")
 include("abc/simulation.jl")
 include("abc/emulation.jl")
 include("util/emulation_helpers.jl")
-
+include("abc/plot_recipe.jl")
 
 # include("abc.jl")
 # include("multiple_training_abc.jl")
+
 
 end;
