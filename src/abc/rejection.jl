@@ -136,7 +136,7 @@ function ABCrejection(
     weights = ones(input.n_particles)
 
     # emulate
-    while n_accepted < input.n_particles
+    while n_accepted < input.n_particles && batch_no <= input.max_iter
 
         if batch_no > input.max_iter
             warn("Emulation reached maximum iterations before finding $(input.n_particles) particles - will return $n_accepted")

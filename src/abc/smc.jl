@@ -170,7 +170,8 @@ function initialiseABCSMC(
                              [rejection_output.distances],
                              [rejection_output.weights],
                              input.priors,
-                             input.distance_prediction_function)
+                             input.distance_prediction_function,
+                             input.max_iter)
 
     return tracker
 end
@@ -253,6 +254,7 @@ function iterateABCSMC!(
         progress_every = 1000,
         )
     # initialise
+    iter_no = 1
     push!(tracker.n_accepted, 0)
     push!(tracker.n_tries, 0)
     if threshold > tracker.threshold_schedule[end]
@@ -266,7 +268,7 @@ function iterateABCSMC!(
     kernels = generate_kernels(tracker.population[end-1], tracker.priors)
 
     # emulate
-    while tracker.n_accepted[end] < n_toaccept
+    while tracker.n_accepted[end] < n_toaccept && iter_no <= tracker.max_iter
         parameters, weight = generate_parameters(tracker.priors,
                                                  tracker.population[end-1],
                                                  tracker.weights[end-1],
@@ -276,9 +278,7 @@ function iterateABCSMC!(
         #
         # Need to transpose parameter vector to pass it to emulator
         #
-        #println("parameters have size $(size(parameters))")
         distance = tracker.distance_prediction_function(parameters')[1]
-        #println("distance = $distance")
         tracker.n_tries[end] += 1
 
         if distance <= threshold
@@ -299,6 +299,8 @@ function iterateABCSMC!(
                               )
             flush(out_stream)
         end
+
+        iter_no += 1
     end
 
     tracker.weights[end] = deepcopy(normalise(tracker.weights[end], tosum=1.0))

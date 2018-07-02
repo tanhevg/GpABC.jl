@@ -76,6 +76,7 @@ mutable struct EmulatedABCSMCTracker <: ABCSMCTracker
     weights::Vector{StatsBase.Weights}
     priors::Vector{ContinuousUnivariateDistribution}
     distance_prediction_function::Function
+    max_iter::Int
 end
 
 #
