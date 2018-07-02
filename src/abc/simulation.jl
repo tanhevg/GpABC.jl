@@ -1,9 +1,9 @@
-function SimulatedABCRejection(reference_data::AbstractArray{Float64,2},
+function SimulatedABCRejection{D<:ContinuousUnivariateDistribution}(reference_data::AbstractArray{Float64,2},
     n_particles::Int64, threshold::Float64,
-    priors::Vector{ContinuousUnivariateDistribution},
-    summary_statistic::Union{String,Vector{String},Function},
+    priors::AbstractArray{D,1},
+    summary_statistic::Union{String,AbstractArray{String,1},Function},
     simulator_function::Function;
-    distance_function::Function=eucildean,
+    distance_function::Function=Distances.euclidean,
     kwargs...
     )
 
@@ -13,16 +13,16 @@ function SimulatedABCRejection(reference_data::AbstractArray{Float64,2},
                                         priors, summary_statistic,
                                         distance_function, simulator_function)
 
-    return ABCRejection(input, reference_data; kwargs...)
+    return ABCrejection(input, reference_data; kwargs...)
 
 end
 
-function SimulatedABCSMC(reference_data::AbstractArray{Float64,2},
-    n_particles::Int64, threshold_schedule::Vector{Float64},
-    priors::Vector{ContinuousUnivariateDistribution},
-    summary_statistic::Union{String,Vector{String},Function},
+function SimulatedABCSMC{D<:ContinuousUnivariateDistribution}(reference_data::AbstractArray{Float64,2},
+    n_particles::Int64, threshold_schedule::AbstractArray{Float64,1},
+    priors::AbstractArray{D,1},
+    summary_statistic::Union{String,AbstractArray{String,1},Function},
     simulator_function::Function;
-    distance_function::Function=eucildean,
+    distance_function::Function=Distances.euclidean,
     kwargs...
     )
 

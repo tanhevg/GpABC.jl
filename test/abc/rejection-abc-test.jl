@@ -91,6 +91,7 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
     function sum_stat(data::AbstractArray{Float64,2})
         return std(data, 2)[:]
     end
+
     sim_rej_input = SimulatedABCRejectionInput(n_var_params,
                             n_particles,
                             3.0,
@@ -102,7 +103,7 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
     sim_result = ABCrejection(sim_rej_input, reference_data, write_progress=false)
     @test size(sim_result.population, 1) > 0
 
-    X, y = get_training_data(n_design_points, priors, simulator_function, distance_metric, reference_data)
+    X, y = get_training_data(n_design_points, priors, simulator_function, "keep_all", distance_metric, reference_data)
 
     gpem = GPModel(training_x=X, training_y=y, kernel=SquaredExponentialArdKernel())
     gp_train(gpem)
@@ -122,5 +123,14 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
 
     emu_result = ABCrejection(emu_rej_input, reference_data, write_progress=false)
     @test size(emu_result.population, 1) > 0
+
+    # Now repeat using user-level functions
+    sim_out = SimulatedABCRejection(reference_data, n_particles, 0.5, 
+        priors, "keep_all", simulator_function, write_progress=false)
+    @test size(sim_out.population, 1) > 0
+
+    emu_out = EmulatedABCRejection(n_design_points, reference_data, n_particles, 0.5, 
+        priors, "keep_all", simulator_function, write_progress=false)
+    @test size(emu_out.population, 1) > 0
 
 end

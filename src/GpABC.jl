@@ -24,6 +24,9 @@ export
 	ABCRejectionOutput, ABCSMCOutput,
 	ABCSMCTracker,
 	SimulatedABCSMCTracker, EmulatedABCSMCTracker,
+	SimulatedABCRejection, SimulatedABCSMC,
+	EmulatedABCRejection, EmulatedABCSMC,
+	get_training_data,
 	read_rejection_output, read_smc_output;
 
 	# multiple_training_abc,

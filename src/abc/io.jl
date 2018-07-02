@@ -9,8 +9,8 @@ struct SimulatedABCRejectionInput <: ABCRejectionInput
     n_params::Int64
     n_particles::Int64
     threshold::Float64
-    priors::Vector{ContinuousUnivariateDistribution}
-    summary_statistic::Union{String,Vector{String},Function}
+    priors::AbstractArray{ContinuousUnivariateDistribution,1}
+    summary_statistic::Union{String,AbstractArray{String,1},Function}
     distance_function::Function
     simulator_function::Function
 end
@@ -19,7 +19,7 @@ struct EmulatedABCRejectionInput <: ABCRejectionInput
 	n_params::Int64
 	n_particles::Int64
 	threshold::Float64
-	priors::Vector{ContinuousUnivariateDistribution}
+	priors::AbstractArray{ContinuousUnivariateDistribution,1}
 	distance_prediction_function::Function
 	batch_size::Int64
     max_iter::Int
@@ -30,9 +30,9 @@ abstract type ABCSMCInput <: ABCInput end
 struct SimulatedABCSMCInput <: ABCSMCInput
     n_params::Int64
     n_particles::Int64
-    threshold_schedule::Vector{Float64}
-    priors::Vector{ContinuousUnivariateDistribution}
-    summary_statistic::Union{String,Vector{String},Function}
+    threshold_schedule::AbstractArray{Float64,1}
+    priors::AbstractArray{ContinuousUnivariateDistribution,1}
+    summary_statistic::Union{String,AbstractArray{String,1},Function}
     distance_function::Function
     simulator_function::Function
 end
@@ -40,8 +40,8 @@ end
 struct EmulatedABCSMCInput <: ABCSMCInput
     n_params::Int64
     n_particles::Int64
-    threshold_schedule::Vector{Float64}
-    priors::Vector{ContinuousUnivariateDistribution}
+    threshold_schedule::AbstractArray{Float64,1}
+    priors::AbstractArray{ContinuousUnivariateDistribution,1}
     distance_prediction_function::Function
     batch_size::Int64
     max_iter::Int
@@ -54,13 +54,13 @@ abstract type ABCSMCTracker end
 
 mutable struct SimulatedABCSMCTracker <: ABCSMCTracker
     n_params::Int64
-    n_accepted::Vector{Int64}
+    n_accepted::AbstractArray{Int64,1}
     n_tries::Vector{Int64}
-    threshold_schedule::Vector{Float64}
-    population::Vector{Matrix{Float64}}
-    distances::Vector{Vector{Float64}}
-    weights::Vector{StatsBase.Weights}
-    priors::Vector{ContinuousUnivariateDistribution}
+    threshold_schedule::AbstractArray{Float64,1}
+    population::AbstractArray{AbstractArray{Float64,2},1}
+    distances::AbstractArray{AbstractArray{Float64,1},1}
+    weights::AbstractArray{StatsBase.Weights,1}
+    priors::AbstractArray{ContinuousUnivariateDistribution,1}
     summary_statistic::Function
     distance_function::Function
     simulator_function::Function
@@ -68,13 +68,13 @@ end
 
 mutable struct EmulatedABCSMCTracker <: ABCSMCTracker
     n_params::Int64
-    n_accepted::Vector{Int64}
-    n_tries::Vector{Int64}
-    threshold_schedule::Vector{Float64}
-    population::Vector{Matrix{Float64}}
-    distances::Vector{Vector{Float64}}
-    weights::Vector{StatsBase.Weights}
-    priors::Vector{ContinuousUnivariateDistribution}
+    n_accepted::AbstractArray{Int64,1}
+    n_tries::AbstractArray{Int64,1}
+    threshold_schedule::AbstractArray{Float64,1}
+    population::AbstractArray{AbstractArray{Float64,2},1}
+    distances::AbstractArray{AbstractArray{Float64,1},1}
+    weights::AbstractArray{StatsBase.Weights,1}
+    priors::AbstractArray{ContinuousUnivariateDistribution,1}
     distance_prediction_function::Function
     max_iter::Int
 end
@@ -89,20 +89,20 @@ struct ABCRejectionOutput <: ABCOutput
     n_accepted::Int64
     n_tries::Int64
     threshold::Float64
-    population::Matrix{Float64}
-    distances::Vector{Float64}
+    population::AbstractArray{Float64,2}
+    distances::AbstractArray{Float64,1}
     weights::StatsBase.Weights
 end
 
 
 struct ABCSMCOutput <: ABCOutput
     n_params::Int64
-    n_accepted::Vector{Int64}
-    n_tries::Vector{Int64}
-    threshold_schedule::Vector{Float64}
-    population::Vector{Matrix{Float64}}
-    distances::Vector{Vector{Float64}}
-    weights::Vector{StatsBase.Weights}
+    n_accepted::AbstractArray{Int64,1}
+    n_tries::AbstractArray{Int64,1}
+    threshold_schedule::AbstractArray{Float64,1}
+    population::AbstractArray{AbstractArray{Float64,2},1}
+    distances::AbstractArray{AbstractArray{Float64,1},1}
+    weights::AbstractArray{StatsBase.Weights,1}
 end
 
 #
