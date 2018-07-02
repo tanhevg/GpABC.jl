@@ -2,7 +2,7 @@
 # Returns a single parameter and its weight - for simulation
 #
 function generate_parameters(
-        priors::Vector{D},
+        priors::AbstractArray{D,1},
         ) where {
         D<:ContinuousUnivariateDistribution
         }
@@ -22,7 +22,7 @@ end
 # Returns a set parameter and its weight with size batch_size - for emulation
 #
 function generate_parameters(
-        priors::Vector{D},
+        priors::AbstractArray{D,1},
         batch_size::Int,
         ) where {
         D<:ContinuousUnivariateDistribution

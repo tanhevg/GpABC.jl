@@ -3,8 +3,8 @@
 # j-th element of the i-th particle from the previous population
 #
 function generate_kernels(
-        population::Matrix{F},
-        priors::Vector{D},
+        population::AbstractArray{F,2},
+        priors::AbstractArray{D,1},
         ) where {
         F<:AbstractFloat,
         D<:ContinuousUnivariateDistribution,
@@ -34,10 +34,10 @@ end
 
 
 function generate_parameters(
-        priors::Vector{D1},
-        old_parameters::Matrix{F},
+        priors::AbstractArray{D1,1},
+        old_parameters::AbstractArray{F,2},
         old_weights::StatsBase.Weights,
-        kernels::Matrix{D2},
+        kernels::AbstractArray{D2,2},
         ) where {
         D1, D2<:ContinuousUnivariateDistribution,
         F<:AbstractFloat,
