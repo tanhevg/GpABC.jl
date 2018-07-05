@@ -57,7 +57,7 @@ module LNA
 
     end
 
-    #this function is not needed
+    #this function is the mean variance decomposition of the LNAS 
     LNA_Mean_Var = function(params::AbstractArray{Float64,1},Tspan::Tuple{Float64,Float64},
             x0::AbstractArray{Float64}, solver::DEAlgorithm,
             saveat::Float64, S::AbstractArray{Float64,2},
