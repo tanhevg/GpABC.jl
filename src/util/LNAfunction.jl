@@ -9,6 +9,10 @@ module LNA
     ##S is the stochiometry matrix
     ##make_f is a function of the rates - MUST be in the same order as the stochiometry matrix is laid out
     ##volume is the volume of reactants
+    #
+    #
+    #
+    # the maths behind this function can be found on BayesianInference_LNA.pdf in the LNA dropbox p3, equations (1) and (3).
     LNAdecomp = function(params::AbstractArray{Float64,1},Tspan::Tuple{Float64,Float64},
         x0::AbstractArray{Float64}, solver::StochasticDiffEq.StochasticDiffEqAlgorithm,
         dt::Float64,S::AbstractArray{Float64,2},
@@ -57,7 +61,16 @@ module LNA
 
     end
 
-    #this function is the mean variance decomposition of the LNAS 
+    #this function is the mean variance decomposition of the LNAS
+    ##LNA_Mean_Var takes the inputs and then performs the simulating of the mean (ODE solution) and the covariance matrix which changes over time.
+    ##x0 is the initial conditions of the DE and the covariance matrix
+    ##S is the stochiometry matrix
+    ##make_f is a function of the rates - MUST be in the same order as the stochiometry matrix is laid out
+    ##volume is the volume of reactants
+    #
+    #
+    #
+    #the maths for this can be found in UserManual_v28102013.pdf in the LNA folder in Gaussian Procceses Drop box, p2 equation (7) - the ODE of the covariance  
     LNA_Mean_Var = function(params::AbstractArray{Float64,1},Tspan::Tuple{Float64,Float64},
             x0::AbstractArray{Float64}, solver::DEAlgorithm,
             saveat::Float64, S::AbstractArray{Float64,2},
