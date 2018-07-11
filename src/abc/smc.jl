@@ -308,10 +308,23 @@ function iterateABCSMC!(
     return tracker
 end
 
+"""
+  ABCSMC
 
+Run a ABC-SMC computation using either simulation (the model is simulated in full for each parameter vector from which the corresponding
+distance to observed data is used to construct the posterior) or emulation (a regression model trained to predict the distance from the 
+parameter vector directly is used to construct the posterior). Whether simulation or emulation is used is controlled by the type of `input`.
+
+# Fields
+- `input::ABCSMCInput`: An ['SimulatedABCSMCInput'](@ref) or ['EmulatedABCSMCInput'](@ref) object that defines the settings for thw ABC-SMC run.
+- `reference_data::AbstractArray{Float64,2}`: The observed data to which the simulated model output will be compared. Size: (n_model_trajectories, n_time_points)
+- `out_stream::IO`: The output stream to which progress will be written. An optional argument whose default is `STDOUT`.
+- `write_progress::Bool`: Optional argument controlling whether progress is written to `out_stream`.
+- `progress_every::Int`: Progress will be written to `out_stream` every `progress_every` simulations (optional, ignored if `write_progress` is `False`).
+"""
 function ABCSMC(
         input::ABCSMCInput,
-        reference_data;
+        reference_data::AbstractArray{Float64,2};
         out_stream::IO = STDOUT,
         write_progress = true,
         progress_every = 1000,
