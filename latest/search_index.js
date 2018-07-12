@@ -17,30 +17,6 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "#Basic-Usage-1",
-    "page": "Home",
-    "title": "Basic Usage",
-    "category": "section",
-    "text": "The package is built around a type GPModel, which encapsulates all the information required for training the Gaussian Process and performing the regression. In the simplest scenario the user would instantiate this type with some training data and labels, provide the hyperparameters and run the regression. By default, SquaredExponentialIsoKernel will be used. This scenario is illustrated by Basic Gaussian Process Regression Example."
-},
-
-{
-    "location": "#Training-the-GP-1",
-    "page": "Home",
-    "title": "Training the GP",
-    "category": "section",
-    "text": "Normally, kernel hyperparameters are not known in advance. In this scenario the training function gp_train should be used to find the Maximum Likelihood Estimate (MLE) of hyperparameters. This is demonstrated in Optimising Hyperparameters for GP Regression Example.GaussProABC uses Optim package for optimising the hyperparameters. By default, Conjugate Gradient bounded box optimisation is used, as long as the gradient with respect to hyperparameters is implemented for the kernel function. If the gradient implementation is not provided, Nelder Mead optimiser is used by default.The starting point of the optimisation can be specified by calling set_hyperparameters. If the starting point has not been provided, optimisation will start from all hyperparameters set to 1. Default upper and lower bounds are set to e^10 and e^10 , respectively, for each hyperparameter.For numerical stability the package uses logarithms of hyperparameters internally, when calling the log likelihood and kernel functions. Logarithmisation and exponentiation back takes place in gp_train function.The log likelihood function with log hyperparameters is implemented by gp_loglikelihood_log. This is the target function of the optimisation procedure in gp_train. There is also a version of log likelihood with actual (non-log) hyperparameters: gp_loglikelihood. The gradient of the log likelihood function with respect to logged hyperparameters is implemented by gp_loglikelihood_grad.Depending on the kernel, it is not uncommon for the log likelihood function to have multiple local optima. If a trained GP produces an unsatisfactory data fit, one possible workaround is trying to run gp_train several times with random starting points. This approach is demonstrated in Advanced Usage of gp_train example.Optim has a built in constraint of running no more than 1000 iterations of any optimisation algorithm. GpABC relies on this feature to ensure that the training procedure does not get stuck forever. As a consequence, the optimizer might exit prematurely, before reaching the local optimum. Setting log_level argument of gp_train to a value greater than zero will make it log its actions to standard output, including whether the local minimum has been reached or not."
-},
-
-{
-    "location": "#Kernels-1",
-    "page": "Home",
-    "title": "Kernels",
-    "category": "section",
-    "text": "GpABC ships with an extensible library of kernel functions. Each kernel is represented with a type that derives from AbstractGPKernel:SquaredExponentialIsoKernel\nSquaredExponentialArdKernel\nMaternIsoKernel\nMaternArdKernel\nExponentialIsoKernel\nExponentialArdKernelThese kernels rely on matrix of scaled squared distances between training/test inputs r_ij, which is computed by scaled_squared_distance function. The gradient vector of scaled squared distance derivatives with respect to length scale hyperparameter(s) is returned by scaled_squared_distance_grad function.The kernel covariance matrix is returned by function covariance. Optional speedups of this function covariance_diagonal and covariance_training are implemented for the pre-shipped kernels. The gradient with respect to log hyperparameters is computed by covariance_grad. The log_theta argument refers to the logarithms of kernel hyperparameters. Note that hyperparameters that do not affect the kernel (e.g. sigma_n ) are not included in log_theta.Custom kernels functions can be implemented  by adding more types that inherit from AbstractGPKernel. This is demonstrated in Using a Custom Kernel Example"
-},
-
-{
     "location": "examples/#",
     "page": "Examples",
     "title": "Examples",
@@ -105,11 +81,43 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "reference/#GpABC.ABCRejectionOutput",
+    "page": "Reference",
+    "title": "GpABC.ABCRejectionOutput",
+    "category": "type",
+    "text": "ABCRejectionOutput\n\nA container for the output of a rejection-ABC computation.\n\nFields\n\nn_params::Int64: The number of parameters to be estimated.\nn_accepted::Int64: The number of accepted parameter vectors (particles) in the posterior.\nn_tries::Int64: The total number of parameter vectors (particles) that were tried.\nthreshold::Float64: The maximum distance from the summarised model output to summarised observed data for a parameter vector to be included in the posterior.\npopulation::AbstractArray{Float64,2}: The parameter vectors (particles) in the posterior. Size: (n_accepted, n_params).\ndistances::AbstractArray{Float64,1}: The distances for each parameter vector (particle) in the posterior to the observed data in summary statistic space. Size: (n_accepted).\nweights::StatsBase.Weights: The weight of each parameter vector (particle) in the posterior.\n\n\n\n"
+},
+
+{
+    "location": "reference/#GpABC.ABCSMCOutput",
+    "page": "Reference",
+    "title": "GpABC.ABCSMCOutput",
+    "category": "type",
+    "text": "ABCSMCOutput\n\nA container for the output of a rejection-ABC computation.\n\nFields\n\nn_params::Int64: The number of parameters to be estimated.\nn_accepted::Int64: The number of accepted parameter vectors (particles) in the posterior.\nn_tries::Int64: The total number of parameter vectors (particles) that were tried.\nthreshold_schedule::AbstractArray{Float64}: A set of maximum distances from the summarised model output to summarised observed data for a parameter vector to be included in the posterior. Each distance will be used in a single run of the ABC-SMC algorithm.\npopulation::AbstractArray{Float64,2}: The parameter vectors (particles) in the posterior. Size: (n_accepted, n_params).\ndistances::AbstractArray{Float64,1}: The distances for each parameter vector (particle) in the posterior to the observed data in summary statistic space. Size: (n_accepted).\nweights::StatsBase.Weights: The weight of each parameter vector (particle) in the posterior.\n\n\n\n"
+},
+
+{
     "location": "reference/#GpABC.AbstractGPKernel",
     "page": "Reference",
     "title": "GpABC.AbstractGPKernel",
     "category": "type",
     "text": "AbstractGPKernel\n\nAbstract kernel type. User-defined kernels should derive from it.\n\nImplementations have to provide methods for get_hyperparameters_size and covariance. Methods for covariance_training, covariance_diagonal and covariance_grad are optional.\n\n\n\n"
+},
+
+{
+    "location": "reference/#GpABC.EmulatedABCRejectionInput",
+    "page": "Reference",
+    "title": "GpABC.EmulatedABCRejectionInput",
+    "category": "type",
+    "text": "EmulatedABCRejectionInput\n\nAn object that defines the settings for a emulation-based rejection-ABC computation.\n\nFields\n\nn_params::Int64: The number of parameters to be estimated.\nn_particles::Int64: The number of parameter vectors (particles) that will be included in the final posterior.\nthreshold::Float64: The maximum distance from the summarised model output to summarised observed data for a parameter vector to be included in the posterior.\npriors::AbstractArray{ContinuousUnivariateDistribution,1}: A 1D Array of distributions with length n_params from which candidate parameter vectors will be sampled.\ndistance_prediction_function::Function: A function that takes a parameter vector as an argument and outputs a distance to the observed data.\nbatch_size::Int64: The number of predictions to be made in each batch.\nmax_iter::Int64: The maximum number of iterations/batches before termination.\n\n\n\n"
+},
+
+{
+    "location": "reference/#GpABC.EmulatedABCSMCInput",
+    "page": "Reference",
+    "title": "GpABC.EmulatedABCSMCInput",
+    "category": "type",
+    "text": "EmulatedABCRejectionInput\n\nAn object that defines the settings for a emulation-based rejection-ABC computation.\n\nFields\n\nn_params::Int64: The number of parameters to be estimated (the length of each parameter vector/particle).\nn_particles::Int64: The number of parameter vectors (particles) that will be included in the final posterior.\nthreshold_schedule::AbstractArray{Float64}: A set of maximum distances from the summarised model output to summarised observed data for a parameter vector to be included in the posterior. Each distance will be used in a single run of the ABC-SMC algorithm.\npriors::AbstractArray{ContinuousUnivariateDistribution,1}: A 1D Array of distributions with length n_params from which candidate parameter vectors will be sampled.\ndistance_prediction_function::Function: A function that takes a parameter vector as an argument and outputs a distance to the observed data.\nbatch_size::Int64: The number of predictions to be made in each batch.\nmax_iter::Int64: The maximum number of iterations/batches before termination.\n\n\n\n"
 },
 
 {
@@ -161,6 +169,22 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "reference/#GpABC.SimulatedABCRejectionInput",
+    "page": "Reference",
+    "title": "GpABC.SimulatedABCRejectionInput",
+    "category": "type",
+    "text": "SimulatedABCRejectionInput\n\nAn object that defines the settings for a simulation-based rejection-ABC computation.\n\nFields\n\nn_params::Int64: The number of parameters to be estimated.\nn_particles::Int64: The number of parameter vectors (particles) that will be included in the final posterior.\nthreshold::Float64: The maximum distance from the summarised model output to summarised observed data for a parameter vector to be included in the posterior.\npriors::AbstractArray{ContinuousUnivariateDistribution,1}: A 1D Array of distributions with length n_params from which candidate parameter vectors will be sampled.\nsummary_statistic::Union{String,AbstractArray{String,1},Function}: Either: 1. A String or 1D Array of strings that Or 2. A function that outputs a 1D Array of Floats that summarises model output. REFER TO DOCS\ndistance_function::Function: Any function that computes the distance between 2 1D Arrays.\nsimulator_function::Function: A function that takes a parameter vector as an argument and outputs model results.\n\n\n\n"
+},
+
+{
+    "location": "reference/#GpABC.SimulatedABCSMCInput",
+    "page": "Reference",
+    "title": "GpABC.SimulatedABCSMCInput",
+    "category": "type",
+    "text": "SimulatedABCSMCInput\n\nAn object that defines the settings for a simulation-based ABC-SMC computation.\n\nFields\n\nn_params::Int64: The number of parameters to be estimated.\nn_particles::Int64: The number of parameter vectors (particles) that will be included in the final posterior.\nthreshold_schedule::AbstractArray{Float64}: A set of maximum distances from the summarised model output to summarised observed data for a parameter vector to be included in the posterior. Each distance will be used in a single run of the ABC-SMC algorithm.\npriors::AbstractArray{ContinuousUnivariateDistribution,1}: A 1D Array of distributions with length n_params from which candidate parameter vectors will be sampled.\nsummary_statistic::Union{String,AbstractArray{String,1},Function}: Either: 1. A String or 1D Array of strings that Or 2. A function that outputs a 1D Array of Floats that summarises model output. REFER TO DOCS\ndistance_function::Function: Any function that computes the distance between 2 1D Arrays.\nsimulator_function::Function: A function that takes a parameter vector as an argument and outputs model results.\n\n\n\n"
+},
+
+{
     "location": "reference/#GpABC.SquaredExponentialArdKernel",
     "page": "Reference",
     "title": "GpABC.SquaredExponentialArdKernel",
@@ -177,6 +201,46 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "reference/#GpABC.ABCSMC-Tuple{GpABC.ABCSMCInput,AbstractArray{Float64,2}}",
+    "page": "Reference",
+    "title": "GpABC.ABCSMC",
+    "category": "method",
+    "text": "ABCSMC\n\nRun a ABC-SMC computation using either simulation (the model is simulated in full for each parameter vector from which the corresponding distance to observed data is used to construct the posterior) or emulation (a regression model trained to predict the distance from the  parameter vector directly is used to construct the posterior). Whether simulation or emulation is used is controlled by the type of input.\n\nFields\n\ninput::ABCSMCInput: An \'SimulatedABCSMCInput\' or \'EmulatedABCSMCInput\' object that defines the settings for thw ABC-SMC run.\nreference_data::AbstractArray{Float64,2}: The observed data to which the simulated model output will be compared. Size: (n_model_trajectories, n_time_points)\nout_stream::IO: The output stream to which progress will be written. An optional argument whose default is STDOUT.\nwrite_progress::Bool: Optional argument controlling whether progress is written to out_stream.\nprogress_every::Int: Progress will be written to out_stream every progress_every simulations (optional, ignored if write_progress is False).\n\n\n\n"
+},
+
+{
+    "location": "reference/#GpABC.ABCrejection-Tuple{GpABC.EmulatedABCRejectionInput,AbstractArray{Float64,2}}",
+    "page": "Reference",
+    "title": "GpABC.ABCrejection",
+    "category": "method",
+    "text": "ABCrejection\n\nRun a emulation-based rejection-ABC computation. Parameter posteriors are obtained using a regression model (the emulator), that has learnt a mapping from parameter vectors to the distance between the  model output and observed data in summary statistic space. If this distance is sufficiently small the parameter vector is included in the posterior.\n\nFields\n\ninput::EmulatedABCRejectionInput: An \'EmulatedABCRejectionInput\' object that defines the settings for the emulated rejection-ABC run.\nreference_data::AbstractArray{Float64,2}: The observed data to which the simulated model output will be compared. Size: (n_model_trajectories, n_time_points)\nout_stream::IO: The output stream to which progress will be written. An optional argument whose default is STDOUT.\nwrite_progress::Bool: Optional argument controlling whether progress is written to out_stream.\nprogress_every::Int: Progress will be written to out_stream every progress_every simulations (optional, ignored if write_progress is False).\n\n\n\n"
+},
+
+{
+    "location": "reference/#GpABC.ABCrejection-Tuple{GpABC.SimulatedABCRejectionInput,AbstractArray{Float64,2}}",
+    "page": "Reference",
+    "title": "GpABC.ABCrejection",
+    "category": "method",
+    "text": "ABCrejection\n\nRun a simulationed-based rejection-ABC computation. Parameter posteriors are obtained by simulating the model for a parameter vector, computing the summary statistic of the output then computing the distance to the  summary statistic of the reference data. If this distance is sufficiently small the parameter vector is included in the posterior.\n\nFields\n\ninput::SimulatedABCRejectionInput: A \'SimulatedABCRejectionInput\' object that defines the settings for the simulated rejection-ABC run.\nreference_data::AbstractArray{Float64,2}: The observed data to which the simulated model output will be compared. Size: (n_model_trajectories, n_time_points)\nout_stream::IO: The output stream to which progress will be written. An optional argument whose default is STDOUT.\nwrite_progress::Bool: Optional argument controlling whether progress is written to out_stream.\nprogress_every::Int: Progress will be written to out_stream every progress_every simulations (optional, ignored if write_progress is False).\n\n\n\n"
+},
+
+{
+    "location": "reference/#GpABC.EmulatedABCRejection-Union{Tuple{D}, Tuple{Int64,AbstractArray{Float64,2},Int64,Float64,AbstractArray{D,1},Union{AbstractArray{String,1}, Function, String},Function}} where D<:Distributions.Distribution{Distributions.Univariate,Distributions.Continuous}",
+    "page": "Reference",
+    "title": "GpABC.EmulatedABCRejection",
+    "category": "method",
+    "text": "EmulatedABCRejection\n\nA convenience function that trains a Gaussian process emulator of  type `GPmodel then uses it in emulation-based rejection-ABC. It creates the training data by simulating the model for the design points, trains the emulator, creates the EmulatedABCRejectionInput object then calls `ABCrejection.\n\nFields\n\nn_design_points::Int64: The number of parameter vectors used to train the Gaussian process emulator\nreference_data::AbstractArray{Float64,2}: The observed data to which the simulated model output will be compared. Size: (n_model_trajectories, n_time_points)\nn_particles::Int64: The number of parameter vectors (particles) that will be included in the final posterior.\nthreshold::Float64: The maximum distance from the summarised model output to summarised observed data for a parameter vector to be included in the posterior.\npriors::AbstractArray{D,1}: A 1D Array of continuous univariate distributions with length n_params from which candidate parameter vectors will be sampled.\nsummary_statistic::Union{String,AbstractArray{String,1},Function}: Either: 1. A String or 1D Array of strings that Or 2. A function that outputs a 1D Array of Floats that summarises model output. REFER TO DOCS\nsimulator_function::Function: A function that takes a parameter vector as an argument and outputs model results.\ndistance_metric::Function: Any function that computes the distance between 2 1D Arrays (optional - default is to use the Euclidean distance).\ngpkernel::AbstractGPKernel: An object inheriting from AbstractGPKernel that is the Gaussian process kernel. (optional - default is the ARD-RBF/squared exponential kernel).\nbatch_size::Int64: The number of predictions to be made in each batch (optional - default is 10 times n_particles).\nmax_iter::Int64: The maximum number of iterations/batches before termination.\nkwargs: optional keyword arguments passed to \'ABCrejection\'.\n\n\n\n"
+},
+
+{
+    "location": "reference/#GpABC.EmulatedABCSMC-Union{Tuple{D}, Tuple{Int64,AbstractArray{Float64,2},Int64,AbstractArray{Float64,1},AbstractArray{D,1},Union{AbstractArray{String,1}, Function, String},Function}} where D<:Distributions.Distribution{Distributions.Univariate,Distributions.Continuous}",
+    "page": "Reference",
+    "title": "GpABC.EmulatedABCSMC",
+    "category": "method",
+    "text": "EmulatedABCSMC\n\nA convenience function that trains a Gaussian process emulator of type `GPmodel then uses it in emulation-based ABC-SMC. It creates the training data by simulating the model for the design points, trains the emulator, creates the EmulatedABCSMCInput object then calls `ABCSMC.\n\nFields\n\nn_design_points::Int64: The number of parameter vectors used to train the Gaussian process emulator\nreference_data::AbstractArray{Float64,2}: The observed data to which the simulated model output will be compared. Size: (n_model_trajectories, n_time_points)\nn_particles::Int64: The number of parameter vectors (particles) that will be included in the final posterior.\nthreshold_schedule::AbstractArray{Float64}: A set of maximum distances from the summarised model output to summarised observed data for a parameter vector to be included in the posterior. Each distance will be used in a single run of the ABC-SMC algorithm.\npriors::AbstractArray{D,1}: A 1D Array of continuous univariate distributions with length n_params from which candidate parameter vectors will be sampled.\nsummary_statistic::Union{String,AbstractArray{String,1},Function}: Either: 1. A String or 1D Array of strings that Or 2. A function that outputs a 1D Array of Floats that summarise model output. REFER TO DOCS\nsimulator_function::Function: A function that takes a parameter vector as an argument and outputs model results.\ndistance_metric::Function: Any function that computes the distance between 2 1D Arrays (optional - default is to use the Euclidean distance).\ngpkernel::AbstractGPKernel: An object inheriting from AbstractGPKernel that is the Gaussian process kernel. (optional - default is the ARD-RBF/squared exponential kernel).\nbatch_size::Int64: The number of predictions to be made in each batch (optional - default is 10 times n_particles).\nmax_iter::Int64: The maximum number of iterations/batches before termination.\nkwargs: optional keyword arguments passed to \'ABCSMC\'.\n\n\n\n"
+},
+
+{
     "location": "reference/#GpABC.ExponentialArdKernel-Tuple{}",
     "page": "Reference",
     "title": "GpABC.ExponentialArdKernel",
@@ -190,6 +254,22 @@ var documenterSearchIndex = {"docs": [
     "title": "GpABC.ExponentialIsoKernel",
     "category": "method",
     "text": "ExponentialIsoKernel\n\nAlias for MaternIsoKernel(1)\n\n\n\n"
+},
+
+{
+    "location": "reference/#GpABC.SimulatedABCRejection-Union{Tuple{AbstractArray{Float64,2},Int64,Float64,AbstractArray{D,1},Union{AbstractArray{String,1}, Function, String},Function}, Tuple{D}} where D<:Distributions.Distribution{Distributions.Univariate,Distributions.Continuous}",
+    "page": "Reference",
+    "title": "GpABC.SimulatedABCRejection",
+    "category": "method",
+    "text": "SimulatedABCRejection\n\nRun a simulation-based ABC-rejection computation. This is a convenience wrapper that constructs a SimulatedABCRejectionInput object then calls \'ABCrejection\'.\n\nFields\n\nreference_data::AbstractArray{Float64,2}: The observed data to which the simulated model output will be compared. Size: (n_model_trajectories, n_time_points)\nn_particles::Int64: The number of parameter vectors (particles) that will be included in the final posterior.\npriors::AbstractArray{D,1}: A 1D Array of continuous univariate distributions with length n_params from which candidate parameter vectors will be sampled.\nsummary_statistic::Union{String,AbstractArray{String,1},Function}: Either: 1. A String or 1D Array of strings that Or 2. A function that outputs a 1D Array of Floats that summarises model output. REFER TO DOCS\nsimulator_function::Function: A function that takes a parameter vector as an argument and outputs model results.\ndistance_function::Function: Any function that computes the distance between 2 1D Arrays. Optional argument (default is to use the Euclidean distance).\nkwargs: optional keyword arguments passed to \'ABCrejection\'.\n\n\n\n"
+},
+
+{
+    "location": "reference/#GpABC.SimulatedABCSMC-Union{Tuple{AbstractArray{Float64,2},Int64,AbstractArray{Float64,1},AbstractArray{D,1},Union{AbstractArray{String,1}, Function, String},Function}, Tuple{D}} where D<:Distributions.Distribution{Distributions.Univariate,Distributions.Continuous}",
+    "page": "Reference",
+    "title": "GpABC.SimulatedABCSMC",
+    "category": "method",
+    "text": "SimulatedABCSMC\n\nRun a emulation-based ABC-rejection computation. This is a convenience wrapper that constructs a SimulatedABCSMCInput object then calls \'ABCrejection\'.\n\nFields\n\nreference_data::AbstractArray{Float64,2}: The observed data to which the simulated model output will be compared. Size: (n_model_trajectories, n_time_points)\nthreshold_schedule::AbstractArray{Float64}: A set of maximum distances from the summarised model output to summarised observed data for a parameter vector to be included in the posterior. Each distance will be used in a single run of the ABC-SMC algorithm.\npriors::AbstractArray{D,1}: A 1D Array of continuous univariate distributions with length n_params from which candidate parameter vectors will be sampled.\nsummary_statistic::Union{String,AbstractArray{String,1},Function}: Either: 1. A String or 1D Array of strings that Or 2. A function that outputs a 1D Array of Floats that summarises model output. REFER TO DOCS\nsimulator_function::Function: A function that takes a parameter vector as an argument and outputs model results.\ndistance_function::Function: Any function that computes the distance between 2 1D Arrays. Optional argument (default is to use the Euclidean distance).\nkwargs: optional keyword arguments passed to \'ABCrejection\'.\n\n\n\n"
 },
 
 {
@@ -230,6 +310,14 @@ var documenterSearchIndex = {"docs": [
     "title": "GpABC.get_hyperparameters_size",
     "category": "method",
     "text": "get_hyperparameters_size(kernel::AbstractGPKernel, training_data::AbstractArray{Float64, 2})\n\nReturn the number of hyperparameters for used by this kernel on this training data set. Should be overridden by kernel implementations.\n\n\n\n"
+},
+
+{
+    "location": "reference/#GpABC.get_training_data-Union{Tuple{D}, Tuple{Int64,AbstractArray{D,1},Function,Union{AbstractArray{String,1}, Function, String},Function,AbstractArray{Float64,2}}} where D<:Distributions.Distribution{Distributions.Univariate,Distributions.Continuous}",
+    "page": "Reference",
+    "title": "GpABC.get_training_data",
+    "category": "method",
+    "text": "get_training_data\n\nReturns training data in a suitable format to train a Gaussian process emulator of the type  `GPmodel. The training data are (parameter vector, distance) pairs where distances are the distance from simulated model output to the observed data in summary statistic space.\n\nFields\n\nn_design_points::Int64: The number of parameter vectors used to train the Gaussian process emulator\npriors::AbstractArray{D,1}: A 1D Array of continuous univariate distributions with length n_params from which candidate parameter vectors will be sampled.\nsimulator_function::Function: A function that takes a parameter vector as an argument and outputs model results.\nsummary_statistic::Union{String,AbstractArray{String,1},Function}: Either: 1. A String or 1D Array of strings that Or 2. A function that outputs a 1D Array of Floats that summarises model output. REFER TO DOCS\ndistance_metric::Function: Any function that computes the distance between 2 1D Arrays.\nreference_data::AbstractArray{Float64,2}: The observed data to which the simulated model output will be compared. Size: (n_model_trajectories, n_time_points)\n\n\n\n"
 },
 
 {
