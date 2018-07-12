@@ -15,15 +15,14 @@ export
 	get_hyperparameters_size, set_hyperparameters,
     gp_train,
 
-	ABCrejection,
-	initialiseABCSMC, iterateABCSMC!, ABCSMC,
-	ABCInput, ABCOutput,
+	ABCrejection, ABCSMC,
 	ABCRejectionInput, ABCSMCInput,
 	SimulatedABCRejectionInput, EmulatedABCRejectionInput,
 	SimulatedABCSMCInput, EmulatedABCSMCInput,
 	ABCRejectionOutput, ABCSMCOutput,
-	ABCSMCTracker,
-	SimulatedABCSMCTracker, EmulatedABCSMCTracker,
+	SimulatedABCRejection, SimulatedABCSMC,
+	EmulatedABCRejection, EmulatedABCSMC,
+	get_training_data,
 	read_rejection_output, read_smc_output;
 
 	# multiple_training_abc,
@@ -32,7 +31,7 @@ export
 	# get_head_of_ref_table,
 	# rejection_abc,
 
-using Optim, Distributions
+using Optim, Distributions, Distances, DifferentialEquations
 
 import StatsBase
 
@@ -52,6 +51,13 @@ include("abc/io.jl")
 include("abc/rejection.jl")
 include("abc/smc.jl")
 include("abc/summary_stats.jl")
+include("abc/simulation.jl")
+include("abc/emulation.jl")
+include("util/emulation_helpers.jl")
 include("abc/plot_recipe.jl")
+
+# include("abc.jl")
+# include("multiple_training_abc.jl")
+
 
 end;

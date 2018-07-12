@@ -2,7 +2,7 @@
 # Returns a single parameter and its weight - for simulation
 #
 function generate_parameters(
-        priors::Vector{D},
+        priors::AbstractArray{D,1},
         ) where {
         D<:ContinuousUnivariateDistribution
         }
@@ -22,7 +22,7 @@ end
 # Returns a set parameter and its weight with size batch_size - for emulation
 #
 function generate_parameters(
-        priors::Vector{D},
+        priors::AbstractArray{D,1},
         batch_size::Int,
         ) where {
         D<:ContinuousUnivariateDistribution
@@ -47,15 +47,27 @@ end
 # as simulator_function
 #
 
-#
-# Simulated version
-#
+"""
+    ABCrejection
+
+Run a simulationed-based rejection-ABC computation. Parameter posteriors are obtained by simulating the model
+for a parameter vector, computing the summary statistic of the output then computing the distance to the 
+summary statistic of the reference data. If this distance is sufficiently small the parameter vector is
+included in the posterior.
+
+# Fields
+- `input::SimulatedABCRejectionInput`: A ['SimulatedABCRejectionInput'](@ref) object that defines the settings for the simulated rejection-ABC run.
+- `reference_data::AbstractArray{Float64,2}`: The observed data to which the simulated model output will be compared. Size: (n_model_trajectories, n_time_points)
+- `out_stream::IO`: The output stream to which progress will be written. An optional argument whose default is `STDOUT`.
+- `write_progress::Bool`: Optional argument controlling whether progress is written to `out_stream`.
+- `progress_every::Int`: Progress will be written to `out_stream` every `progress_every` simulations (optional, ignored if `write_progress` is `False`).
+"""
 function ABCrejection(
 	input::SimulatedABCRejectionInput,
-	reference_data;
+	reference_data::AbstractArray{Float64,2};
 	out_stream::IO = STDOUT,
-    write_progress = true,
-    progress_every = 1000)
+    write_progress::Bool = true,
+    progress_every::Int = 1000)
 
 	checkABCInput(input)
 
@@ -115,12 +127,24 @@ function ABCrejection(
 
 end
 
-#
-# Emulated version
-#
+"""
+    ABCrejection
+
+Run a emulation-based rejection-ABC computation. Parameter posteriors are obtained using a regression model
+(the emulator), that has learnt a mapping from parameter vectors to the distance between the 
+model output and observed data in summary statistic space. If this distance is sufficiently small the parameter vector is
+included in the posterior.
+
+# Fields
+- `input::EmulatedABCRejectionInput`: An ['EmulatedABCRejectionInput'](@ref) object that defines the settings for the emulated rejection-ABC run.
+- `reference_data::AbstractArray{Float64,2}`: The observed data to which the simulated model output will be compared. Size: (n_model_trajectories, n_time_points)
+- `out_stream::IO`: The output stream to which progress will be written. An optional argument whose default is `STDOUT`.
+- `write_progress::Bool`: Optional argument controlling whether progress is written to `out_stream`.
+- `progress_every::Int`: Progress will be written to `out_stream` every `progress_every` simulations (optional, ignored if `write_progress` is `False`).
+"""
 function ABCrejection(
 	input::EmulatedABCRejectionInput,
-	reference_data;
+	reference_data::AbstractArray{Float64,2};
 	out_stream::IO = STDOUT,
     write_progress = true,
     progress_every = 1000)
@@ -136,7 +160,7 @@ function ABCrejection(
     weights = ones(input.n_particles)
 
     # emulate
-    while n_accepted < input.n_particles
+    while n_accepted < input.n_particles && batch_no <= input.max_iter
 
         if batch_no > input.max_iter
             warn("Emulation reached maximum iterations before finding $(input.n_particles) particles - will return $n_accepted")
@@ -156,14 +180,13 @@ function ABCrejection(
         # Check which parameter indices were accepted
         #
         accepted_batch_idxs = find(distances .<= input.threshold)
-        #println("accepted_batch_idxs = $(accepted_batch_idxs)")
         n_accepted_batch = length(accepted_batch_idxs)
 
         #
         # If some parameters were accepted, store their values, (predicted) distances and weights
         #
         if n_accepted_batch > 0
-            # Check that we won't accept too many parameters
+            # Check that we won't accept too many parameters - throw away the extra parameters if so
             if n_accepted + n_accepted_batch > input.n_particles
                 accepted_batch_idxs = accepted_batch_idxs[1:input.n_particles - n_accepted]
                 n_accepted_batch = length(accepted_batch_idxs)
