@@ -24,17 +24,17 @@ module LNA
         end
 
         no_of_species, no_of_reactions=size(S)
-        function ODE(t,x,dx)
-            D=ForwardDiff.jacobian(y -> make_f(y, params),x)
+        function ODE(dx, x, pars, t)
+            D=ForwardDiff.jacobian(y -> make_f(y, pars),x)
             D=D[:,1:no_of_species]
             A=S*D
-            dx[1:no_of_species]= S*make_f(x,params)
+            dx[1:no_of_species]= S*make_f(x,pars)
             dx[no_of_species+1:end]=  A*x[no_of_species+1:no_of_species*2]
         end
         E_null= zeros(no_of_species,no_of_reactions)
         E_full=vcat(E_null, S)
         noise = zeros(no_of_species*2,no_of_reactions)
-        function SDE(t,x,dx)
+        function SDE(dx, x, pars, t)
             #for i in 1:no_of_species*2
                 #for j in 1:no_of_reactions
                     #dx[i,j]=(E_full[i,j] * sqrt(abs.(make_f(x,params)[j])))
@@ -42,12 +42,12 @@ module LNA
             #end
 
             ## Fei's additions/corrections below
-            noise[1:no_of_species*2,1:no_of_reactions] = E_full.*(ones(no_of_species*2,1)*sqrt.(abs.(make_f(x,params)))')
-            dx[1:no_of_species*2,1:no_of_reactions] = E_full.*(ones(no_of_species*2,1)*sqrt.(abs.(make_f(x,params)))')
+            noise[1:no_of_species*2,1:no_of_reactions] = E_full.*(ones(no_of_species*2,1)*sqrt.(abs.(make_f(x,pars)))')
+            dx[1:no_of_species*2,1:no_of_reactions] = E_full.*(ones(no_of_species*2,1)*sqrt.(abs.(make_f(x,pars)))')
 
         end
 
-        prob = SDEProblem(ODE,SDE,x0,Tspan,noise_rate_prototype=zeros(no_of_species*2, no_of_reactions))
+        prob = SDEProblem(ODE,SDE,x0,Tspan,params,noise_rate_prototype=zeros(no_of_species*2, no_of_reactions))
 
         sols=solve(prob, solver,  dt=dt)
 
@@ -70,7 +70,7 @@ module LNA
     #
     #
     #
-    #the maths for this can be found in UserManual_v28102013.pdf in the LNA folder in Gaussian Procceses Drop box, p2 equation (7) - the ODE of the covariance. A volume term has been added which can be seen in other sources - the particular source was linked as the layout is the similar to the one implemented.  
+    #the maths for this can be found in UserManual_v28102013.pdf in the LNA folder in Gaussian Procceses Drop box, p2 equation (7) - the ODE of the covariance. A volume term has been added which can be seen in other sources - the particular source was linked as the layout is the similar to the one implemented.
     LNA_Mean_Var = function(params::AbstractArray{Float64,1},Tspan::Tuple{Float64,Float64},
             x0::AbstractArray{Float64}, solver::DEAlgorithm,
             saveat::Float64, S::AbstractArray{Float64,2},
@@ -83,15 +83,18 @@ module LNA
 
         no_of_species, no_of_reactions=size(S)
 
-        function Mean_ODE(t,x,dx)
-            D=ForwardDiff.jacobian(y -> make_f(y, params), diag(x))
+        function Mean_ODE(dx, x, pars, t)
+            D=ForwardDiff.jacobian(y -> make_f(y, pars), diag(x))
             D=D[:,1:no_of_species]
             A=S*D
-            dx[1:no_of_species, 1:no_of_species] = diagm(S*make_f(diag(x),params))
-            dx[no_of_species+1:end,1:no_of_species]= A*x[no_of_species+1:no_of_species*2,1:no_of_species] + x[no_of_species+1:no_of_species*2,1:no_of_species]*(A') + (1/sqrt(volume))*S* diagm(make_f(diag(x),params)) * S'
+            dx[1:no_of_species, 1:no_of_species] = diagm(S*make_f(diag(x),pars))
+            dx[no_of_species+1:end,1:no_of_species]=
+                A*x[no_of_species+1:no_of_species*2,1:no_of_species] +
+                x[no_of_species+1:no_of_species*2,1:no_of_species]*(A') +
+                (1/sqrt(volume))*S* diagm(make_f(diag(x),pars)) * S'
         end
 
-        prob = ODEProblem(Mean_ODE, x0, Tspan)
+        prob = ODEProblem(Mean_ODE, x0, Tspan, params)
         mean_and_var = solve(prob,solver,saveat=saveat)
 
         Mean=[]
