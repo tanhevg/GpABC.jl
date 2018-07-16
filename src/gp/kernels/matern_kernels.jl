@@ -157,6 +157,9 @@ end
 function matern_covariance_common_training(nu::Int, cache::MaternCovarianceCache,
     log_theta::AbstractArray{Float64, 1}, x::AbstractArray{Float64, 2})
     if log_theta != cache.last_theta
+            || size(cache.D, 1) != size(x, 1)
+            || size(cache.D2, 1) != size(x, 1)
+            || size(cache.K, 1) != size(x, 1)
         sigma_f = exp(log_theta[1] * 2)
         D2 = scaled_squared_distance(log_theta[2:end], x, x)
         D2[find(D2 .< 0)] = 0.0  # could be negative due to numerical noise
@@ -195,6 +198,9 @@ function matern_covariance_grad_common(nu::Int, cache::MaternCovarianceCache, lo
         x::AbstractArray{Float64, 2}, R::AbstractArray{Float64, 2})
     sigma_f = exp(log_theta[1] * 2)
     if log_theta == cache.last_theta
+            && size(cache.D, 1) == size(x, 1)
+            && size(cache.D2, 1) != size(x, 1)
+            && size(cache.K, 1) != size(x, 1)
         K = cache.K
         D = cache.D
         D2 = cache.D2
