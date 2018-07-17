@@ -24,7 +24,9 @@ export
 	ABCRejectionOutput, ABCSMCOutput,
 	ABCSMCTracker,
 	SimulatedABCSMCTracker, EmulatedABCSMCTracker,
-	read_rejection_output, read_smc_output;
+	read_rejection_output, read_smc_output,
+
+	lna_covariance;
 
 	# multiple_training_abc,
 	# multiple_training_seq_abc,
@@ -32,7 +34,7 @@ export
 	# get_head_of_ref_table,
 	# rejection_abc,
 
-using Optim, Distributions
+using Optim, Distributions, DifferentialEquations, ForwardDiff
 
 import StatsBase
 
@@ -53,5 +55,6 @@ include("abc/rejection.jl")
 include("abc/smc.jl")
 include("abc/summary_stats.jl")
 include("abc/plot_recipe.jl")
+include("util/lna.jl")
 
 end;
