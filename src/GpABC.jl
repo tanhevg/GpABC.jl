@@ -15,16 +15,15 @@ export
 	get_hyperparameters_size, set_hyperparameters,
     gp_train,
 
-	ABCrejection,
-	initialiseABCSMC, iterateABCSMC!, ABCSMC,
-	ABCInput, ABCOutput,
+	ABCrejection, ABCSMC,
 	ABCRejectionInput, ABCSMCInput,
 	SimulatedABCRejectionInput, EmulatedABCRejectionInput,
 	SimulatedABCSMCInput, EmulatedABCSMCInput,
 	ABCRejectionOutput, ABCSMCOutput,
-	ABCSMCTracker,
-	SimulatedABCSMCTracker, EmulatedABCSMCTracker,
-	read_rejection_output, read_smc_output,
+	SimulatedABCRejection, SimulatedABCSMC,
+	EmulatedABCRejection, EmulatedABCSMC,
+	get_training_data,
+	read_rejection_output, read_smc_output
 
 	lna_covariance;
 
@@ -34,7 +33,7 @@ export
 	# get_head_of_ref_table,
 	# rejection_abc,
 
-using Optim, Distributions, DifferentialEquations, ForwardDiff
+using Optim, Distributions, Distances, DifferentialEquations, ForwardDiff
 
 import StatsBase
 
@@ -54,7 +53,14 @@ include("abc/io.jl")
 include("abc/rejection.jl")
 include("abc/smc.jl")
 include("abc/summary_stats.jl")
+include("abc/simulation.jl")
+include("abc/emulation.jl")
+include("util/emulation_helpers.jl")
 include("abc/plot_recipe.jl")
 include("util/lna.jl")
+
+# include("abc.jl")
+# include("multiple_training_abc.jl")
+
 
 end;
