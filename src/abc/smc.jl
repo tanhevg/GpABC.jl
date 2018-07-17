@@ -150,7 +150,7 @@ function initialiseABCSMC(
                                         input.n_particles,
                                         input.threshold_schedule[1],
                                         input.priors,
-                                        input.emulator_retraining_function
+                                        input.emulator_retraining_function,
                                         input.emulate_distance_function,
                                         input.batch_size,
                                         input.max_iter,
