@@ -317,7 +317,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Reference",
     "title": "GpABC.get_training_data",
     "category": "method",
-    "text": "get_training_data\n\nReturns training data in a suitable format to train a Gaussian process emulator of the type  `GPmodel. The training data are (parameter vector, distance) pairs where distances are the distance from simulated model output to the observed data in summary statistic space.\n\nFields\n\nn_design_points::Int64: The number of parameter vectors used to train the Gaussian process emulator\npriors::AbstractArray{D,1}: A 1D Array of continuous univariate distributions with length n_params from which candidate parameter vectors will be sampled.\nsimulator_function::Function: A function that takes a parameter vector as an argument and outputs model results.\nsummary_statistic::Union{String,AbstractArray{String,1},Function}: Either: 1. A String or 1D Array of strings that Or 2. A function that outputs a 1D Array of Floats that summarises model output. REFER TO DOCS\ndistance_metric::Function: Any function that computes the distance between 2 1D Arrays.\nreference_data::AbstractArray{Float64,2}: The observed data to which the simulated model output will be compared. Size: (n_model_trajectories, n_time_points)\n\n\n\n"
+    "text": "get_training_data\n\nReturns training data in a suitable format to train a Gaussian process emulator of the type `GPmodel. The training data are (parameter vector, distance) pairs where distances are the distance from simulated model output to the observed data in summary statistic space.\n\nFields\n\nn_design_points::Int64: The number of parameter vectors used to train the Gaussian process emulator\npriors::AbstractArray{D,1}: A 1D Array of continuous univariate distributions with length n_params from which candidate parameter vectors will be sampled.\nsimulator_function::Function: A function that takes a parameter vector as an argument and outputs model results.\nsummary_statistic::Union{String,AbstractArray{String,1},Function}: Either: 1. A String or 1D Array of strings that Or 2. A function that outputs a 1D Array of Floats that summarises model output. REFER TO DOCS\ndistance_metric::Function: Any function that computes the distance between 2 1D Arrays.\nreference_data::AbstractArray{Float64,2}: The observed data to which the simulated model output will be compared. Size: (n_model_trajectories, n_time_points)\n\n\n\n"
 },
 
 {
@@ -366,6 +366,14 @@ var documenterSearchIndex = {"docs": [
     "title": "GpABC.gp_regression",
     "category": "method",
     "text": "gp_regression(test_x::Union{AbstractArray{Float64, 1}, AbstractArray{Float64, 2}},\n    gpem::GPModel; <optional keyword arguments>)\n\n\n\n"
+},
+
+{
+    "location": "reference/#GpABC.gp_regression_sample-Tuple{Union{AbstractArray{Float64,1}, AbstractArray{Float64,2}},GpABC.GPModel}",
+    "page": "Reference",
+    "title": "GpABC.gp_regression_sample",
+    "category": "method",
+    "text": "gp_regression_sample(params::Union{AbstractArray{Float64, 1}, AbstractArray{Float64, 2}}, gpem::GPModel)\n\nReturn a random sample from a multivariate Gaussian distrubution, obtained by calling gp_regression\n\n\n\n"
 },
 
 {
