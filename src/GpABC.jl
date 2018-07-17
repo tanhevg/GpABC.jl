@@ -9,7 +9,8 @@ export
 	GPModel,
     MvUniform,
     LatinHypercubeSampler,
-    gp_loglikelihood, gp_loglikelihood_log, gp_loglikelihood_grad, gp_regression,
+    gp_loglikelihood, gp_loglikelihood_log, gp_loglikelihood_grad,
+	gp_regression, gp_regression_sample,
 	covariance, covariance_training, covariance_diagonal, covariance_grad,
 	scaled_squared_distance, scaled_squared_distance_grad,
 	get_hyperparameters_size, set_hyperparameters,
@@ -52,8 +53,8 @@ include("abc/rejection.jl")
 include("abc/smc.jl")
 include("abc/summary_stats.jl")
 include("abc/simulation.jl")
-include("abc/emulation.jl")
 include("util/emulation_helpers.jl")
+include("abc/emulation.jl")
 include("abc/plot_recipe.jl")
 
 # include("abc.jl")

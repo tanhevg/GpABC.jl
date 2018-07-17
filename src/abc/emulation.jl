@@ -36,7 +36,7 @@ function EmulatedABCRejection{D<:ContinuousUnivariateDistribution}(n_design_poin
 
     gpem = GPModel(training_x=X, training_y=y, kernel=gpkernel)
     gp_train(gpem)
-    distance_prediction_function(params) = gp_regression(params, gpem)[1]
+    distance_prediction_function(params) = gp_regression_sample(params, gpem)
 
     input = EmulatedABCRejectionInput(n_var_params, n_particles, threshold,
         priors, distance_prediction_function, batch_size, max_iter)
@@ -82,7 +82,7 @@ function EmulatedABCSMC{D<:ContinuousUnivariateDistribution}(n_design_points::In
 
     gpem = GPModel(training_x=X, training_y=y, kernel=gpkernel)
     gp_train(gpem)
-    distance_prediction_function(params) = gp_regression(params, gpem)[1]
+    distance_prediction_function(params) = gp_regression_sample(params, gpem)
 
     input = EmulatedABCSMCInput(n_var_params, n_particles, threshold_schedule,
         priors, distance_prediction_function, batch_size, max_iter)
