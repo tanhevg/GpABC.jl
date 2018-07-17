@@ -30,6 +30,27 @@ struct SimulatedABCRejectionInput <: ABCRejectionInput
 end
 
 """
+    RepetitiveTrainingSettings
+
+A structure that holds settings for repetitive training of the emulator. On each iteration of re-training a certain number of points is sampled from the prior.
+Emulator prediction variance is then obtained for this sample. The points with the highest variance are added to the training set, the model is simulated for
+these additional parameters, and the emulator is re-trained.
+
+# Fields
+- `rt_iterations`: Number of times the emulator will be re-trained.
+- `rt_sample_size`: Size of the sample that will be used to evaluate emulator variance.
+- `rt_extra_points`: Number of points to add to the training set at each iteration of re-training. Should not be greater than `rt_sample_size`.
+"""
+struct RepetitiveTrainingSettings
+    rt_iterations::Int64
+    rt_sample_size::Int64
+    rt_extra_points::Int64
+end
+
+RepetitiveTrainingSettings(; rt_iterations::Int64=0, rt_sample_size::Int64=0, rt_extra_points::Int64=0) =
+    RepetitiveTrainingSettings(rt_iterations, rt_sample_size, rt_extra_points)
+
+"""
     EmulatedABCRejectionInput
 
 An object that defines the settings for a emulation-based rejection-ABC computation.
@@ -51,7 +72,24 @@ struct EmulatedABCRejectionInput <: ABCRejectionInput
 	distance_prediction_function::Function
 	batch_size::Int64
     max_iter::Int64
+    # rt_settings::RepetitiveTrainingSettings
 end
+
+# EmulatedABCRejectionInput(n_params::Int64,
+#     n_particles::Int64,
+#     threshold::Float64,
+#     priors::AbstractArray{ContinuousUnivariateDistribution,1},
+#     distance_prediction_function::Function,
+#     batch_size::Int64,
+#     max_iter::Int64) =
+# EmulatedABCRejectionInput(n_params,
+#     n_particles,
+#     threshold,
+#     priors,
+#     distance_prediction_function,
+#     batch_size,
+#     max_iter,
+#     RepetitiveTrainingSettings())
 
 abstract type ABCSMCInput <: ABCInput end
 

@@ -27,15 +27,21 @@ function EmulatedABCRejection{D<:ContinuousUnivariateDistribution}(n_design_poin
     distance_metric::Function=Distances.euclidean,
     gpkernel::AbstractGPKernel=SquaredExponentialArdKernel(),
     batch_size::Int64=10*n_particles, max_iter::Int64=1000,
+    repetitive_training_settings::RepetitiveTrainingSettings=RepetitiveTrainingSettings(),
     kwargs...)
 
     n_var_params = length(priors)
 
-    X, y = get_training_data(n_design_points, priors, simulator_function,
-                                summary_statistic, distance_metric, reference_data)
+    X = sample_from_priors(n_design_points, priors)
+    summary_statistic = build_summary_statistic(summary_statistic)
+    reference_summary_statistic = summary_statistic(reference_data)
+    y = simulate_distance(X, simulator_function, summary_statistic, distance_metric, reference_summary_statistic)
 
     gpem = GPModel(training_x=X, training_y=y, kernel=gpkernel)
     gp_train(gpem)
+    retrain_emulator(repetitive_training_settings, gpem, priors,
+        simulator_function, summary_statistic, distance_metric,
+        reference_summary_statistic)
     distance_prediction_function(params) = gp_regression(params, gpem)[1]
 
     input = EmulatedABCRejectionInput(n_var_params, n_particles, threshold,

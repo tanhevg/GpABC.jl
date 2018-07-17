@@ -125,12 +125,18 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
     @test size(emu_result.population, 1) > 0
 
     # Now repeat using user-level functions
-    sim_out = SimulatedABCRejection(reference_data, n_particles, 0.5, 
+    sim_out = SimulatedABCRejection(reference_data, n_particles, 0.5,
         priors, "keep_all", simulator_function, write_progress=false)
     @test size(sim_out.population, 1) > 0
 
-    emu_out = EmulatedABCRejection(n_design_points, reference_data, n_particles, 0.5, 
+    emu_out = EmulatedABCRejection(n_design_points, reference_data, n_particles, 0.5,
         priors, "keep_all", simulator_function, write_progress=false)
     @test size(emu_out.population, 1) > 0
 
+    emu_out = EmulatedABCRejection(n_design_points, reference_data, n_particles, 0.5,
+        priors, "keep_all", simulator_function,
+        repetitive_training_settings =
+            RepetitiveTrainingSettings(rt_iterations=2, rt_sample_size=10000, rt_extra_points=10),
+        write_progress=false)
+    @test size(emu_out.population, 1) > 0
 end
