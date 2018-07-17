@@ -51,7 +51,7 @@ end
     ABCrejection
 
 Run a simulationed-based rejection-ABC computation. Parameter posteriors are obtained by simulating the model
-for a parameter vector, computing the summary statistic of the output then computing the distance to the 
+for a parameter vector, computing the summary statistic of the output then computing the distance to the
 summary statistic of the reference data. If this distance is sufficiently small the parameter vector is
 included in the posterior.
 
@@ -131,7 +131,7 @@ end
     ABCrejection
 
 Run a emulation-based rejection-ABC computation. Parameter posteriors are obtained using a regression model
-(the emulator), that has learnt a mapping from parameter vectors to the distance between the 
+(the emulator), that has learnt a mapping from parameter vectors to the distance between the
 model output and observed data in summary statistic space. If this distance is sufficiently small the parameter vector is
 included in the posterior.
 
@@ -159,6 +159,8 @@ function ABCrejection(
     accepted_distances = zeros(input.n_particles)
     weights = ones(input.n_particles)
 
+    emulator = input.retrain_emulator_function(input.emulator)
+
     # emulate
     while n_accepted < input.n_particles && batch_no <= input.max_iter
 
@@ -173,7 +175,7 @@ function ABCrejection(
 
         parameter_batch, weight_batch = generate_parameters(input.priors, input.batch_size)
 
-        distances = input.distance_prediction_function(parameter_batch)
+        distances = input.emulate_distance_function(parameter_batch, emulator)
         n_tries += input.batch_size
 
         #

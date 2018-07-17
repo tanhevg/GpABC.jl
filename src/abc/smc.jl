@@ -150,9 +150,11 @@ function initialiseABCSMC(
                                         input.n_particles,
                                         input.threshold_schedule[1],
                                         input.priors,
-                                        input.distance_prediction_function,
+                                        input.emulator_retraining_function
+                                        input.emulate_distance_function,
                                         input.batch_size,
-                                        input.max_iter
+                                        input.max_iter,
+                                        input.gpem,
                                         )
 
     rejection_output = ABCrejection(rejection_input,
@@ -170,7 +172,7 @@ function initialiseABCSMC(
                              [rejection_output.distances],
                              [rejection_output.weights],
                              input.priors,
-                             input.distance_prediction_function,
+                             input.emulate_distance_function,
                              input.max_iter)
 
     return tracker
@@ -278,7 +280,7 @@ function iterateABCSMC!(
         #
         # Need to transpose parameter vector to pass it to emulator
         #
-        distance = tracker.distance_prediction_function(parameters')[1]
+        distance = tracker.emulate_distance_function(parameters')[1]
         tracker.n_tries[end] += 1
 
         if distance <= threshold
@@ -312,7 +314,7 @@ end
   ABCSMC
 
 Run a ABC-SMC computation using either simulation (the model is simulated in full for each parameter vector from which the corresponding
-distance to observed data is used to construct the posterior) or emulation (a regression model trained to predict the distance from the 
+distance to observed data is used to construct the posterior) or emulation (a regression model trained to predict the distance from the
 parameter vector directly is used to construct the posterior). Whether simulation or emulation is used is controlled by the type of `input`.
 
 # Fields
@@ -340,6 +342,7 @@ function ABCSMC(
 
     for i in 2:length(input.threshold_schedule)
         threshold = input.threshold_schedule[i]
+
         iterateABCSMC!(tracker,
                        threshold,
                        input.n_particles,

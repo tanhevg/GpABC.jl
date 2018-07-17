@@ -39,13 +39,15 @@ function EmulatedABCRejection{D<:ContinuousUnivariateDistribution}(n_design_poin
 
     gpem = GPModel(training_x=X, training_y=y, kernel=gpkernel)
     gp_train(gpem)
-    retrain_emulator(repetitive_training_settings, gpem, priors,
-        simulator_function, summary_statistic, distance_metric,
-        reference_summary_statistic)
-    distance_prediction_function(params) = gp_regression(params, gpem)[1]
+    emulator_retraining_function = function(gpem)
+        retrain_emulator(repetitive_training_settings, gpem, priors,
+            simulator_function, summary_statistic, distance_metric,
+            reference_summary_statistic)
+    end
+    emulate_distance_function(params, gpem) = gp_regression(params, gpem)[1] # todo conflict
 
     input = EmulatedABCRejectionInput(n_var_params, n_particles, threshold,
-        priors, distance_prediction_function, batch_size, max_iter)
+        priors, emulator_retraining_function, emulate_distance_function, batch_size, max_iter, gpem)
 
     return ABCrejection(input, reference_data; kwargs...)
 end
@@ -55,7 +57,7 @@ end
 
 A convenience function that trains a Gaussian process emulator of type [`GPmodel](@ref) then uses it in emulation-based
 ABC-SMC. It creates the training data by simulating the model for the design points, trains
-the emulator, creates the [`EmulatedABCSMCInput`](@ref) object then calls [`ABCSMC](@ref).
+the emulator, creates the [`EmulatedABCSMCInput`](@ref) object then calls [`ABCSMC`](@ref).
 
 # Fields
 - `n_design_points::Int64`: The number of parameter vectors used to train the Gaussian process emulator
@@ -79,19 +81,27 @@ function EmulatedABCSMC{D<:ContinuousUnivariateDistribution}(n_design_points::In
     distance_metric::Function=Distances.euclidean,
     gpkernel::AbstractGPKernel=SquaredExponentialArdKernel(),
     batch_size::Int64=10*n_particles, max_iter::Int64=1000,
+    repetitive_training_settings::RepetitiveTrainingSettings=RepetitiveTrainingSettings(),
     kwargs...)
 
     n_var_params = length(priors)
 
-    X, y = get_training_data(n_design_points, priors, simulator_function,
-                                summary_statistic, distance_metric, reference_data)
+    X = sample_from_priors(n_design_points, priors)
+    summary_statistic = build_summary_statistic(summary_statistic)
+    reference_summary_statistic = summary_statistic(reference_data)
+    y = simulate_distance(X, simulator_function, summary_statistic, distance_metric, reference_summary_statistic)
 
     gpem = GPModel(training_x=X, training_y=y, kernel=gpkernel)
     gp_train(gpem)
-    distance_prediction_function(params) = gp_regression(params, gpem)[1]
+    emulator_retraining_function = function(gpem)
+        retrain_emulator(repetitive_training_settings, gpem, priors,
+            simulator_function, summary_statistic, distance_metric,
+            reference_summary_statistic)
+    end
+    emulate_distance_function(params, gpem) = gp_regression(params, gpem)[1] # todo conflict
 
     input = EmulatedABCSMCInput(n_var_params, n_particles, threshold_schedule,
-        priors, distance_prediction_function, batch_size, max_iter)
+        priors, emulator_retraining_function, emulate_distance_function, batch_size, max_iter, gpem)
 
     return ABCSMC(input, reference_data; kwargs...)
 end

@@ -32,7 +32,7 @@ end
 """
     RepetitiveTrainingSettings
 
-A structure that holds settings for repetitive training of the emulator. On each iteration of re-training a certain number of points is sampled from the prior.
+A structure that holds the settings for repetitive training of the emulator. On each iteration of re-training a certain number of points is sampled from the prior.
 Emulator prediction variance is then obtained for this sample. The points with the highest variance are added to the training set, the model is simulated for
 these additional parameters, and the emulator is re-trained.
 
@@ -69,27 +69,12 @@ struct EmulatedABCRejectionInput <: ABCRejectionInput
 	n_particles::Int64
 	threshold::Float64
 	priors::AbstractArray{ContinuousUnivariateDistribution,1}
-	distance_prediction_function::Function
+    retrain_emulator_function::Function
+	emulate_distance_function::Function
 	batch_size::Int64
     max_iter::Int64
-    # rt_settings::RepetitiveTrainingSettings
+    emulator
 end
-
-# EmulatedABCRejectionInput(n_params::Int64,
-#     n_particles::Int64,
-#     threshold::Float64,
-#     priors::AbstractArray{ContinuousUnivariateDistribution,1},
-#     distance_prediction_function::Function,
-#     batch_size::Int64,
-#     max_iter::Int64) =
-# EmulatedABCRejectionInput(n_params,
-#     n_particles,
-#     threshold,
-#     priors,
-#     distance_prediction_function,
-#     batch_size,
-#     max_iter,
-#     RepetitiveTrainingSettings())
 
 abstract type ABCSMCInput <: ABCInput end
 
@@ -136,9 +121,11 @@ struct EmulatedABCSMCInput <: ABCSMCInput
     n_particles::Int64
     threshold_schedule::AbstractArray{Float64,1}
     priors::AbstractArray{ContinuousUnivariateDistribution,1}
-    distance_prediction_function::Function
+    retrain_emulator_function::Function
+    emulate_distance_function::Function
     batch_size::Int64
     max_iter::Int64
+    emulator
 end
 
 #
@@ -169,7 +156,7 @@ mutable struct EmulatedABCSMCTracker <: ABCSMCTracker
     distances::AbstractArray{AbstractArray{Float64,1},1}
     weights::AbstractArray{StatsBase.Weights,1}
     priors::AbstractArray{ContinuousUnivariateDistribution,1}
-    distance_prediction_function::Function
+    emulate_distance_function::Function
     max_iter::Int64
 end
 

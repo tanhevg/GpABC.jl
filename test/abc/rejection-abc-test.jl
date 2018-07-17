@@ -108,7 +108,7 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
     gpem = GPModel(training_x=X, training_y=y, kernel=SquaredExponentialArdKernel())
     gp_train(gpem)
 
-    function predict_distance(p::AbstractArray{Float64})
+    function predict_distance(p::AbstractArray{Float64}, gpem)
         result = gp_regression(p,gpem)[1]
         return result
     end
@@ -117,9 +117,11 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
           n_particles,
           0.5,
           priors,
+          x->x,
           predict_distance,
           batch_size,
-          max_iter)
+          max_iter,
+          gpem)
 
     emu_result = ABCrejection(emu_rej_input, reference_data, write_progress=false)
     @test size(emu_result.population, 1) > 0
