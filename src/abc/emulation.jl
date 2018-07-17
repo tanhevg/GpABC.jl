@@ -44,7 +44,7 @@ function EmulatedABCRejection{D<:ContinuousUnivariateDistribution}(n_design_poin
             simulator_function, summary_statistic, distance_metric,
             reference_summary_statistic)
     end
-    emulate_distance_function(params, gpem) = gp_regression(params, gpem)[1] # todo conflict
+    emulate_distance_function(params, em) = gp_regression_sample(params, em)
 
     input = EmulatedABCRejectionInput(n_var_params, n_particles, threshold,
         priors, emulator_retraining_function, emulate_distance_function, batch_size, max_iter, gpem)
@@ -98,7 +98,7 @@ function EmulatedABCSMC{D<:ContinuousUnivariateDistribution}(n_design_points::In
             simulator_function, summary_statistic, distance_metric,
             reference_summary_statistic)
     end
-    emulate_distance_function(params, gpem) = gp_regression(params, gpem)[1] # todo conflict
+    emulate_distance_function(params, em) = gp_regression_sample(params, em)
 
     input = EmulatedABCSMCInput(n_var_params, n_particles, threshold_schedule,
         priors, emulator_retraining_function, emulate_distance_function, batch_size, max_iter, gpem)
