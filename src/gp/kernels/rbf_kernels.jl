@@ -68,7 +68,7 @@ end
 
 function rbf_covariance_grad_common(cache::RbfCovarianceCache, log_theta::AbstractArray{Float64, 1},
         x::AbstractArray{Float64, 2}, R::AbstractArray{Float64, 2})
-    if log_theta == cache.last_theta
+    if log_theta == cache.last_theta && size(cache.K, 1) == size(x, 1) && size(cache.D2, 1) == size(x, 1)
         K = cache.K
         D2 = cache.D2
     else
@@ -108,7 +108,7 @@ end
 
 function rbf_covariance_common_training(cache::RbfCovarianceCache,
         log_theta::AbstractArray{Float64, 1}, x::AbstractArray{Float64, 2})
-    if log_theta != cache.last_theta
+    if log_theta != cache.last_theta || size(cache.D2, 1) != size(x, 1) || size(cache.K, 1) != size(x, 1)
         cache.last_theta = copy(log_theta)
         sigma_f = exp(log_theta[1] * 2)
         D2 = scaled_squared_distance(log_theta[2:end], x, x)
