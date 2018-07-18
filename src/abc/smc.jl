@@ -77,6 +77,19 @@ function generate_parameters(
     return perturbed_parameters, weight
 end
 
+function generate_parameters_batch(
+        n_batch_size::Int64,
+        priors::AbstractArray{D1,1},
+        old_parameters::AbstractArray{F,2},
+        old_weights::StatsBase.Weights,
+        kernels::AbstractArray{D2,2},
+        ) where {
+        D1, D2<:ContinuousUnivariateDistribution,
+        F<:AbstractFloat,
+        }
+    particles = StatsBase.sample(indices(old_parameters, 1), old_weights, n_batch_size)
+    return rand.(kernels[particles,:])
+end
 
 function normalise(
         weights::StatsBase.AbstractWeights;
@@ -150,11 +163,9 @@ function initialiseABCSMC(
                                         input.n_particles,
                                         input.threshold_schedule[1],
                                         input.priors,
-                                        input.emulator_retraining_function,
-                                        input.emulate_distance_function,
+                                        input.emulation_settings,
                                         input.batch_size,
                                         input.max_iter,
-                                        input.gpem,
                                         )
 
     rejection_output = ABCrejection(rejection_input,
@@ -172,8 +183,9 @@ function initialiseABCSMC(
                              [rejection_output.distances],
                              [rejection_output.weights],
                              input.priors,
-                             input.emulate_distance_function,
-                             input.max_iter)
+                             input.emulation_settings,
+                             input.max_iter,
+                             )
 
     return tracker
 end
@@ -257,6 +269,9 @@ function iterateABCSMC!(
         )
     # initialise
     iter_no = 1
+    old_population = tracker.population[end]
+    old_weights = tracker.weights[end]
+
     push!(tracker.n_accepted, 0)
     push!(tracker.n_tries, 0)
     if threshold > tracker.threshold_schedule[end]
@@ -267,20 +282,25 @@ function iterateABCSMC!(
     push!(tracker.distances, zeros(tracker.distances[end]))
     push!(tracker.weights, StatsBase.Weights(ones(tracker.weights[end].values)))
 
-    kernels = generate_kernels(tracker.population[end-1], tracker.priors)
+    kernels = generate_kernels(old_population, tracker.priors)
+    prior_sampling_function(n_design_points) = generate_parameters_batch(n_design_points,
+        tracker.priors,
+        old_population,
+        old_weights,
+        kernels)
+    emulator = tracker.emulation_settings.train_emulator_function(prior_sampling_function)
 
     # emulate
     while tracker.n_accepted[end] < n_toaccept && iter_no <= tracker.max_iter
         parameters, weight = generate_parameters(tracker.priors,
-                                                 tracker.population[end-1],
-                                                 tracker.weights[end-1],
+                                                 old_population,
+                                                 old_weights,
                                                  kernels,
                                                  )
-
         #
         # Need to transpose parameter vector to pass it to emulator
         #
-        distance = tracker.emulate_distance_function(parameters')[1]
+        distance = tracker.emulation_settings.emulate_distance_function(parameters', emulator)[1]
         tracker.n_tries[end] += 1
 
         if distance <= threshold

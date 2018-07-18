@@ -26,13 +26,7 @@ export
 	get_training_data,
 	read_rejection_output, read_smc_output,
 
-	RepetitiveTrainingSettings;
-
-	# multiple_training_abc,
-	# multiple_training_seq_abc,
-	# smc,
-	# get_head_of_ref_table,
-	# rejection_abc,
+	RepetitiveTraining, AbcEmulationSettings;
 
 using Optim, Distributions, Distances, DifferentialEquations
 

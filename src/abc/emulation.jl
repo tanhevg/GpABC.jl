@@ -27,27 +27,29 @@ function EmulatedABCRejection{D<:ContinuousUnivariateDistribution}(n_design_poin
     distance_metric::Function=Distances.euclidean,
     gpkernel::AbstractGPKernel=SquaredExponentialArdKernel(),
     batch_size::Int64=10*n_particles, max_iter::Int64=1000,
-    repetitive_training_settings::RepetitiveTrainingSettings=RepetitiveTrainingSettings(),
+    repetitive_training::RepetitiveTraining=RepetitiveTraining(),
     kwargs...)
 
-    n_var_params = length(priors)
-
-    X = sample_from_priors(n_design_points, priors)
     summary_statistic = build_summary_statistic(summary_statistic)
     reference_summary_statistic = summary_statistic(reference_data)
-    y = simulate_distance(X, simulator_function, summary_statistic, distance_metric, reference_summary_statistic)
 
-    gpem = GPModel(training_x=X, training_y=y, kernel=gpkernel)
-    gp_train(gpem)
-    emulator_retraining_function = function(gpem)
-        retrain_emulator(repetitive_training_settings, gpem, priors,
-            simulator_function, summary_statistic, distance_metric,
-            reference_summary_statistic)
+    gp_train_function = function(prior_sampling_function::Function)
+        abc_train_emulator(prior_sampling_function,
+                n_design_points,
+                reference_summary_statistic,
+                simulator_function,
+                summary_statistic,
+                distance_metric,
+                rts=repetitive_training,
+                gpkernel=gpkernel)
     end
-    emulate_distance_function(params, em) = gp_regression_sample(params, em)
 
-    input = EmulatedABCRejectionInput(n_var_params, n_particles, threshold,
-        priors, emulator_retraining_function, emulate_distance_function, batch_size, max_iter, gpem)
+    emulation_settings = AbcEmulationSettings(n_design_points,
+        gp_train_function,
+        gp_regression_sample)
+
+    input = EmulatedABCRejectionInput(length(priors), n_particles, threshold,
+        priors, emulation_settings, batch_size, max_iter)
 
     return ABCrejection(input, reference_data; kwargs...)
 end
@@ -81,27 +83,30 @@ function EmulatedABCSMC{D<:ContinuousUnivariateDistribution}(n_design_points::In
     distance_metric::Function=Distances.euclidean,
     gpkernel::AbstractGPKernel=SquaredExponentialArdKernel(),
     batch_size::Int64=10*n_particles, max_iter::Int64=1000,
-    repetitive_training_settings::RepetitiveTrainingSettings=RepetitiveTrainingSettings(),
+    repetitive_training::RepetitiveTraining=RepetitiveTraining(),
     kwargs...)
 
-    n_var_params = length(priors)
 
-    X = sample_from_priors(n_design_points, priors)
     summary_statistic = build_summary_statistic(summary_statistic)
     reference_summary_statistic = summary_statistic(reference_data)
-    y = simulate_distance(X, simulator_function, summary_statistic, distance_metric, reference_summary_statistic)
 
-    gpem = GPModel(training_x=X, training_y=y, kernel=gpkernel)
-    gp_train(gpem)
-    emulator_retraining_function = function(gpem)
-        retrain_emulator(repetitive_training_settings, gpem, priors,
-            simulator_function, summary_statistic, distance_metric,
-            reference_summary_statistic)
+    gp_train_function = function(prior_sampling_function)
+        abc_train_emulator(prior_sampling_function,
+                n_design_points,
+                reference_summary_statistic,
+                simulator_function,
+                summary_statistic,
+                distance_metric,
+                rts=repetitive_training,
+                gpkernel=gpkernel)
     end
-    emulate_distance_function(params, em) = gp_regression_sample(params, em)
 
-    input = EmulatedABCSMCInput(n_var_params, n_particles, threshold_schedule,
-        priors, emulator_retraining_function, emulate_distance_function, batch_size, max_iter, gpem)
+    emulation_settings = AbcEmulationSettings(n_design_points,
+        gp_train_function,
+        gp_regression_sample)
+
+    input = EmulatedABCSMCInput(length(priors), n_particles, threshold_schedule,
+        priors, emulation_settings, batch_size, max_iter)
 
     return ABCSMC(input, reference_data; kwargs...)
 end

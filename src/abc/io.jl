@@ -30,25 +30,29 @@ struct SimulatedABCRejectionInput <: ABCRejectionInput
 end
 
 """
-    RepetitiveTrainingSettings
+    RepetitiveTraining
 
 A structure that holds the settings for repetitive training of the emulator. On each iteration of re-training a certain number of points is sampled from the prior.
-Emulator prediction variance is then obtained for this sample. The points with the highest variance are added to the training set, the model is simulated for
-these additional parameters, and the emulator is re-trained.
+Emulator prediction variance is then obtained for this sample. The point with the highest variance is added to the training set. The model is then simulated for
+this additional parameter, and the emulator is re-trained.
 
 # Fields
 - `rt_iterations`: Number of times the emulator will be re-trained.
 - `rt_sample_size`: Size of the sample that will be used to evaluate emulator variance.
-- `rt_extra_points`: Number of points to add to the training set at each iteration of re-training. Should not be greater than `rt_sample_size`.
 """
-struct RepetitiveTrainingSettings
+struct RepetitiveTraining
     rt_iterations::Int64
     rt_sample_size::Int64
-    rt_extra_points::Int64
 end
 
-RepetitiveTrainingSettings(; rt_iterations::Int64=0, rt_sample_size::Int64=0, rt_extra_points::Int64=0) =
-    RepetitiveTrainingSettings(rt_iterations, rt_sample_size, rt_extra_points)
+RepetitiveTraining(rt_iterations::Int64=0; rt_sample_size::Int64=1000) =
+    RepetitiveTraining(rt_iterations, rt_sample_size)
+
+struct AbcEmulationSettings
+    n_design_points::Int64
+    train_emulator_function::Function
+    emulate_distance_function::Function
+end
 
 """
     EmulatedABCRejectionInput
@@ -69,11 +73,9 @@ struct EmulatedABCRejectionInput <: ABCRejectionInput
 	n_particles::Int64
 	threshold::Float64
 	priors::AbstractArray{ContinuousUnivariateDistribution,1}
-    retrain_emulator_function::Function
-	emulate_distance_function::Function
+    emulation_settings::AbcEmulationSettings
 	batch_size::Int64
     max_iter::Int64
-    emulator
 end
 
 abstract type ABCSMCInput <: ABCInput end
@@ -121,11 +123,9 @@ struct EmulatedABCSMCInput <: ABCSMCInput
     n_particles::Int64
     threshold_schedule::AbstractArray{Float64,1}
     priors::AbstractArray{ContinuousUnivariateDistribution,1}
-    retrain_emulator_function::Function
-    emulate_distance_function::Function
+    emulation_settings::AbcEmulationSettings
     batch_size::Int64
     max_iter::Int64
-    emulator
 end
 
 #
@@ -156,7 +156,7 @@ mutable struct EmulatedABCSMCTracker <: ABCSMCTracker
     distances::AbstractArray{AbstractArray{Float64,1},1}
     weights::AbstractArray{StatsBase.Weights,1}
     priors::AbstractArray{ContinuousUnivariateDistribution,1}
-    emulate_distance_function::Function
+    emulation_settings::AbcEmulationSettings
     max_iter::Int64
 end
 

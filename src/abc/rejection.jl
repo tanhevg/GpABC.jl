@@ -62,8 +62,7 @@ included in the posterior.
 - `write_progress::Bool`: Optional argument controlling whether progress is written to `out_stream`.
 - `progress_every::Int`: Progress will be written to `out_stream` every `progress_every` simulations (optional, ignored if `write_progress` is `False`).
 """
-function ABCrejection(
-	input::SimulatedABCRejectionInput,
+function ABCrejection(input::SimulatedABCRejectionInput,
 	reference_data::AbstractArray{Float64,2};
 	out_stream::IO = STDOUT,
     write_progress::Bool = true,
@@ -142,8 +141,7 @@ included in the posterior.
 - `write_progress::Bool`: Optional argument controlling whether progress is written to `out_stream`.
 - `progress_every::Int`: Progress will be written to `out_stream` every `progress_every` simulations (optional, ignored if `write_progress` is `False`).
 """
-function ABCrejection(
-	input::EmulatedABCRejectionInput,
+function ABCrejection(input::EmulatedABCRejectionInput,
 	reference_data::AbstractArray{Float64,2};
 	out_stream::IO = STDOUT,
     write_progress = true,
@@ -159,7 +157,10 @@ function ABCrejection(
     accepted_distances = zeros(input.n_particles)
     weights = ones(input.n_particles)
 
-    emulator = input.retrain_emulator_function(input.emulator)
+    # todo: consolidate sample_from_priors with generate_parameters
+    prior_sampling_function(n_design_points) = generate_parameters(input.priors, n_design_points)[1]
+
+    emulator = input.emulation_settings.train_emulator_function(prior_sampling_function)
 
     # emulate
     while n_accepted < input.n_particles && batch_no <= input.max_iter
@@ -175,7 +176,7 @@ function ABCrejection(
 
         parameter_batch, weight_batch = generate_parameters(input.priors, input.batch_size)
 
-        distances = input.emulate_distance_function(parameter_batch, emulator)
+        distances = input.emulation_settings.emulate_distance_function(parameter_batch, emulator)
         n_tries += input.batch_size
 
         #
