@@ -23,9 +23,10 @@ export
 	SimulatedABCRejection, SimulatedABCSMC,
 	EmulatedABCRejection, EmulatedABCSMC,
 	get_training_data,
-	read_rejection_output, read_smc_output
+	read_rejection_output, read_smc_output,
 
-	lna_covariance;
+	LNAInput, LNA,
+	compute_LNA, sample_LNA_trajectories, get_LNA_trajectories;
 
 	# multiple_training_abc,
 	# multiple_training_seq_abc,
@@ -55,9 +56,9 @@ include("abc/smc.jl")
 include("abc/summary_stats.jl")
 include("abc/simulation.jl")
 include("abc/emulation.jl")
-include("util/emulation_helpers.jl")
 include("abc/plot_recipe.jl")
 include("util/lna.jl")
+include("util/emulation_helpers.jl")
 
 # include("abc.jl")
 # include("multiple_training_abc.jl")
