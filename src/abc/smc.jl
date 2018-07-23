@@ -21,11 +21,7 @@ function generate_kernels(
     for j in 1:n_params
         means = population[j,:]
         for i in 1:n_particles
-            kernels[i, j] = TruncatedNormal(means[j],
-                                                          stds[j]*sqrt(2),
-                                                          lowers[j],
-                                                          uppers[j],
-                                                          )
+            kernels[i, j] = TruncatedNormal(means[j], stds[j]*sqrt(2), lowers[j], uppers[j])
         end
     end
 
@@ -104,7 +100,8 @@ end
 #
 # Initialise a simulated ABC-SMC run
 #
-function initialiseABCSMC(
+function
+    initialiseABCSMC(
         input::SimulatedABCSMCInput,
         reference_data;
         out_stream::IO =  STDOUT,
@@ -185,6 +182,7 @@ function initialiseABCSMC(
                              input.priors,
                              input.emulation_settings,
                              input.max_iter,
+                             [rejection_output.emulator] # emulators
                              )
 
     return tracker
@@ -297,9 +295,7 @@ function iterateABCSMC!(
                                                  old_weights,
                                                  kernels,
                                                  )
-        #
         # Need to transpose parameter vector to pass it to emulator
-        #
         distance = tracker.emulation_settings.emulate_distance_function(parameters', emulator)[1]
         tracker.n_tries[end] += 1
 
@@ -325,9 +321,36 @@ function iterateABCSMC!(
         iter_no += 1
     end
 
+    if tracker.n_accepted[end] < n_toaccept
+        n_accepted = tracker.n_accepted[end]
+        tracker.population[end] = tracker.population[end][1:n_accepted, :]
+        tracker.weights[end] = StatsBase.Weights(tracker.weights[end][1:n_accepted])
+    end
     tracker.weights[end] = deepcopy(normalise(tracker.weights[end], tosum=1.0))
+    push!(tracker.emulators, emulator)
 
     return tracker
+end
+
+function buildAbcSmcOutput(input::EmulatedABCSMCInput, tracker::EmulatedABCSMCTracker)
+    EmulatedABCSMCOutput(input.n_params,
+                        tracker.n_accepted,
+                        tracker.n_tries,
+                        tracker.threshold_schedule,
+                        tracker.population,
+                        tracker.distances,
+                        tracker.weights,
+                        tracker.emulators)
+end
+
+function buildAbcSmcOutput(input::SimulatedABCSMCInput, tracker::SimulatedABCSMCTracker)
+    SimulatedABCSMCOutput(input.n_params,
+                        tracker.n_accepted,
+                        tracker.n_tries,
+                        tracker.threshold_schedule,
+                        tracker.population,
+                        tracker.distances,
+                        tracker.weights)
 end
 
 """
@@ -371,24 +394,17 @@ function ABCSMC(
                        write_progress = write_progress,
                        progress_every = progress_every,
                        )
-        output = ABCSMCOutput(input.n_params,
-                              tracker.n_accepted,
-                              tracker.n_tries,
-                              tracker.threshold_schedule,
-                              tracker.population,
-                              tracker.distances,
-                              tracker.weights,
-                              )
-
+        # output = ABCSMCOutput(input.n_params,
+        #                       tracker.n_accepted,
+        #                       tracker.n_tries,
+        #                       tracker.threshold_schedule,
+        #                       tracker.population,
+        #                       tracker.distances,
+        #                       tracker.weights,
+        #                       )
+        #
         #write(out_stream, output)
     end
 
-    return ABCSMCOutput(input.n_params,
-                        tracker.n_accepted,
-                        tracker.n_tries,
-                        tracker.threshold_schedule,
-                        tracker.population,
-                        tracker.distances,
-                        tracker.weights,
-                        )
+    return buildAbcSmcOutput(input, tracker)
 end

@@ -111,7 +111,7 @@ function ABCrejection(input::SimulatedABCRejectionInput,
     weights = weights ./ sum(weights)
 
     # output
-    output = ABCRejectionOutput(input.n_params,
+    output = SimulatedABCRejectionOutput(input.n_params,
                                 n_accepted,
                                 n_tries,
                                 input.threshold,
@@ -223,13 +223,14 @@ function ABCrejection(input::EmulatedABCRejectionInput,
     weights = weights ./ sum(weights)
 
     # output
-    output = ABCRejectionOutput(input.n_params,
+    output = EmulatedABCRejectionOutput(input.n_params,
                                 n_accepted,
                                 n_tries,
                                 input.threshold,
                                 accepted_parameters,
                                 accepted_distances,
                                 StatsBase.Weights(weights, 1.0),
+                                emulator
                                 )
 
     #write(out_stream, output)

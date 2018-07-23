@@ -103,16 +103,6 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
     sim_abcsmc_res = ABCSMC(sim_abcsmc_input, reference_data, write_progress = false)
     @test size(sim_abcsmc_res.population, 1) > 0
 
-    # X, y = get_training_data(n_design_points, priors, simulator_function, "keep_all", distance_metric, reference_data)
-
-    # gpem = GPModel(training_x=X, training_y=y, kernel=SquaredExponentialArdKernel())
-    # gp_train(gpem)
-    #
-    # function predict_distance(p::AbstractArray{Float64})
-    #     result = gp_regression(p,gpem)[1]
-    #     return result
-    # end
-
     gp_train_function = function(prior_sampling_function::Function)
         GpABC.abc_train_emulator(prior_sampling_function,
                 n_design_points,

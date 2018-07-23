@@ -42,11 +42,12 @@ this additional parameter, and the emulator is re-trained.
 """
 struct RepetitiveTraining
     rt_iterations::Int64
+    rt_extra_training_points::Int64
     rt_sample_size::Int64
 end
 
-RepetitiveTraining(rt_iterations::Int64=0; rt_sample_size::Int64=1000) =
-    RepetitiveTraining(rt_iterations, rt_sample_size)
+RepetitiveTraining(; rt_iterations::Int64=0, rt_extra_training_points::Int64=1, rt_sample_size::Int64=1000) =
+    RepetitiveTraining(rt_iterations, rt_extra_training_points, rt_sample_size)
 
 struct AbcEmulationSettings
     n_design_points::Int64
@@ -158,6 +159,7 @@ mutable struct EmulatedABCSMCTracker <: ABCSMCTracker
     priors::AbstractArray{ContinuousUnivariateDistribution,1}
     emulation_settings::AbcEmulationSettings
     max_iter::Int64
+    emulators::AbstractArray{Any,1}
 end
 
 #
@@ -179,7 +181,20 @@ A container for the output of a rejection-ABC computation.
 - `distances::AbstractArray{Float64,1}`: The distances for each parameter vector (particle) in the posterior to the observed data in summary statistic space. Size: (`n_accepted`).
 - `weights::StatsBase.Weights`: The weight of each parameter vector (particle) in the posterior.
 """
-struct ABCRejectionOutput <: ABCOutput
+abstract type ABCRejectionOutput <: ABCOutput end
+
+struct EmulatedABCRejectionOutput <: ABCRejectionOutput
+    n_params::Int64
+    n_accepted::Int64
+    n_tries::Int64
+    threshold::Float64
+    population::AbstractArray{Float64,2}
+    distances::AbstractArray{Float64,1}
+    weights::StatsBase.Weights
+    emulator
+end
+
+struct SimulatedABCRejectionOutput <: ABCRejectionOutput
     n_params::Int64
     n_accepted::Int64
     n_tries::Int64
@@ -203,7 +218,20 @@ A container for the output of a rejection-ABC computation.
 - `distances::AbstractArray{Float64,1}`: The distances for each parameter vector (particle) in the posterior to the observed data in summary statistic space. Size: (`n_accepted`).
 - `weights::StatsBase.Weights`: The weight of each parameter vector (particle) in the posterior.
 """
-struct ABCSMCOutput <: ABCOutput
+abstract type ABCSMCOutput <: ABCOutput end
+
+struct EmulatedABCSMCOutput <: ABCSMCOutput
+    n_params::Int64
+    n_accepted::AbstractArray{Int64,1}
+    n_tries::AbstractArray{Int64,1}
+    threshold_schedule::AbstractArray{Float64,1}
+    population::AbstractArray{AbstractArray{Float64,2},1}
+    distances::AbstractArray{AbstractArray{Float64,1},1}
+    weights::AbstractArray{StatsBase.Weights,1}
+    emulators::AbstractArray{Any,1}
+end
+
+struct SimulatedABCSMCOutput <: ABCSMCOutput
     n_params::Int64
     n_accepted::AbstractArray{Int64,1}
     n_tries::AbstractArray{Int64,1}

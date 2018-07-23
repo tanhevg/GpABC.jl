@@ -32,7 +32,8 @@ function abc_train_emulator(
     while rt_count < rts.rt_iterations
         retraining_sample = prior_sampling_function(rts.rt_sample_size)
         mean, variance = gp_regression(retraining_sample, gpem)
-        idx = [indmax(variance)]
+        variance_perm = sortperm(variance)
+        idx = variance_perm[1:rts.rt_extra_training_points]
         extra_x = retraining_sample[idx, :]
         extra_y = simulate_distance(extra_x,
             simulator_function, summary_statistic, distance_metric, reference_summary_statistic)
