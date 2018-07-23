@@ -84,6 +84,16 @@ function ABCrejection(
 
     # simulate
     while n_accepted < input.n_particles
+
+        # If the maximum number of tries were reached trim the returned objects
+        if n_tries > input.max_iter
+            warn("Simulation reached maximum iterations before finding $(input.n_particles) particles - will return $n_accepted")
+            accepted_parameters = accepted_parameters[1:n_accepted,:]
+            accepted_distances = accepted_distances[1:n_accepted]
+            weights = weights[1:n_accepted]
+            break
+        end
+
         parameters, weight = generate_parameters(input.priors)
         simulated_data = input.simulator_function(parameters)
         simulated_data_sum_stat = summary_statistic(simulated_data)
@@ -160,14 +170,14 @@ function ABCrejection(
     weights = ones(input.n_particles)
 
     # emulate
-    while n_accepted < input.n_particles && batch_no <= input.max_iter
+    while n_accepted < input.n_particles
 
+        # If the maximum number of batches were reached trim the returned objects
         if batch_no > input.max_iter
-            warn("Emulation reached maximum iterations before finding $(input.n_particles) particles - will return $n_accepted")
+            warn("Emulation reached maximum number of batches before finding $(input.n_particles) particles - will return $n_accepted")
             accepted_parameters = accepted_parameters[1:n_accepted,:]
             accepted_distances = accepted_distances[1:n_accepted]
             weights = weights[1:n_accepted]
-
             break
         end
 

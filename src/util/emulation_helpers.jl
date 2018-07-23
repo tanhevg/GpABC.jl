@@ -39,3 +39,14 @@ function get_training_data{D<:ContinuousUnivariateDistribution}(n_design_points:
 
     return X, y
 end
+
+function build_simulator_function(ode_function::Function,
+    Tspan::Tuple{Float64,Float64}, x0::AbstractArray{Float64,1};
+    solver::OrdinaryDiffEq.OrdinaryDiffEqAlgorithm=RK4(), kwargs...)
+
+    function simulator_function(params::AbstractArray{Float64,1})
+        prob = ODEProblem(ode_function, x0, Tspan, params)
+        return solve(prob, solver; kwargs...)
+    end
+    return simulator_function
+end

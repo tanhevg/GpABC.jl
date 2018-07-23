@@ -93,7 +93,7 @@ end
 #
 function initialiseABCSMC(
         input::SimulatedABCSMCInput,
-        reference_data;
+        reference_data::AbstractArray{Float64,2};
         out_stream::IO =  STDOUT,
         write_progress = true,
         progress_every = 1000,
@@ -110,6 +110,7 @@ function initialiseABCSMC(
                                         built_summary_statistic,
                                         input.distance_function,
                                         input.simulator_function,
+                                        input.max_iter
                                         )
 
     rejection_output = ABCrejection(rejection_input,
@@ -130,6 +131,7 @@ function initialiseABCSMC(
                              built_summary_statistic,
                              input.distance_function,
                              input.simulator_function,
+                             input.max_iter
                              )
 
     return tracker
@@ -140,7 +142,7 @@ end
 #
 function initialiseABCSMC(
         input::EmulatedABCSMCInput,
-        reference_data;
+        reference_data::AbstractArray{Float64,2};
         out_stream::IO =  STDOUT,
         write_progress = true,
         progress_every = 1000,
@@ -183,7 +185,7 @@ function iterateABCSMC!(
         tracker::SimulatedABCSMCTracker,
         threshold::AbstractFloat,
         n_toaccept::Integer,
-        reference_data;
+        reference_data::AbstractArray{Float64,2};
         out_stream::IO = STDOUT,
         write_progress = true,
         progress_every = 1000,
@@ -195,9 +197,9 @@ function iterateABCSMC!(
         println("Warning: current threshold less strict than previous one.")
     end
     push!(tracker.threshold_schedule, threshold)
-    push!(tracker.population, zeros(tracker.population[end]))
-    push!(tracker.distances, zeros(tracker.distances[end]))
-    push!(tracker.weights, StatsBase.Weights(ones(tracker.weights[end].values)))
+    push!(tracker.population, zeros(n_toaccept, tracker.n_params))
+    push!(tracker.distances, zeros(n_toaccept))
+    push!(tracker.weights, StatsBase.Weights(ones(n_toaccept)))
 
     kernels = generate_kernels(tracker.population[end-1], tracker.priors)
 
@@ -205,6 +207,17 @@ function iterateABCSMC!(
 
     # simulate
     while tracker.n_accepted[end] < n_toaccept
+            # If the maximum number of tries were reached trim the returned objects
+        if tracker.n_tries[end] >= tracker.max_iter
+            n_accepted = tracker.n_accepted[end]
+            warn("Simulation reached maximum iterations before finding $n_toaccept particles - will return $n_accepted")
+            tracker.population[end] = tracker.population[end][1:n_accepted,:]
+            tracker.distances[end] = tracker.distances[end][1:n_accepted]
+            tracker.weights[end].values = tracker.weights[end].values[1:n_accepted]
+
+            break
+        end
+
         parameters, weight = generate_parameters(tracker.priors,
                                                  tracker.population[end-1],
                                                  tracker.weights[end-1],
@@ -248,13 +261,12 @@ function iterateABCSMC!(
         tracker::EmulatedABCSMCTracker,
         threshold::AbstractFloat,
         n_toaccept::Integer,
-        reference_data;
+        reference_data::AbstractArray{Float64,2};
         out_stream::IO = STDOUT,
         write_progress = true,
         progress_every = 1000,
         )
     # initialise
-    iter_no = 1
     push!(tracker.n_accepted, 0)
     push!(tracker.n_tries, 0)
     if threshold > tracker.threshold_schedule[end]
@@ -268,7 +280,17 @@ function iterateABCSMC!(
     kernels = generate_kernels(tracker.population[end-1], tracker.priors)
 
     # emulate
-    while tracker.n_accepted[end] < n_toaccept && iter_no <= tracker.max_iter
+    while tracker.n_accepted[end] < n_toaccept
+
+        if tracker.n_tries[end] >= tracker.max_iter
+          n_accepted = tracker.n_accepted[end]
+          warn("Emulation reached maximum iterations before finding $n_toaccept particles - will return $n_accepted")
+          tracker.population[end] = tracker.population[end][1:n_accepted,:]
+          tracker.distances[end] = tracker.distances[end][1:n_accepted]
+          tracker.weights[end].values = tracker.weights[end].values[1:n_accepted]
+          break
+        end
+
         parameters, weight = generate_parameters(tracker.priors,
                                                  tracker.population[end-1],
                                                  tracker.weights[end-1],
@@ -300,7 +322,6 @@ function iterateABCSMC!(
             flush(out_stream)
         end
 
-        iter_no += 1
     end
 
     tracker.weights[end] = deepcopy(normalise(tracker.weights[end], tosum=1.0))
@@ -316,7 +337,7 @@ distance to observed data is used to construct the posterior) or emulation (a re
 parameter vector directly is used to construct the posterior). Whether simulation or emulation is used is controlled by the type of `input`.
 
 # Fields
-- `input::ABCSMCInput`: An ['SimulatedABCSMCInput'](@ref) or ['EmulatedABCSMCInput'](@ref) object that defines the settings for thw ABC-SMC run.
+- `input::ABCSMCInput`: An ['SimulatedABCSMCInput'](@ref) or ['EmulatedABCSMCInput'](@ref) object that defines the settings for the ABC-SMC run.
 - `reference_data::AbstractArray{Float64,2}`: The observed data to which the simulated model output will be compared. Size: (n_model_trajectories, n_time_points)
 - `out_stream::IO`: The output stream to which progress will be written. An optional argument whose default is `STDOUT`.
 - `write_progress::Bool`: Optional argument controlling whether progress is written to `out_stream`.

@@ -11,6 +11,7 @@ Run a simulation-based ABC-rejection computation. This is a convenience wrapper 
 - `summary_statistic::Union{String,AbstractArray{String,1},Function}`: Either: 1. A `String` or 1D Array of strings that Or 2. A function that outputs a 1D Array of Floats that summarises model output. REFER TO DOCS
 - `simulator_function::Function`: A function that takes a parameter vector as an argument and outputs model results.
 - `distance_function::Function`: Any function that computes the distance between 2 1D Arrays. Optional argument (default is to use the Euclidean distance).
+- `max_iter::Int64`: The maximum number of simulations that will be run. The default is 1000*`n_particles`.
 - `kwargs`: optional keyword arguments passed to ['ABCrejection'](@ref).
 """
 function SimulatedABCRejection{D<:ContinuousUnivariateDistribution}(reference_data::AbstractArray{Float64,2},
@@ -20,6 +21,7 @@ function SimulatedABCRejection{D<:ContinuousUnivariateDistribution}(reference_da
     summary_statistic::Union{String,AbstractArray{String,1},Function},
     simulator_function::Function;
     distance_function::Function=Distances.euclidean,
+    max_iter::Int64=1000*n_particles,
     kwargs...
     )
 
@@ -27,7 +29,8 @@ function SimulatedABCRejection{D<:ContinuousUnivariateDistribution}(reference_da
 
     input = SimulatedABCRejectionInput(n_params, n_particles, threshold,
                                         priors, summary_statistic,
-                                        distance_function, simulator_function)
+                                        distance_function, simulator_function,
+                                        max_iter)
 
     return ABCrejection(input, reference_data; kwargs...)
 
@@ -46,6 +49,7 @@ Run a emulation-based ABC-rejection computation. This is a convenience wrapper t
 - `summary_statistic::Union{String,AbstractArray{String,1},Function}`: Either: 1. A `String` or 1D Array of strings that Or 2. A function that outputs a 1D Array of Floats that summarises model output. REFER TO DOCS
 - `simulator_function::Function`: A function that takes a parameter vector as an argument and outputs model results.
 - `distance_function::Function`: Any function that computes the distance between 2 1D Arrays. Optional argument (default is to use the Euclidean distance).
+- `max_iter::Int64`: The maximum number of simulations that will be run. The default is 1000*`n_particles`.
 - `kwargs`: optional keyword arguments passed to ['ABCrejection'](@ref).
 """
 function SimulatedABCSMC{D<:ContinuousUnivariateDistribution}(reference_data::AbstractArray{Float64,2},
@@ -55,6 +59,7 @@ function SimulatedABCSMC{D<:ContinuousUnivariateDistribution}(reference_data::Ab
     summary_statistic::Union{String,AbstractArray{String,1},Function},
     simulator_function::Function;
     distance_function::Function=Distances.euclidean,
+    max_iter::Int64=1000*n_particles,
     kwargs...
     )
 
@@ -62,7 +67,8 @@ function SimulatedABCSMC{D<:ContinuousUnivariateDistribution}(reference_data::Ab
 
     input = SimulatedABCSMCInput(n_params, n_particles, threshold_schedule,
                                     priors, summary_statistic,
-                                    distance_function, simulator_function)
+                                    distance_function, simulator_function,
+                                    max_iter)
 
     return ABCSMC(input, reference_data; kwargs...)
 

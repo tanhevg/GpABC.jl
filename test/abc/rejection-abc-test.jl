@@ -9,13 +9,14 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
     priors = [Uniform(0., 5.), Uniform(0., 5.)]
     distance_metric = euclidean
     progress_every = 1000
+    max_iter_sim = 1e4
 
     #
     # Emulation settings
     #
     n_design_points = 100
     batch_size = 1000
-    max_iter = 1000
+    max_iter_emu = 1000
 
     #
     # True parameters
@@ -65,7 +66,8 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
                             priors,
                             "keep_all",
                             distance_metric,
-                            simulator_function)
+                            simulator_function,
+                            max_iter_sim)
 
     sim_result = ABCrejection(sim_rej_input, reference_data, write_progress=false)
     @test size(sim_result.population, 1) > 0
@@ -80,7 +82,8 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
                             ["mean", "variance", "max", "min", "range", "median",
                             "q1", "q3", "iqr"],
                             distance_metric,
-                            simulator_function)
+                            simulator_function,
+                            max_iter_sim)
 
     sim_result = ABCrejection(sim_rej_input, reference_data, write_progress=false)
     @test size(sim_result.population, 1) > 0
@@ -98,7 +101,8 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
                             priors,
                             sum_stat,
                             distance_metric,
-                            simulator_function)
+                            simulator_function,
+                            max_iter_sim)
 
     sim_result = ABCrejection(sim_rej_input, reference_data, write_progress=false)
     @test size(sim_result.population, 1) > 0
@@ -119,7 +123,7 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
           priors,
           predict_distance,
           batch_size,
-          max_iter)
+          max_iter_emu)
 
     emu_result = ABCrejection(emu_rej_input, reference_data, write_progress=false)
     @test size(emu_result.population, 1) > 0
