@@ -40,6 +40,40 @@ function get_training_data{D<:ContinuousUnivariateDistribution}(n_design_points:
     return X, y
 end
 
+"""
+    get_training_data{D<:ContinuousUnivariateDistribution}(input::LNAInput,
+        n_samples::Int64, n_design_points::Int64,
+        priors::AbstractArray{D,1},
+        summary_statistic::Union{String,AbstractArray{String,1},Function},
+        distance_metric::Function,
+        reference_data::AbstractArray{Float64,2},
+        x0::Tuple{AbstractArray{Float64,1},AbstractArray{Float64,2}},
+        Tspan::Tuple{Float64,Float64},
+        saveat::Float64,
+        unknown_param_idxs::Union{AbstractArray{Int64,1},Void}=nothing,
+        solver::OrdinaryDiffEq.OrdinaryDiffEqAlgorithm=RK4();
+        kwargs...)
+
+This is the same as `get_training_data` but can compute the LNA.
+Returns training data in a suitable format to train a Gaussian process emulator of the type
+[`GPmodel](@ref). The training data are (parameter vector, distance) pairs where distances
+are the distance from simulated model output to the observed data in summary statistic space.
+
+# Fields
+- `input::LNAInput`: LNAInput structure - fields described in lna.jl
+- `n_design_points::Int64`: The number of parameter vectors used to train the Gaussian process emulator
+- `priors::AbstractArray{D,1}`: A 1D Array of continuous univariate distributions with length `n_params` from which candidate parameter vectors will be sampled.
+- `simulator_function::Function`: A function that takes a parameter vector as an argument and outputs model results.
+- `summary_statistic::Union{String,AbstractArray{String,1},Function}`: Either: 1. A `String` or 1D Array of strings that Or 2. A function that outputs a 1D Array of Floats that summarises model output. REFER TO DOCS
+- `distance_metric::Function`: Any function that computes the distance between 2 1D Arrays.
+- `reference_data::AbstractArray{Float64,2}`: The observed data to which the simulated model output will be compared. Size: (n_model_trajectories, n_time_points)
+- `x0::Tuple{AbstractArray{Float64,2},AbstractArray{Float64,2}}`: The initial conditions of the system. In the form of (the initial conditions of the species, the initial covariance matrix of the system).
+- `Tspan::Tuple{Float64,Float64}`: The start and end times of the simulation
+- `saveat::Float64`: The number of time points the use wishes to solve the system for
+- `unknown_param_idxs::Union{AbstractArray{Int64,1},Void}=nothing`: The indices of the parameters that are unknown and the user wishes to estimate. If is argument is not supplied it is assumed the first n parameters are unknown, where n is the number of priors provided.
+- `solver::DEAlgorithm`: The ODE solver the user wishes to use, for example DifferentialEquations.RK4()
+"""
+
 function get_training_data{D<:ContinuousUnivariateDistribution}(input::LNAInput,
     n_samples::Int64, n_design_points::Int64,
     priors::AbstractArray{D,1},
