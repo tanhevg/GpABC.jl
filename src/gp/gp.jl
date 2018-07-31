@@ -169,7 +169,7 @@ end
 
 Compute the log likelihood function, based on the kernel and training data specified in `gpm`.
 ```math
-log p(y \\vert X, \\theta) = - \\frac{1}{2}(y^TK^{-1}y + log \\vert K \\vert + n log 2 \\pi)
+\\log p(y \\vert X, \\theta) = - \\frac{1}{2}(y^TK^{-1}y + \\log \\vert K \\vert + n \\log 2 \\pi)
 ```
 """
 gp_loglikelihood(gpem::GPModel) = gp_loglikelihood_log(log.(gpem.gp_hyperparameters), gpem)

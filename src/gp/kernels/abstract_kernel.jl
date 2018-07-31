@@ -103,7 +103,7 @@ end
 """
     get_hyperparameters_size(kernel::AbstractGPKernel, training_data::AbstractArray{Float64, 2})
 
-Return the number of hyperparameters for used by this kernel on this training data set.
+Return the number of hyperparameters used by the kernel on the training data set.
 Should be overridden by kernel implementations.
 """
 function get_hyperparameters_size(kernel::AbstractGPKernel, training_data::AbstractArray{Float64, 2}) end

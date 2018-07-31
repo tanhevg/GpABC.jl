@@ -111,8 +111,8 @@ function gp_train(gpem::GPModel;
          println("Optimized hyperparameters: ", exp.(opt_res.minimizer))
     end
     gpem.gp_hyperparameters = exp.(opt_res.minimizer)
-    if opt_res.minimum < 0 && log_level > 0
-        println("Positive maximum log likelihood $(-opt_res.minimum) at $(gpem.gp_hyperparameters). ")
+    if log_level > 0
+        println("Optimal log likelihood $(-opt_res.minimum) reached at $(gpem.gp_hyperparameters). ")
     end
     return exp.(opt_res.minimizer)
 end;
