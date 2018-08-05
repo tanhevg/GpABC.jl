@@ -66,9 +66,10 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
         priors,
         "keep_all",
         distance_metric,
-        simulator_function)
+        simulator_function,
+        max_iter)
 
-    sim_abcsmc_res = ABCSMC(sim_abcsmc_input, reference_data, write_progress = false)
+    sim_abcsmc_res = ABCSMC(sim_abcsmc_input, reference_data)
     @test size(sim_abcsmc_res.population, 1) > 0
 
     #
@@ -81,9 +82,10 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
         ["mean", "variance", "max", "min", "range", "median",
         "q1", "q3", "iqr"],
         distance_metric,
-        simulator_function)
+        simulator_function,
+        max_iter)
 
-    sim_abcsmc_res = ABCSMC(sim_abcsmc_input, reference_data, write_progress = false)
+    sim_abcsmc_res = ABCSMC(sim_abcsmc_input, reference_data)
     @test size(sim_abcsmc_res.population, 1) > 0
 
     #
@@ -98,9 +100,10 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
         priors,
         sum_stat,
         distance_metric,
-        simulator_function)
+        simulator_function,
+        max_iter)
 
-    sim_abcsmc_res = ABCSMC(sim_abcsmc_input, reference_data, write_progress = false)
+    sim_abcsmc_res = ABCSMC(sim_abcsmc_input, reference_data)
     @test size(sim_abcsmc_res.population, 1) > 0
 
     gp_train_function = function(prior_sampling_function::Function)
@@ -134,7 +137,7 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
 
     emu_out = EmulatedABCSMC(n_design_points, reference_data, n_particles, threshold_schedule,
         priors, "keep_all", simulator_function,
-        repetitive_training = RepetitiveTraining(2),
+        repetitive_training = RepetitiveTraining(rt_iterations=1, rt_extra_training_points=1),
         write_progress=false)
     @test size(emu_out.population, 1) > 0
 

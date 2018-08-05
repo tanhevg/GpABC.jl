@@ -65,9 +65,10 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
                             priors,
                             "keep_all",
                             distance_metric,
-                            simulator_function)
+                            simulator_function,
+                            max_iter)
 
-    sim_result = ABCrejection(sim_rej_input, reference_data, write_progress=false)
+    sim_result = ABCrejection(sim_rej_input, reference_data)
     @test size(sim_result.population, 1) > 0
 
     #
@@ -80,9 +81,10 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
                             ["mean", "variance", "max", "min", "range", "median",
                             "q1", "q3", "iqr"],
                             distance_metric,
-                            simulator_function)
+                            simulator_function,
+                            max_iter)
 
-    sim_result = ABCrejection(sim_rej_input, reference_data, write_progress=false)
+    sim_result = ABCrejection(sim_rej_input, reference_data)
     @test size(sim_result.population, 1) > 0
 
     #
@@ -98,9 +100,10 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
                             priors,
                             sum_stat,
                             distance_metric,
-                            simulator_function)
+                            simulator_function,
+                            max_iter)
 
-    sim_result = ABCrejection(sim_rej_input, reference_data, write_progress=false)
+    sim_result = ABCrejection(sim_rej_input, reference_data)
     @test size(sim_result.population, 1) > 0
 
     gp_train_function = function(prior_sampling_function::Function)
@@ -120,21 +123,21 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
           batch_size,
           max_iter)
 
-    emu_result = ABCrejection(emu_rej_input, reference_data, write_progress=false)
+    emu_result = ABCrejection(emu_rej_input, reference_data)
     @test size(emu_result.population, 1) > 0
 
     # Now repeat using user-level functions
     sim_out = SimulatedABCRejection(reference_data, n_particles, 0.5,
-        priors, "keep_all", simulator_function, write_progress=false)
+        priors, "keep_all", simulator_function)
     @test size(sim_out.population, 1) > 0
 
     emu_out = EmulatedABCRejection(n_design_points, reference_data, n_particles, 0.5,
-        priors, "keep_all", simulator_function, write_progress=false)
+        priors, "keep_all", simulator_function)
     @test size(emu_out.population, 1) > 0
 
     emu_out = EmulatedABCRejection(n_design_points, reference_data, n_particles, 0.5,
         priors, "keep_all", simulator_function,
-        repetitive_training = RepetitiveTraining(2),
+        repetitive_training = RepetitiveTraining(rt_iterations=1, rt_extra_training_points=2),
         write_progress=false)
     @test size(emu_out.population, 1) > 0
 end

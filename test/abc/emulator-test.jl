@@ -105,4 +105,4 @@ output = ABCrejection(input, reference_data, progress_every=100)
 plot(output)
 
 # emu_out = EmulatedABCRejection(n_design_points, reference_data, n_particles, 0.5,
-#     priors, "keep_all", simulator_function, write_progress=false)
+#     priors, "keep_all", simulator_function)

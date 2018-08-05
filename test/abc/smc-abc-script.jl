@@ -67,7 +67,17 @@ emu_out = EmulatedABCSMC(n_design_points, reference_data, n_particles, threshold
     priors, "keep_all", simulator_function,
     repetitive_training=RepetitiveTraining(rt_iterations=3, rt_extra_training_points=5))
 
-# using Plots
+using Plots
+pyplot()
+plot_x = emu_out.population[2][:, 2]
+plot_y = emu_out.population[2][:, 3]
+plot_z = zeros(length(plot_x), length(plot_y))
+using PyCall
+@pyimport matplotlib.pyplot as plt
+plt.figure()
+plt.tricontour(plot_x, plot_y, plot_z, nlevel=5)
+plt.show()
+
 # plot(emu_out, population_colors=["blue", "green", "black"])
 # plot(emu_out)
 # plot(sim_out, population_colors=["blue", "green", "black"])

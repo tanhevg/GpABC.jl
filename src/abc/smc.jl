@@ -99,7 +99,9 @@ function initialiseABCSMC(input::SimulatedABCSMCInput,
         write_progress = true,
         progress_every = 1000,
         )
-    write(out_stream, string(DateTime(now())), " ϵ = $(input.threshold_schedule[1]).\n")
+    if write_progress
+        write(out_stream, string(DateTime(now())), " ϵ = $(input.threshold_schedule[1]).\n")
+    end
     # construct summary statistic function to be used in all runs
     built_summary_statistic = build_summary_statistic(input.summary_statistic)
 
@@ -146,7 +148,9 @@ function initialiseABCSMC(input::EmulatedABCSMCInput,
         out_stream::IO =  STDOUT,
         write_progress = true)
     # the first run is an ABC rejection simulation
-    write(out_stream, string(DateTime(now())), " ϵ = $(input.threshold_schedule[1]).\n")
+    if write_progress
+        write(out_stream, string(DateTime(now())), " ϵ = $(input.threshold_schedule[1]).\n")
+    end
     rejection_input = EmulatedABCRejectionInput(input.n_params,
                                         input.n_particles,
                                         input.threshold_schedule[1],
@@ -195,9 +199,9 @@ function iterateABCSMC!(tracker::SimulatedABCSMCTracker,
         println("Warning: current threshold less strict than previous one.")
     end
     push!(tracker.threshold_schedule, threshold)
-    push!(tracker.population, zeros(tracker.population[end]))
-    push!(tracker.distances, zeros(tracker.distances[end]))
-    push!(tracker.weights, StatsBase.Weights(ones(tracker.weights[end].values)))
+    push!(tracker.population, zeros(n_toaccept, tracker.n_params))
+    push!(tracker.distances, zeros(n_toaccept))
+    push!(tracker.weights, StatsBase.Weights(ones(n_toaccept)))
 
     kernels = generate_kernels(tracker.population[end-1], tracker.priors)
 
@@ -269,9 +273,9 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
         println("Warning: current threshold less strict than previous one.")
     end
     push!(tracker.threshold_schedule, threshold)
-    push!(tracker.population, zeros(tracker.population[end]))
-    push!(tracker.distances, zeros(tracker.distances[end]))
-    push!(tracker.weights, StatsBase.Weights(ones(tracker.weights[end].values)))
+    push!(tracker.population, zeros(n_toaccept, tracker.n_params))
+    push!(tracker.distances, zeros(n_toaccept))
+    push!(tracker.weights, StatsBase.Weights(ones(n_toaccept)))
 
     kernels = generate_kernels(old_population, tracker.priors)
     prior_sampling_function(n_design_points) = generate_parameters_no_weights(n_design_points,
@@ -302,12 +306,6 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
         weights = weights[accepted_indices]
         parameters = parameters[accepted_indices, :]
         store_slice = n_accepted + 1 : n_accepted + n_include
-
-        idx_test = parameters[:, 3] .> 25.0
-        if any(idx_test)
-            println(parameters[idx_test, :])
-            println(distance[idx_test])
-        end
 
         tracker.n_accepted[end] += n_include
         n_accepted = tracker.n_accepted[end]
@@ -392,7 +390,9 @@ function ABCSMC(
 
     for i in 2:length(input.threshold_schedule)
         threshold = input.threshold_schedule[i]
-        write(out_stream, string(DateTime(now())), " ϵ = $threshold.\n")
+        if write_progress
+            write(out_stream, string(DateTime(now())), " ϵ = $threshold.\n")
+        end
 
         iterateABCSMC!(tracker,
                        threshold,
