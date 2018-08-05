@@ -67,7 +67,7 @@ function gp_train(gpem::GPModel;
         catch ex
             last_hypers = gpem.cache.theta
             gpem.gp_hyperparameters = exp.(last_hypers)
-            println("Exception ", ex, " for hyperparameters $(last_hypers)")
+            println("Exception ", ex, " for hyperparameters $(gpem.gp_hyperparameters)")
             rethrow(ex)
         end
     else

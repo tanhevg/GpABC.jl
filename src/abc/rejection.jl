@@ -51,7 +51,7 @@ end
     ABCrejection
 
 Run a simulationed-based rejection-ABC computation. Parameter posteriors are obtained by simulating the model
-for a parameter vector, computing the summary statistic of the output then computing the distance to the 
+for a parameter vector, computing the summary statistic of the output then computing the distance to the
 summary statistic of the reference data. If this distance is sufficiently small the parameter vector is
 included in the posterior.
 
@@ -62,8 +62,7 @@ included in the posterior.
 - `write_progress::Bool`: Optional argument controlling whether progress is written to `out_stream`.
 - `progress_every::Int`: Progress will be written to `out_stream` every `progress_every` simulations (optional, ignored if `write_progress` is `False`).
 """
-function ABCrejection(
-	input::SimulatedABCRejectionInput,
+function ABCrejection(input::SimulatedABCRejectionInput,
 	reference_data::AbstractArray{Float64,2};
 	out_stream::IO = STDOUT,
     write_progress::Bool = true,
@@ -99,7 +98,7 @@ function ABCrejection(
 
         if write_progress && (n_tries % progress_every == 0)
             write(out_stream, string(DateTime(now())),
-                              " Accepted ",
+                              " Rejection ABC simulation accepted ",
                               string(n_accepted),
                               "/",
                               string(n_tries),
@@ -112,7 +111,7 @@ function ABCrejection(
     weights = weights ./ sum(weights)
 
     # output
-    output = ABCRejectionOutput(input.n_params,
+    output = SimulatedABCRejectionOutput(input.n_params,
                                 n_accepted,
                                 n_tries,
                                 input.threshold,
@@ -131,7 +130,7 @@ end
     ABCrejection
 
 Run a emulation-based rejection-ABC computation. Parameter posteriors are obtained using a regression model
-(the emulator), that has learnt a mapping from parameter vectors to the distance between the 
+(the emulator), that has learnt a mapping from parameter vectors to the distance between the
 model output and observed data in summary statistic space. If this distance is sufficiently small the parameter vector is
 included in the posterior.
 
@@ -142,8 +141,7 @@ included in the posterior.
 - `write_progress::Bool`: Optional argument controlling whether progress is written to `out_stream`.
 - `progress_every::Int`: Progress will be written to `out_stream` every `progress_every` simulations (optional, ignored if `write_progress` is `False`).
 """
-function ABCrejection(
-	input::EmulatedABCRejectionInput,
+function ABCrejection(input::EmulatedABCRejectionInput,
 	reference_data::AbstractArray{Float64,2};
 	out_stream::IO = STDOUT,
     write_progress = true,
@@ -159,21 +157,17 @@ function ABCrejection(
     accepted_distances = zeros(input.n_particles)
     weights = ones(input.n_particles)
 
+    # todo: consolidate sample_from_priors with generate_parameters
+    prior_sampling_function(n_design_points) = generate_parameters(input.priors, n_design_points)[1]
+
+    emulator = input.emulation_settings.train_emulator_function(prior_sampling_function)
+
     # emulate
     while n_accepted < input.n_particles && batch_no <= input.max_iter
 
-        if batch_no > input.max_iter
-            warn("Emulation reached maximum iterations before finding $(input.n_particles) particles - will return $n_accepted")
-            accepted_parameters = accepted_parameters[1:n_accepted,:]
-            accepted_distances = accepted_distances[1:n_accepted]
-            weights = weights[1:n_accepted]
-
-            break
-        end
-
         parameter_batch, weight_batch = generate_parameters(input.priors, input.batch_size)
 
-        distances = input.distance_prediction_function(parameter_batch)
+        distances = input.emulation_settings.emulate_distance_function(parameter_batch, emulator)
         n_tries += input.batch_size
 
         #
@@ -199,9 +193,9 @@ function ABCrejection(
 
         end
 
-        if write_progress && (batch_no % progress_every == 0)
+        if write_progress
             write(out_stream, string(DateTime(now())),
-                              " Accepted ",
+                              " Rejection ABC emulation accepted ",
                               string(n_accepted),
                               "/",
                               string(n_tries),
@@ -217,16 +211,21 @@ function ABCrejection(
         batch_no += 1
     end
 
+    if n_accepted < input.n_particles
+        warn("Emulation reached maximum iterations before finding $(input.n_particles) particles - will return $n_accepted")
+    end
+
     weights = weights ./ sum(weights)
 
     # output
-    output = ABCRejectionOutput(input.n_params,
+    output = EmulatedABCRejectionOutput(input.n_params,
                                 n_accepted,
                                 n_tries,
                                 input.threshold,
                                 accepted_parameters,
                                 accepted_distances,
                                 StatsBase.Weights(weights, 1.0),
+                                emulator
                                 )
 
     #write(out_stream, output)

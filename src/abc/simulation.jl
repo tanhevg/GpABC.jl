@@ -20,6 +20,7 @@ function SimulatedABCRejection{D<:ContinuousUnivariateDistribution}(reference_da
     summary_statistic::Union{String,AbstractArray{String,1},Function},
     simulator_function::Function;
     distance_function::Function=Distances.euclidean,
+    max_iter::Integer=10 * n_particles,
     kwargs...
     )
 
@@ -27,7 +28,7 @@ function SimulatedABCRejection{D<:ContinuousUnivariateDistribution}(reference_da
 
     input = SimulatedABCRejectionInput(n_params, n_particles, threshold,
                                         priors, summary_statistic,
-                                        distance_function, simulator_function)
+                                        distance_function, simulator_function, max_iter)
 
     return ABCrejection(input, reference_data; kwargs...)
 
@@ -55,6 +56,7 @@ function SimulatedABCSMC{D<:ContinuousUnivariateDistribution}(reference_data::Ab
     summary_statistic::Union{String,AbstractArray{String,1},Function},
     simulator_function::Function;
     distance_function::Function=Distances.euclidean,
+    max_iter::Integer=10 * n_particles,
     kwargs...
     )
 
@@ -62,7 +64,7 @@ function SimulatedABCSMC{D<:ContinuousUnivariateDistribution}(reference_data::Ab
 
     input = SimulatedABCSMCInput(n_params, n_particles, threshold_schedule,
                                     priors, summary_statistic,
-                                    distance_function, simulator_function)
+                                    distance_function, simulator_function, max_iter)
 
     return ABCSMC(input, reference_data; kwargs...)
 
