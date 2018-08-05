@@ -27,6 +27,7 @@ struct SimulatedABCRejectionInput <: ABCRejectionInput
     summary_statistic::Union{String,AbstractArray{String,1},Function}
     distance_function::Function
     simulator_function::Function
+    max_iter::Integer
 end
 
 """
@@ -103,6 +104,7 @@ struct SimulatedABCSMCInput <: ABCSMCInput
     summary_statistic::Union{String,AbstractArray{String,1},Function}
     distance_function::Function
     simulator_function::Function
+    max_iter::Integer
 end
 
 """
@@ -146,6 +148,7 @@ mutable struct SimulatedABCSMCTracker <: ABCSMCTracker
     summary_statistic::Function
     distance_function::Function
     simulator_function::Function
+    max_iter::Integer
 end
 
 mutable struct EmulatedABCSMCTracker <: ABCSMCTracker
@@ -158,6 +161,7 @@ mutable struct EmulatedABCSMCTracker <: ABCSMCTracker
     weights::AbstractArray{StatsBase.Weights,1}
     priors::AbstractArray{ContinuousUnivariateDistribution,1}
     emulation_settings::AbcEmulationSettings
+    batch_size::Int64
     max_iter::Int64
     emulators::AbstractArray{Any,1}
 end

@@ -32,11 +32,15 @@ function abc_train_emulator(
     while rt_count < rts.rt_iterations
         retraining_sample = prior_sampling_function(rts.rt_sample_size)
         mean, variance = gp_regression(retraining_sample, gpem)
-        variance_perm = sortperm(variance)
+        variance_perm = sortperm(variance, rev=true)
         idx = variance_perm[1:rts.rt_extra_training_points]
         extra_x = retraining_sample[idx, :]
         extra_y = simulate_distance(extra_x,
             simulator_function, summary_statistic, distance_metric, reference_summary_statistic)
+        # println("Repetitive training. Adding extra $(rts.rt_extra_training_points) training points.")
+        # println("X = $extra_x")
+        # println("y = $extra_y")
+        # println("variance = $(variance[idx])")
         new_training_x = vcat(gpem.gp_training_x, extra_x)
         new_training_y = vcat(gpem.gp_training_y, extra_y)
         gpem = GPModel(training_x=new_training_x, training_y=new_training_y, kernel=gpem.kernel)

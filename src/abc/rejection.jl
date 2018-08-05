@@ -98,7 +98,7 @@ function ABCrejection(input::SimulatedABCRejectionInput,
 
         if write_progress && (n_tries % progress_every == 0)
             write(out_stream, string(DateTime(now())),
-                              " Accepted ",
+                              " Rejection ABC simulation accepted ",
                               string(n_accepted),
                               "/",
                               string(n_tries),
@@ -165,15 +165,6 @@ function ABCrejection(input::EmulatedABCRejectionInput,
     # emulate
     while n_accepted < input.n_particles && batch_no <= input.max_iter
 
-        if batch_no > input.max_iter
-            warn("Emulation reached maximum iterations before finding $(input.n_particles) particles - will return $n_accepted")
-            accepted_parameters = accepted_parameters[1:n_accepted,:]
-            accepted_distances = accepted_distances[1:n_accepted]
-            weights = weights[1:n_accepted]
-
-            break
-        end
-
         parameter_batch, weight_batch = generate_parameters(input.priors, input.batch_size)
 
         distances = input.emulation_settings.emulate_distance_function(parameter_batch, emulator)
@@ -202,9 +193,9 @@ function ABCrejection(input::EmulatedABCRejectionInput,
 
         end
 
-        if write_progress && (batch_no % progress_every == 0)
+        if write_progress
             write(out_stream, string(DateTime(now())),
-                              " Accepted ",
+                              " Rejection ABC emulation accepted ",
                               string(n_accepted),
                               "/",
                               string(n_tries),
@@ -218,6 +209,10 @@ function ABCrejection(input::EmulatedABCRejectionInput,
         end
 
         batch_no += 1
+    end
+
+    if n_accepted < input.n_particles
+        warn("Emulation reached maximum iterations before finding $(input.n_particles) particles - will return $n_accepted")
     end
 
     weights = weights ./ sum(weights)

@@ -1,5 +1,7 @@
 using GpABC, DifferentialEquations, Distances, Distributions
 
+srand(2)
+
 #
 # ABC settings
 #
@@ -63,8 +65,10 @@ sim_out = SimulatedABCSMC(reference_data, n_particles, threshold_schedule,
 println("EMULATION")
 emu_out = EmulatedABCSMC(n_design_points, reference_data, n_particles, threshold_schedule,
     priors, "keep_all", simulator_function,
-    repetitive_training=RepetitiveTraining(rt_iterations=5, rt_extra_training_points=5))
+    repetitive_training=RepetitiveTraining(rt_iterations=3, rt_extra_training_points=5))
 
-using Plots
-plot(emu_out)
-plot(sim_out)
+# using Plots
+# plot(emu_out, population_colors=["blue", "green", "black"])
+# plot(emu_out)
+# plot(sim_out, population_colors=["blue", "green", "black"])
+# plot(sim_out)
