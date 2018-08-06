@@ -67,9 +67,9 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
                             "keep_all",
                             distance_metric,
                             simulator_function,
-                            max_iter_sim)
+                            max_iter)
 
-    sim_result = ABCrejection(sim_rej_input, reference_data, write_progress=false)
+    sim_result = ABCrejection(sim_rej_input, reference_data)
     @test size(sim_result.population, 1) > 0
 
     #
@@ -83,9 +83,9 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
                             "q1", "q3", "iqr"],
                             distance_metric,
                             simulator_function,
-                            max_iter_sim)
+                            max_iter)
 
-    sim_result = ABCrejection(sim_rej_input, reference_data, write_progress=false)
+    sim_result = ABCrejection(sim_rej_input, reference_data)
     @test size(sim_result.population, 1) > 0
 
     #
@@ -102,39 +102,43 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
                             sum_stat,
                             distance_metric,
                             simulator_function,
-                            max_iter_sim)
+                            max_iter)
 
-    sim_result = ABCrejection(sim_rej_input, reference_data, write_progress=false)
+    sim_result = ABCrejection(sim_rej_input, reference_data)
     @test size(sim_result.population, 1) > 0
 
-    X, y = get_training_data(n_design_points, priors, simulator_function, "keep_all", distance_metric, reference_data)
-
-    gpem = GPModel(training_x=X, training_y=y, kernel=SquaredExponentialArdKernel())
-    gp_train(gpem)
-
-    function predict_distance(p::AbstractArray{Float64})
-        result = gp_regression(p,gpem)[1]
-        return result
+    gp_train_function = function(prior_sampling_function::Function)
+        GpABC.abc_train_emulator(prior_sampling_function,
+                n_design_points,
+                GpABC.keep_all_summary_statistic(reference_data),
+                simulator_function,
+                GpABC.build_summary_statistic("keep_all"),
+                distance_metric)
     end
 
     emu_rej_input = EmulatedABCRejectionInput(n_var_params,
           n_particles,
           0.5,
           priors,
-          predict_distance,
+          AbcEmulationSettings(n_design_points, gp_train_function, gp_regression_sample),
           batch_size,
           max_iter_emu)
 
-    emu_result = ABCrejection(emu_rej_input, reference_data, write_progress=false)
+    emu_result = ABCrejection(emu_rej_input, reference_data)
     @test size(emu_result.population, 1) > 0
 
     # Now repeat using user-level functions
-    sim_out = SimulatedABCRejection(reference_data, n_particles, 0.5, 
-        priors, "keep_all", simulator_function, write_progress=false)
+    sim_out = SimulatedABCRejection(reference_data, n_particles, 0.5,
+        priors, "keep_all", simulator_function)
     @test size(sim_out.population, 1) > 0
 
-    emu_out = EmulatedABCRejection(n_design_points, reference_data, n_particles, 0.5, 
-        priors, "keep_all", simulator_function, write_progress=false)
+    emu_out = EmulatedABCRejection(n_design_points, reference_data, n_particles, 0.5,
+        priors, "keep_all", simulator_function)
     @test size(emu_out.population, 1) > 0
 
+    emu_out = EmulatedABCRejection(n_design_points, reference_data, n_particles, 0.5,
+        priors, "keep_all", simulator_function,
+        repetitive_training = RepetitiveTraining(rt_iterations=1, rt_extra_training_points=2),
+        write_progress=false)
+    @test size(emu_out.population, 1) > 0
 end

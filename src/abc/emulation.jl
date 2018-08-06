@@ -27,19 +27,29 @@ function EmulatedABCRejection{D<:ContinuousUnivariateDistribution}(n_design_poin
     distance_metric::Function=Distances.euclidean,
     gpkernel::AbstractGPKernel=SquaredExponentialArdKernel(),
     batch_size::Int64=10*n_particles, max_iter::Int64=1000,
+    repetitive_training::RepetitiveTraining=RepetitiveTraining(),
     kwargs...)
 
-    n_var_params = length(priors)
+    summary_statistic = build_summary_statistic(summary_statistic)
+    reference_summary_statistic = summary_statistic(reference_data)
 
-    X, y = get_training_data(n_design_points, priors, simulator_function,
-                                summary_statistic, distance_metric, reference_data)
+    gp_train_function = function(prior_sampling_function::Function)
+        abc_train_emulator(prior_sampling_function,
+                n_design_points,
+                reference_summary_statistic,
+                simulator_function,
+                summary_statistic,
+                distance_metric,
+                rts=repetitive_training,
+                gpkernel=gpkernel)
+    end
 
-    gpem = GPModel(training_x=X, training_y=y, kernel=gpkernel)
-    gp_train(gpem)
-    distance_prediction_function(params) = gp_regression_sample(params, gpem)
+    emulation_settings = AbcEmulationSettings(n_design_points,
+        gp_train_function,
+        (x, em) -> gp_regression(x, em)[1])
 
-    input = EmulatedABCRejectionInput(n_var_params, n_particles, threshold,
-        priors, distance_prediction_function, batch_size, max_iter)
+    input = EmulatedABCRejectionInput(length(priors), n_particles, threshold,
+        priors, emulation_settings, batch_size, max_iter)
 
     return ABCrejection(input, reference_data; kwargs...)
 end
@@ -49,7 +59,7 @@ end
 
 A convenience function that trains a Gaussian process emulator of type [`GPmodel](@ref) then uses it in emulation-based
 ABC-SMC. It creates the training data by simulating the model for the design points, trains
-the emulator, creates the [`EmulatedABCSMCInput`](@ref) object then calls [`ABCSMC](@ref).
+the emulator, creates the [`EmulatedABCSMCInput`](@ref) object then calls [`ABCSMC`](@ref).
 
 # Fields
 - `n_design_points::Int64`: The number of parameter vectors used to train the Gaussian process emulator
@@ -72,20 +82,31 @@ function EmulatedABCSMC{D<:ContinuousUnivariateDistribution}(n_design_points::In
     simulator_function::Function;
     distance_metric::Function=Distances.euclidean,
     gpkernel::AbstractGPKernel=SquaredExponentialArdKernel(),
-    batch_size::Int64=10*n_particles, max_iter::Int64=1000,
+    batch_size::Int64=10*n_particles, max_iter::Int64=20,
+    repetitive_training::RepetitiveTraining=RepetitiveTraining(),
     kwargs...)
 
-    n_var_params = length(priors)
 
-    X, y = get_training_data(n_design_points, priors, simulator_function,
-                                summary_statistic, distance_metric, reference_data)
+    summary_statistic = build_summary_statistic(summary_statistic)
+    reference_summary_statistic = summary_statistic(reference_data)
 
-    gpem = GPModel(training_x=X, training_y=y, kernel=gpkernel)
-    gp_train(gpem)
-    distance_prediction_function(params) = gp_regression_sample(params, gpem)
+    gp_train_function = function(prior_sampling_function)
+        abc_train_emulator(prior_sampling_function,
+                n_design_points,
+                reference_summary_statistic,
+                simulator_function,
+                summary_statistic,
+                distance_metric,
+                rts=repetitive_training,
+                gpkernel=gpkernel)
+    end
 
-    input = EmulatedABCSMCInput(n_var_params, n_particles, threshold_schedule,
-        priors, distance_prediction_function, batch_size, max_iter)
+    emulation_settings = AbcEmulationSettings(n_design_points,
+        gp_train_function,
+        (x, em) -> gp_regression(x, em)[1])
+
+    input = EmulatedABCSMCInput(length(priors), n_particles, threshold_schedule,
+        priors, emulation_settings, batch_size, max_iter)
 
     return ABCSMC(input, reference_data; kwargs...)
 end

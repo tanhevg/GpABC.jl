@@ -24,13 +24,9 @@ export
 	SimulatedABCRejection, SimulatedABCSMC,
 	EmulatedABCRejection, EmulatedABCSMC,
 	get_training_data,
-	read_rejection_output, read_smc_output;
+	read_rejection_output, read_smc_output,
 
-	# multiple_training_abc,
-	# multiple_training_seq_abc,
-	# smc,
-	# get_head_of_ref_table,
-	# rejection_abc,
+	RepetitiveTraining, AbcEmulationSettings;
 
 using Optim, Distributions, Distances, DifferentialEquations
 
@@ -48,6 +44,7 @@ include("gp/gp_optimisation.jl")
 include("util/mv_uniform.jl")
 include("util/latin_hypercube_sampler.jl")
 
+include("abc/summary_stats.jl")
 include("abc/io.jl")
 include("abc/rejection.jl")
 include("abc/smc.jl")

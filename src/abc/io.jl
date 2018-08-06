@@ -27,7 +27,33 @@ struct SimulatedABCRejectionInput <: ABCRejectionInput
     summary_statistic::Union{String,AbstractArray{String,1},Function}
     distance_function::Function
     simulator_function::Function
-    max_iter::Int64
+    max_iter::Integer
+end
+
+"""
+    RepetitiveTraining
+
+A structure that holds the settings for repetitive training of the emulator. On each iteration of re-training a certain number of points is sampled from the prior.
+Emulator prediction variance is then obtained for this sample. The point with the highest variance is added to the training set. The model is then simulated for
+this additional parameter, and the emulator is re-trained.
+
+# Fields
+- `rt_iterations`: Number of times the emulator will be re-trained.
+- `rt_sample_size`: Size of the sample that will be used to evaluate emulator variance.
+"""
+struct RepetitiveTraining
+    rt_iterations::Int64
+    rt_extra_training_points::Int64
+    rt_sample_size::Int64
+end
+
+RepetitiveTraining(; rt_iterations::Int64=0, rt_extra_training_points::Int64=1, rt_sample_size::Int64=1000) =
+    RepetitiveTraining(rt_iterations, rt_extra_training_points, rt_sample_size)
+
+struct AbcEmulationSettings
+    n_design_points::Int64
+    train_emulator_function::Function
+    emulate_distance_function::Function
 end
 
 """
@@ -49,7 +75,7 @@ struct EmulatedABCRejectionInput <: ABCRejectionInput
 	n_particles::Int64
 	threshold::Float64
 	priors::AbstractArray{ContinuousUnivariateDistribution,1}
-	distance_prediction_function::Function
+    emulation_settings::AbcEmulationSettings
 	batch_size::Int64
     max_iter::Int64
 end
@@ -78,7 +104,7 @@ struct SimulatedABCSMCInput <: ABCSMCInput
     summary_statistic::Union{String,AbstractArray{String,1},Function}
     distance_function::Function
     simulator_function::Function
-    max_iter::Int64
+    max_iter::Integer
 end
 
 """
@@ -100,7 +126,7 @@ struct EmulatedABCSMCInput <: ABCSMCInput
     n_particles::Int64
     threshold_schedule::AbstractArray{Float64,1}
     priors::AbstractArray{ContinuousUnivariateDistribution,1}
-    distance_prediction_function::Function
+    emulation_settings::AbcEmulationSettings
     batch_size::Int64
     max_iter::Int64
 end
@@ -122,7 +148,7 @@ mutable struct SimulatedABCSMCTracker <: ABCSMCTracker
     summary_statistic::Function
     distance_function::Function
     simulator_function::Function
-    max_iter::Int64
+    max_iter::Integer
 end
 
 mutable struct EmulatedABCSMCTracker <: ABCSMCTracker
@@ -134,8 +160,10 @@ mutable struct EmulatedABCSMCTracker <: ABCSMCTracker
     distances::AbstractArray{AbstractArray{Float64,1},1}
     weights::AbstractArray{StatsBase.Weights,1}
     priors::AbstractArray{ContinuousUnivariateDistribution,1}
-    distance_prediction_function::Function
+    emulation_settings::AbcEmulationSettings
+    batch_size::Int64
     max_iter::Int64
+    emulators::AbstractArray{Any,1}
 end
 
 #
@@ -157,7 +185,20 @@ A container for the output of a rejection-ABC computation.
 - `distances::AbstractArray{Float64,1}`: The distances for each parameter vector (particle) in the posterior to the observed data in summary statistic space. Size: (`n_accepted`).
 - `weights::StatsBase.Weights`: The weight of each parameter vector (particle) in the posterior.
 """
-struct ABCRejectionOutput <: ABCOutput
+abstract type ABCRejectionOutput <: ABCOutput end
+
+struct EmulatedABCRejectionOutput <: ABCRejectionOutput
+    n_params::Int64
+    n_accepted::Int64
+    n_tries::Int64
+    threshold::Float64
+    population::AbstractArray{Float64,2}
+    distances::AbstractArray{Float64,1}
+    weights::StatsBase.Weights
+    emulator
+end
+
+struct SimulatedABCRejectionOutput <: ABCRejectionOutput
     n_params::Int64
     n_accepted::Int64
     n_tries::Int64
@@ -181,7 +222,20 @@ A container for the output of a rejection-ABC computation.
 - `distances::AbstractArray{Float64,1}`: The distances for each parameter vector (particle) in the posterior to the observed data in summary statistic space. Size: (`n_accepted`).
 - `weights::StatsBase.Weights`: The weight of each parameter vector (particle) in the posterior.
 """
-struct ABCSMCOutput <: ABCOutput
+abstract type ABCSMCOutput <: ABCOutput end
+
+struct EmulatedABCSMCOutput <: ABCSMCOutput
+    n_params::Int64
+    n_accepted::AbstractArray{Int64,1}
+    n_tries::AbstractArray{Int64,1}
+    threshold_schedule::AbstractArray{Float64,1}
+    population::AbstractArray{AbstractArray{Float64,2},1}
+    distances::AbstractArray{AbstractArray{Float64,1},1}
+    weights::AbstractArray{StatsBase.Weights,1}
+    emulators::AbstractArray{Any,1}
+end
+
+struct SimulatedABCSMCOutput <: ABCSMCOutput
     n_params::Int64
     n_accepted::AbstractArray{Int64,1}
     n_tries::AbstractArray{Int64,1}
