@@ -59,25 +59,16 @@ reference_data = GeneReg(true_params, Tspan, x0, solver, saveat)
 simulator_function(var_params) = GeneReg(vcat(var_params, true_params[n_var_params+1:end]), Tspan, x0, solver, saveat)
 
 println("SIMULATION")
-sim_out = SimulatedABCSMC(reference_data, n_particles, threshold_schedule,
-    priors, "keep_all", simulator_function)
+sim_out = SimulatedABCSMC(reference_data, 100, threshold_schedule,
+    priors, "keep_all", simulator_function, max_iter=10000)
 
 println("EMULATION")
 emu_out = EmulatedABCSMC(n_design_points, reference_data, n_particles, threshold_schedule,
     priors, "keep_all", simulator_function,
     repetitive_training=RepetitiveTraining(rt_iterations=3, rt_extra_training_points=5))
 
-using Plots
-pyplot()
-plot_x = emu_out.population[2][:, 2]
-plot_y = emu_out.population[2][:, 3]
-plot_z = zeros(length(plot_x), length(plot_y))
-using PyCall
-@pyimport matplotlib.pyplot as plt
-plt.figure()
-plt.tricontour(plot_x, plot_y, plot_z, nlevel=5)
-plt.show()
 
+# using Plots
 # plot(emu_out, population_colors=["blue", "green", "black"])
 # plot(emu_out)
 # plot(sim_out, population_colors=["blue", "green", "black"])
