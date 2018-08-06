@@ -1,4 +1,6 @@
 using GpABC, DifferentialEquations, Distances, Distributions
+using PyCall, PyPlot; @pyimport pandas as pd
+using PyCall, PyPlot; @pyimport seaborn as sns
 
 srand(2)
 
@@ -67,18 +69,75 @@ emu_out = EmulatedABCSMC(n_design_points, reference_data, n_particles, threshold
     priors, "keep_all", simulator_function,
     repetitive_training=RepetitiveTraining(rt_iterations=3, rt_extra_training_points=5))
 
-using Plots
-pyplot()
-plot_x = emu_out.population[2][:, 2]
-plot_y = emu_out.population[2][:, 3]
-plot_z = zeros(length(plot_x), length(plot_y))
-using PyCall
-@pyimport matplotlib.pyplot as plt
-plt.figure()
-plt.tricontour(plot_x, plot_y, plot_z, nlevel=5)
-plt.show()
 
-# plot(emu_out, population_colors=["blue", "green", "black"])
-# plot(emu_out)
-# plot(sim_out, population_colors=["blue", "green", "black"])
-# plot(sim_out)
+# using Plots
+# pyplot()
+# plot_x = emu_out.population[2][:, 2]
+# plot_y = emu_out.population[2][:, 3]
+# plot_z = zeros(length(plot_x), length(plot_y))
+# using PyCall
+# @pyimport matplotlib.pyplot as plt
+# plt.figure()
+# plt.tricontour(plot_x, plot_y, plot_z, nlevel=5)
+# plt.show()
+#
+# # plot(emu_out, population_colors=["blue", "green", "black"])
+# # plot(emu_out)
+# # plot(sim_out, population_colors=["blue", "green", "black"])
+# # plot(sim_out)
+
+
+emu_plot_data = pd.DataFrame(data= Dict( :param_1=>emu_out.population[3][:,1],:param_2=>emu_out.population[3][:,2],:param_3=>emu_out.population[3][:,3]))
+sim_plot_data = pd.DataFrame(data= Dict( :param_1=>sim_out.population[3][:,1],:param_2=>sim_out.population[3][:,2],:param_3=>sim_out.population[3][:,3]))
+PyPlot.ion()
+fig, ax = PyPlot.subplots(figsize=(15,15),ncols=3, nrows=3)
+     left   =  0.125  # the left side of the subplots of the figure
+     right  =  0.9    # the right side of the subplots of the figure
+     bottom =  0.1    # the bottom of the subplots of the figure
+     top    =  0.9    # the top of the subplots of the figure
+     wspace =  .5     # the amount of width reserved for blank space between subplots
+     hspace =  .5    # the amount of height reserved for white space between subplots
+     PyPlot.subplots_adjust(
+         left    =  left,
+         bottom  =  bottom,
+         right   =  right,
+         top     =  top,
+         wspace  =  wspace,
+         hspace  =  hspace
+     )
+     PyPlot.ioff()
+     cmap = sns.cubehelix_palette(as_cmap=true, dark=0, light=1, reverse=true)
+     # marginals
+     sns.distplot(sim_plot_data[:param_1],bins=15, kde= true, hist=true,rug= false ,color = "cornflowerblue",ax=ax[1,1])
+     sns.distplot(sim_plot_data[:param_2],bins=15, kde= true, hist=true,rug= false ,   color = "cornflowerblue", ax=ax[2,2])
+     sns.distplot(sim_plot_data[:param_3],bins=15, kde= true, hist=true,rug= false ,  color = "cornflowerblue", ax=ax[3,3])
+     sns.distplot(emu_plot_data[:param_1],bins=15, kde= true, hist=true,rug= false ,   color = "salmon", label = "lisi",axlabel = "Parameter 1",ax=ax[1,1])
+    sns.distplot(emu_plot_data[:param_2],bins=15, kde= true, hist=true,rug= false ,  color = "salmon", label = "lisi",axlabel = "Parameter 2",ax=ax[2,2])
+    sns.distplot(emu_plot_data[:param_3],bins=15, kde= true, hist=true,rug= false ,   color = "salmon", label = "lisi",axlabel = "Parameter 3",ax=ax[3,3])
+    #joint
+     sns.jointplot(x="param_1", y="param_2", data=emu_plot_data, kind="kde",color="lightpink", ax=ax[2,1])
+
+     sns.jointplot(x="param_1", y="param_3", data=emu_plot_data, kind="kde", color="lightpink",ax=ax[3,1])
+     sns.jointplot(x="param_2", y="param_1", data=emu_plot_data, kind="kde", color="lightpink",ax=ax[3,2])
+     #HERE scatter
+     sns.jointplot(y="param_1", x="param_2", data=sim_plot_data, kind="kde", color="cornflowerblue", ax=ax[1,2])
+     sns.jointplot(y="param_1", x="param_3", data=sim_plot_data, kind="kde", color="cornflowerblue",ax=ax[1,3])
+     sns.jointplot(y="param_2", x="param_1", data=sim_plot_data, kind="kde", color="cornflowerblue",ax=ax[2,3])
+     ax[1,2][:set_xlabel]("Parameter 2")
+     ax[1,2][:set_ylabel]("Parameter 1")
+     #
+     ax[1,3][:set_xlabel]("Parameter 3")
+     ax[1,3][:set_ylabel]("Parameter 1")
+     #
+     ax[2,3][:set_xlabel]("Parameter 3")
+     ax[2,3][:set_ylabel]("Parameter 2")
+     #
+     ax[2,1][:set_xlabel]("Parameter 1")
+     ax[2,1][:set_ylabel]("Parameter 2")
+     #
+     ax[3,1][:set_xlabel]("Parameter 1")
+     ax[3,1][:set_ylabel]("Parameter 3")
+     #
+     ax[3,2][:set_xlabel]("Parameter 2")
+     ax[3,2][:set_ylabel]("Parameter 3")
+PyPlot.show(fig)
