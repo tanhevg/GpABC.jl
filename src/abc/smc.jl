@@ -404,16 +404,6 @@ function ABCSMC(
                        write_progress = write_progress,
                        progress_every = progress_every,
                        )
-        # output = ABCSMCOutput(input.n_params,
-        #                       tracker.n_accepted,
-        #                       tracker.n_tries,
-        #                       tracker.threshold_schedule,
-        #                       tracker.population,
-        #                       tracker.distances,
-        #                       tracker.weights,
-        #                       )
-        #
-        #write(out_stream, output)
     end
 
     return buildAbcSmcOutput(input, tracker)
