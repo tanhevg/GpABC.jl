@@ -13,6 +13,7 @@ function generate_kernels(
     n_params = size(population, 2)
 
     stds = std(population, 1)[:]
+
     lowers = minimum.(priors)
     uppers = maximum.(priors)
 
@@ -192,6 +193,8 @@ function iterateABCSMC!(tracker::SimulatedABCSMCTracker,
         out_stream::IO = STDOUT,
         write_progress = true,
         progress_every = 1000,
+        normalise_weights::Bool = true,
+        hide_maxiter_warning::Bool = false
         )
     # initialise
     push!(tracker.n_accepted, 0)
@@ -217,6 +220,13 @@ function iterateABCSMC!(tracker::SimulatedABCSMCTracker,
         weight = weight[1]
         simulated_data = tracker.simulator_function(parameters)
         simulated_data_sum_stat = tracker.summary_statistic(simulated_data)
+        # This prevents the whole code from failing if there is a problem with solving the
+        # differential equation(s)
+        if size(simulated_data_sum_stat) != size(reference_data_sum_stat)
+            warn("Summarised simulated and reference data do not have the same size ( $(size(simulated_data_sum_stat)) and $(size(reference_data_sum_stat)) ).
+                This may be due to the behaviour of DifferentialEquations::solve - please check for dt-related warnings. Continuing to the next iteration.")
+            continue
+        end
         distance = tracker.distance_function(reference_data_sum_stat, simulated_data_sum_stat)
         tracker.n_tries[end] += 1
 
@@ -245,9 +255,16 @@ function iterateABCSMC!(tracker::SimulatedABCSMCTracker,
         n_accepted = tracker.n_accepted[end]
         tracker.population[end] = tracker.population[end][1:n_accepted, :]
         tracker.weights[end] = StatsBase.Weights(tracker.weights[end][1:n_accepted])
-        warn("Emulation reached maximum $(tracker.max_iter) iterations before finding $(n_toaccept) particles - will return $n_accepted")
+        if !hide_maxiter_warning
+            warn("Simulation reached maximum $(tracker.max_iter) iterations before finding $(n_toaccept) particles - will return $n_accepted")
+        end
     end
-    tracker.weights[end] = deepcopy(normalise(tracker.weights[end], tosum=1.0))
+
+    # Do not want to normalise weights now if doing model selection - will do at 
+    # end of population at model selection level
+    if normalise_weights
+        tracker.weights[end] = deepcopy(normalise(tracker.weights[end], tosum=1.0))
+    end
 
     return tracker
 end

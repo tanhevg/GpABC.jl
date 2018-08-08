@@ -26,6 +26,8 @@ export
 	get_training_data,
 	read_rejection_output, read_smc_output,
 
+	SimulatedModelSelectionInput, SimulatedModelSelectionOutput, model_selection,
+
 	RepetitiveTraining, AbcEmulationSettings;
 
 using Optim, Distributions, Distances, DifferentialEquations

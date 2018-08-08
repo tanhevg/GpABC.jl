@@ -69,7 +69,8 @@ function ABCrejection(input::SimulatedABCRejectionInput,
 	reference_data::AbstractArray{Float64,2};
 	out_stream::IO = STDOUT,
     write_progress::Bool = true,
-    progress_every::Int = 1000)
+    progress_every::Int = 1000,
+    hide_maxiter_warning::Bool = false)
 
 	checkABCInput(input)
 
@@ -87,11 +88,15 @@ function ABCrejection(input::SimulatedABCRejectionInput,
     # simulate
     while n_accepted < input.n_particles && n_tries < input.max_iter
         parameters, weight = generate_parameters(input.priors)
-        #println("got parameters and weights")
         simulated_data = input.simulator_function(parameters)
-        #println("done simulation")
         simulated_data_sum_stat = summary_statistic(simulated_data)
-        #println("computed summary statistic")
+        # This prevents the whole code from failing if there is a problem with solving the
+        # differential equation(s)
+        if size(simulated_data_sum_stat) != size(reference_data_sum_stat)
+            warn("Summarised simulated and reference data do not have the same size ( $(size(simulated_data_sum_stat)) and $(size(reference_data_sum_stat)) ).
+                This may be due to the behaviour of DifferentialEquations::solve - please check for dt-related warnings. Continuing to the next iteration.")
+            continue
+        end
         distance = input.distance_function(reference_data_sum_stat, simulated_data_sum_stat)
         #println("computed distance")
         n_tries += 1
@@ -115,8 +120,11 @@ function ABCrejection(input::SimulatedABCRejectionInput,
         end
 
     end
+
     if n_accepted < input.n_particles
-        warn("Emulation reached maximum iterations $(input.max_iter) before finding $(input.n_particles) particles - will return $n_accepted")
+        if !hide_maxiter_warning
+            warn("Simulation reached maximum iterations $(input.max_iter) before finding $(input.n_particles) particles - will return $n_accepted")
+        end
         accepted_parameters = accepted_parameters[1:n_accepted, :]
         accepted_distances = accepted_distances[1:n_accepted]
         weights = weights[1:n_accepted]
@@ -162,7 +170,8 @@ function ABCrejection(input::EmulatedABCRejectionInput,
 	reference_data::AbstractArray{Float64,2};
 	out_stream::IO = STDOUT,
     write_progress = true,
-    progress_every = 1000)
+    progress_every = 1000,
+    hide_maxiter_warning::Bool = false)
 
 	checkABCInput(input)
 
@@ -229,7 +238,9 @@ function ABCrejection(input::EmulatedABCRejectionInput,
     end
 
     if n_accepted < input.n_particles
-        warn("Emulation reached maximum iterations before finding $(input.n_particles) particles - will return $n_accepted")
+        if !hide_maxiter_warning
+            warn("Emulation reached maximum iterations before finding $(input.n_particles) particles - will return $n_accepted")
+        end
         accepted_parameters = accepted_parameters[1:n_accepted, :]
         accepted_distances = accepted_distances[1:n_accepted]
         weights = weights[1:n_accepted]

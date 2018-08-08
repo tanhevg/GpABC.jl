@@ -139,7 +139,7 @@ abstract type ABCSMCTracker end
 mutable struct SimulatedABCSMCTracker <: ABCSMCTracker
     n_params::Int64
     n_accepted::AbstractArray{Int64,1}
-    n_tries::Vector{Int64}
+    n_tries::AbstractArray{Int64,1}
     threshold_schedule::AbstractArray{Float64,1}
     population::AbstractArray{AbstractArray{Float64,2},1}
     distances::AbstractArray{AbstractArray{Float64,1},1}

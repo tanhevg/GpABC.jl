@@ -16,7 +16,7 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
     #
     n_design_points = 100
     batch_size = 1000
-    max_iter_emu = 1000
+    max_iter = 1000
 
     #
     # True parameters
@@ -122,7 +122,7 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
           priors,
           AbcEmulationSettings(n_design_points, gp_train_function, gp_regression_sample),
           batch_size,
-          max_iter_emu)
+          max_iter)
 
     emu_result = ABCrejection(emu_rej_input, reference_data)
     @test size(emu_result.population, 1) > 0
