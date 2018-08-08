@@ -28,6 +28,14 @@ mutable struct CandidateModelTracker
     simulator_function::Function
 end
 
+
+# TODO finish this so that it can be used to initialise the CandidateModelTrackers in initialise_modelselection
+# THEN write code that runs the rejection abd for the sampled model - need it to finsih at max_iter
+function CandidateModelTracker(priors::AbstractArray{ContinuousUnivariateDistribution,1})
+	return CandidateModelTracker([0], [zeros(0,0)], [zeros(0)], [StatsBase.Weights(zeros(0))],
+		[Uniform()], f(x)=0)
+end
+
 function initialise_modelselection(input::SimulatedModelSelectionInput, reference_data::AbstractArray{Float64,2})
 
 	#
@@ -42,14 +50,15 @@ function initialise_modelselection(input::SimulatedModelSelectionInput, referenc
 	end
 
 	n_populations = length(input.threshold_schedule)
-	n_accepted = 0
+	total_n_accepted = 0
 	n_iterations = 1
 
+	model_tracker_init_status = [false for i in 1:input.M]
 
 	#
 	# Do first population using rejection-ABC
 	#
-	while n_accepted < input.n_particles
+	while total_n_accepted < input.n_particles
 		println("iteration number $n_iterations")
 		m = rand(input.model_prior)
 		println("Sampled model $m")
@@ -64,6 +73,10 @@ function initialise_modelselection(input::SimulatedModelSelectionInput, referenc
 											input.simulator_functions[m],
 											1),
 				reference_data)
+
+		if model_tracker_init_status[m]
+
+		end
 
 		println(out)
 		println()

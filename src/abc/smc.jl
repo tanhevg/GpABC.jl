@@ -146,7 +146,6 @@ end
 function initialiseABCSMC(
         input::EmulatedABCSMCInput,
         reference_data::AbstractArray{Float64,2};
-        reference_data;
         out_stream::IO =  STDOUT,
         write_progress = true)
     # the first run is an ABC rejection simulation

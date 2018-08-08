@@ -84,12 +84,19 @@ function ABCrejection(input::SimulatedABCRejectionInput,
     summary_statistic = build_summary_statistic(input.summary_statistic)
     reference_data_sum_stat = summary_statistic(reference_data)
 
+    println("Doing simulated rejection ABC...")
+
    # simulate
     while n_accepted < input.n_particles
+        #println("try number $n_tries")
         parameters, weight = generate_parameters(input.priors)
+        #println("got parameters and weights")
         simulated_data = input.simulator_function(parameters)
+        #println("done simulation")
         simulated_data_sum_stat = summary_statistic(simulated_data)
+        #println("computed summary statistic")
         distance = input.distance_function(reference_data_sum_stat, simulated_data_sum_stat)
+        #println("computed distance")
         n_tries += 1
 
         if distance <= input.threshold

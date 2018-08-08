@@ -44,7 +44,6 @@ include("gp/gp_optimisation.jl")
 include("util/mv_uniform.jl")
 include("util/latin_hypercube_sampler.jl")
 
-include("abc/summary_stats.jl")
 include("abc/io.jl")
 include("abc/rejection.jl")
 include("abc/smc.jl")
