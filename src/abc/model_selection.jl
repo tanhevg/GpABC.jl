@@ -1,50 +1,3 @@
-abstract type AbstractModelSelectionInput end
-
-struct SimulatedModelSelectionInput <: AbstractModelSelectionInput
-	M::Int64
-	n_particles::Int64
-	threshold_schedule::AbstractArray{Float64,1}
-	model_prior::DiscreteUnivariateDistribution
-	parameter_priors::AbstractArray{AbstractArray{ContinuousUnivariateDistribution,1},1}
-    summary_statistic::Union{String,AbstractArray{String,1},Function}
-    distance_function::Function
-    simulator_functions::AbstractArray{Function,1}
-    max_iter::Integer
-end
-
-mutable struct CandidateModelTracker
-	n_params::Integer
-    n_accepted::AbstractArray{Int64,1}
-    n_tries::AbstractArray{Int64,1}
-	population::AbstractArray{AbstractArray{Float64,2},1}
-    distances::AbstractArray{AbstractArray{Float64,1},1}
-    weights::AbstractArray{StatsBase.Weights,1}
-    priors::AbstractArray{ContinuousUnivariateDistribution,1}
-    simulator_function::Function
-end
-
-abstract type ModelSelectionTracker end
-
-mutable struct SimulatedModelSelectionTracker <: ModelSelectionTracker
-	M::Int64
-	n_particles::Int64
-	threshold_schedule::AbstractArray{Float64,1}
-	model_prior::DiscreteUnivariateDistribution
-	model_trackers::AbstractArray{CandidateModelTracker,1}
-	summary_statistic::Union{String,AbstractArray{String,1},Function}
-    distance_function::Function
-	max_iter::Integer
-end
-
-abstract type ModelSelectionOutput end
-
-struct SimulatedModelSelectionOutput <: ModelSelectionOutput
-	M::Int64
-	n_accepted::AbstractArray{AbstractArray{Int64,1},1}
-	threshold_schedule::AbstractArray{Float64,1}
-	smc_outputs::AbstractArray{SimulatedABCSMCOutput,1}
-end
-
 # Initialises the model selection run and runs the first (rejection) population
 function initialise_modelselection(input::SimulatedModelSelectionInput, reference_data::AbstractArray{Float64,2})
 
@@ -137,6 +90,7 @@ function initialise_modelselection(input::SimulatedModelSelectionInput, referenc
 		input.max_iter)
 end	
 
+# Perform a subsequent model selection iteration (based on ABC-SMC)
 function iterate_modelselection!(tracker::SimulatedModelSelectionTracker,
 	threshold::AbstractFloat,
 	reference_data::AbstractArray{Float64,2})
@@ -211,6 +165,14 @@ function iterate_modelselection!(tracker::SimulatedModelSelectionTracker,
 
 end
 
+"""
+	model_selection(input::SimulatedModelSelectionInput,
+		reference_data::AbstractArray{Float64,2})
+
+# Arguments
+- `input::SimulatedModelSelectionInput`: A ['SimulatedModelSelectionInput']@(ref) object that contains the settings for the model selection algorithm.
+- `reference_data::AbstractArray{Float64,2}`: The observed data to which the simulated model output will be compared. Size: (n_model_trajectories, n_time_points)
+"""
 function model_selection(input::SimulatedModelSelectionInput,
 	reference_data::AbstractArray{Float64,2})
 

@@ -12,7 +12,11 @@ function generate_kernels(
     n_particles = size(population, 1)
     n_params = size(population, 2)
 
-    stds = std(population, 1)[:]
+    if n_particles > 1
+        stds = std(population, 1)[:]
+    else
+        stds = 1e-3 * ones(n_params) # If there is only one particle we cannot compute the sd - use a small value instead?
+    end
 
     lowers = minimum.(priors)
     uppers = maximum.(priors)
@@ -21,7 +25,7 @@ function generate_kernels(
     kernels = Matrix{CUD}(n_particles, n_params)
     for j in 1:n_params
         means = population[:, j]
-        kernels[:, j] = TruncatedNormal.(means, stds[j]*sqrt(2), lowers[j], uppers[j])
+        kernels[:, j] = TruncatedNormal.(means, stds[j]*sqrt(2.0), lowers[j], uppers[j])
     end
 
     return kernels

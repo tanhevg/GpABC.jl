@@ -100,27 +100,35 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
 	# Tests on output shapes
 	#
 	n_params = [4,5,5]
+
+	# 2nd dimension of population should always be the number of parameters
 	@test all(vcat([[size(ms_res.smc_outputs[m].population[i],2) == n_params[m]
-		for i in 1:length(threshold_schedule)]
+		for i in 1:length(ms_res.threshold_schedule)]
 				for m in 1:ms_res.M]...))
 
+	# First dimension of population should always be the number of accepted particles
 	@test all(vcat([[size(ms_res.smc_outputs[m].population[i],1) == ms_res.n_accepted[i][m]
-		for i in 1:length(threshold_schedule)]
+		for i in 1:length(ms_res.threshold_schedule)]
 				for m in 1:ms_res.M]...))
 
+	# First dimension of distances should always be the number of accepted particles
 	@test all(vcat([[size(ms_res.smc_outputs[m].distances[i],1) == ms_res.n_accepted[i][m]
-		for i in 1:length(threshold_schedule)]
+		for i in 1:length(ms_res.threshold_schedule)]
 				for m in 1:ms_res.M]...))
 
+	# First dimension of weights should always be the number of accepted particles
 	@test all(vcat([[size(ms_res.smc_outputs[m].weights[i],1) == ms_res.n_accepted[i][m]
-		for i in 1:length(threshold_schedule)]
+		for i in 1:length(ms_res.threshold_schedule)]
 				for m in 1:ms_res.M]...))
 
+	# Total number of accepted particles at each population can't be more than n_particles 
 	@test all([sum(arr) <= n_particles for arr in ms_res.n_accepted])
 
-
-	@test all([size(ms_res.smc_outputs[m].population,1) == length(threshold_schedule) for m in 1:ms_res.M])
-	@test all([size(ms_res.smc_outputs[m].distances,1) == length(threshold_schedule) for m in 1:ms_res.M])
-	@test all([size(ms_res.smc_outputs[m].weights,1) == length(threshold_schedule) for m in 1:ms_res.M])
-
+	# There should be as many populations, distances as weights as populations
+	@test all([size(ms_res.smc_outputs[m].population,1) == length(ms_res.threshold_schedule) for m in 1:ms_res.M])
+	@test all([size(ms_res.smc_outputs[m].distances,1) == length(ms_res.threshold_schedule) for m in 1:ms_res.M])
+	@test all([size(ms_res.smc_outputs[m].weights,1) == length(ms_res.threshold_schedule) for m in 1:ms_res.M])
+	
+	# Can't have more than max_iter tries in total at each population
+	@test all([sum([ms_res.smc_outputs[m].n_tries[i] for m=1:ms_res.M]) <= max_iter for i=1:length(ms_res.threshold_schedule)])
 end

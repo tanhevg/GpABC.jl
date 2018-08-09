@@ -95,6 +95,7 @@ An object that defines the settings for a simulation-based ABC-SMC computation.
 - `summary_statistic::Union{String,AbstractArray{String,1},Function}`: Either: 1. A `String` or 1D Array of strings that Or 2. A function that outputs a 1D Array of Floats that summarises model output. REFER TO DOCS
 - `distance_function::Function`: Any function that computes the distance between 2 1D Arrays.
 - `simulator_function::Function`: A function that takes a parameter vector as an argument and outputs model results.
+- `max_iter::Integer`: The maximum number of iterations in each population before algorithm termination.
 """
 struct SimulatedABCSMCInput <: ABCSMCInput
     n_params::Int64
