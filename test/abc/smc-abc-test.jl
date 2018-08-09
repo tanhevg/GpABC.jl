@@ -10,14 +10,13 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
     priors = [Uniform(0., 5.), Uniform(0., 5.)]
     distance_metric = euclidean
     progress_every = 1000
-    max_iter_emu = 1e4
 
     #
     # Emulation settings
     #
     n_design_points = 100
     batch_size = 1000
-    max_iter_sim = 1000
+    max_iter = 1000
 
     #
     # True parameters
@@ -122,7 +121,7 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
         priors,
         AbcEmulationSettings(n_design_points, gp_train_function, gp_regression_sample),
         batch_size,
-        max_iter_emu)
+        max_iter)
 
     emu_abcsmc_res = ABCSMC(emu_abcsmc_input, reference_data, write_progress=false)
     @test size(emu_abcsmc_res.population, 1) > 0

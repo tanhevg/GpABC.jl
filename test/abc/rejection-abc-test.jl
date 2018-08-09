@@ -9,7 +9,6 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
     priors = [Uniform(0., 5.), Uniform(0., 5.)]
     distance_metric = euclidean
     progress_every = 1000
-    max_iter_sim = 1e4
 
     #
     # Emulation settings
