@@ -96,9 +96,9 @@ function EmulatedABCSMC{D<:ContinuousUnivariateDistribution}(n_design_points::In
                 reference_summary_statistic,
                 simulator_function,
                 summary_statistic,
-                distance_metric,
-                rts=repetitive_training,
-                gpkernel=gpkernel)
+                distance_metric;
+                kwargs...
+                )
     end
 
     emulation_settings = AbcEmulationSettings(n_design_points,

@@ -22,22 +22,24 @@ function abc_train_emulator(
         summary_statistic::Function,
         distance_metric::Function;
         gpkernel::AbstractGPKernel=SquaredExponentialArdKernel(),
-        rts::RepetitiveTraining = RepetitiveTraining())
+        repetitive_training::RepetitiveTraining = RepetitiveTraining(),
+        out_stream::IO=STDOUT)
     X = prior_sampling_function(n_design_points)
     y = simulate_distance(X,
         simulator_function, summary_statistic, distance_metric, reference_summary_statistic)
+    write(out_stream, string(DateTime(now())), " Training data for emulator: \nX=", string(X), "\ny=", string(y), "\n")
     gpem = GPModel(training_x=X, training_y=y, kernel=gpkernel)
     gp_train(gpem)
     rt_count = 0
-    while rt_count < rts.rt_iterations
-        retraining_sample = prior_sampling_function(rts.rt_sample_size)
+    while rt_count < repetitive_training.rt_iterations
+        retraining_sample = prior_sampling_function(repetitive_training.rt_sample_size)
         mean, variance = gp_regression(retraining_sample, gpem)
         variance_perm = sortperm(variance, rev=true)
-        idx = variance_perm[1:rts.rt_extra_training_points]
+        idx = variance_perm[1:repetitive_training.rt_extra_training_points]
         extra_x = retraining_sample[idx, :]
         extra_y = simulate_distance(extra_x,
             simulator_function, summary_statistic, distance_metric, reference_summary_statistic)
-        # println("Repetitive training. Adding extra $(rts.rt_extra_training_points) training points.")
+        # println("Repetitive training. Adding extra $(repetitive_training.rt_extra_training_points) training points.")
         # println("X = $extra_x")
         # println("y = $extra_y")
         # println("variance = $(variance[idx])")

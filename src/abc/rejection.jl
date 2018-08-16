@@ -69,6 +69,9 @@ function ABCrejection(input::SimulatedABCRejectionInput,
     progress_every::Int = 1000)
 
 	checkABCInput(input)
+    if write_progress
+        write(out_stream, string(DateTime(now())), " Rejection ABC simulation ϵ = $(input.threshold).\n")
+    end
 
 	# initialise
     n_tries = 0
@@ -156,6 +159,9 @@ function ABCrejection(input::EmulatedABCRejectionInput,
 
 	checkABCInput(input)
 
+    if write_progress
+        write(out_stream, string(DateTime(now())), " Rejection ABC emulation ϵ = $(input.threshold).\n")
+    end
 	# initialise
     n_accepted = 0
     n_tries = 0
