@@ -70,6 +70,7 @@ function ABCrejection(input::SimulatedABCRejectionInput,
 	out_stream::IO = STDOUT,
     write_progress::Bool = true,
     progress_every::Int = 1000,
+    normalise_weights::Bool = true,
     hide_maxiter_warning::Bool = false)
 
 	checkABCInput(input)
@@ -130,7 +131,9 @@ function ABCrejection(input::SimulatedABCRejectionInput,
         weights = weights[1:n_accepted]
     end
 
-    weights = weights ./ sum(weights)
+    if normalise_weights
+        weights = weights ./ sum(weights)
+    end
 
     # output
     output = SimulatedABCRejectionOutput(input.n_params,

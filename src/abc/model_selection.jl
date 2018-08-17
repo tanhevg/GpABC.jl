@@ -1,3 +1,7 @@
+#
+# SIMULATION
+#
+
 # Initialises the model selection run and runs the first (rejection) population
 function initialise_modelselection(input::SimulatedModelSelectionInput, reference_data::AbstractArray{Float64,2})
 
@@ -21,7 +25,7 @@ function initialise_modelselection(input::SimulatedModelSelectionInput, referenc
 
 	#
 	# Initialise arrays that will track rejection ABC run for each model - these 
-	# will be used to create CandidateModelTrackers after the rejection ABC run
+	# will be used to create SimulatedCandidateModelTrackers after the rejection ABC run
 	# n_accepted(model), n_tries, parameters, distances, weights
 	#
 	rejection_trackers = [[0, 0, zeros(0,length(input.parameter_priors[m])), Array{Float64,1}(), Array{Float64,1}()]
@@ -44,6 +48,7 @@ function initialise_modelselection(input::SimulatedModelSelectionInput, referenc
 											input.simulator_functions[m],
 											1),
 				reference_data,
+				normalise_weights=false,
 				hide_maxiter_warning=true)
 
 		# If particle accepted
@@ -66,7 +71,7 @@ function initialise_modelselection(input::SimulatedModelSelectionInput, referenc
 		warn("Simulated model selection reached maximum number of iterations ($(input.max_iter)) on the first population - consider trying more iterations.")
 	end
 
-	cmTrackers = [CandidateModelTracker(
+	cmTrackers = [SimulatedCandidateModelTracker(
 		length(input.parameter_priors[m]),
 		[rejection_trackers[m][1]],
 		[rejection_trackers[m][2]],
@@ -209,3 +214,7 @@ function build_modelselection_output(tracker::SimulatedModelSelectionTracker)
 				for m in 1:tracker.M]
 		)
 end
+
+#
+# EMULATION
+#
