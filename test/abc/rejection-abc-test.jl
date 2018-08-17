@@ -1,6 +1,7 @@
 using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
 
 @testset "Rejection ABC Test" begin
+    srand(2)
     #
     # ABC settings
     #
