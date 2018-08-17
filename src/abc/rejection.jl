@@ -174,7 +174,7 @@ function ABCrejection(input::EmulatedABCRejectionInput,
 	out_stream::IO = STDOUT,
     write_progress = true,
     progress_every = 1000, 
-    emulator::Union{GPModel,Void}=nothing, # In model selection an emulator is provided
+    emulator::Union{GPModel,Void}=nothing, # In model selection an emulator is provided - not finished
     normalise_weights::Bool = true,
     hide_maxiter_warning::Bool = false)
 

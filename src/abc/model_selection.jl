@@ -221,7 +221,7 @@ function build_modelselection_output(tracker::SimulatedModelSelectionTracker)
 end
 
 #
-# EMULATION
+# EMULATION - UNFINISHED
 #
 
 # Initialises the model selection run and runs the first (rejection) population
