@@ -95,7 +95,7 @@ function ABCrejection(input::SimulatedABCRejectionInput,
         # differential equation(s)
         if size(simulated_data_sum_stat) != size(reference_data_sum_stat)
             warn("Summarised simulated and reference data do not have the same size ( $(size(simulated_data_sum_stat)) and $(size(reference_data_sum_stat)) ).
-                This may be due to the behaviour of DifferentialEquations::solve - please check for dt-related warnings. Continuing to the next iteration.")
+                This may be due to the behaviour of DifferentialEquations::solve - please check for related warnings. Continuing to the next iteration.")
             continue
         end
         distance = input.distance_function(reference_data_sum_stat, simulated_data_sum_stat)
@@ -173,7 +173,9 @@ function ABCrejection(input::EmulatedABCRejectionInput,
 	reference_data::AbstractArray{Float64,2};
 	out_stream::IO = STDOUT,
     write_progress = true,
-    progress_every = 1000,
+    progress_every = 1000, 
+    emulator::Union{GPModel,Void}=nothing, # In model selection an emulator is provided
+    normalise_weights::Bool = true,
     hide_maxiter_warning::Bool = false)
 
 	checkABCInput(input)
@@ -185,14 +187,20 @@ function ABCrejection(input::EmulatedABCRejectionInput,
     accepted_parameters = zeros(input.n_particles, input.n_params)
     accepted_distances = zeros(input.n_particles)
     weights = ones(input.n_particles)
+    println("initialised rejection ABC")
+
+    # TODO: get returned emulator from first rejection run (train it in model selection function)
+    #       then re-use it in subsequent rejection runs - put it in the tracker?
 
     # todo: consolidate sample_from_priors with generate_parameters
-    prior_sampling_function(n_design_points) = generate_parameters(input.priors, n_design_points)[1]
-
-    emulator = input.emulation_settings.train_emulator_function(prior_sampling_function)
-
+    if emulator == nothing
+        prior_sampling_function(n_design_points) = generate_parameters(input.priors, n_design_points)[1]
+        emulator = input.emulation_settings.train_emulator_function(prior_sampling_function)
+        println("trained emulator")
+    end
     # emulate
     while n_accepted < input.n_particles && batch_no <= input.max_iter
+        println("Batch number $batch_no")
 
         parameter_batch, weight_batch = generate_parameters(input.priors, input.batch_size)
 
@@ -249,7 +257,9 @@ function ABCrejection(input::EmulatedABCRejectionInput,
         weights = weights[1:n_accepted]
     end
 
-    weights = weights ./ sum(weights)
+    if normalise_weights
+        weights = weights ./ sum(weights)
+    end
 
     # output
     output = EmulatedABCRejectionOutput(input.n_params,

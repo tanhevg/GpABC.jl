@@ -71,6 +71,11 @@ function initialise_modelselection(input::SimulatedModelSelectionInput, referenc
 		warn("Simulated model selection reached maximum number of iterations ($(input.max_iter)) on the first population - consider trying more iterations.")
 	end
 
+	# Normalise weights for each model
+	for m=1:input.M
+		rejection_trackers[m][5] = rejection_trackers[m][5] ./ sum(rejection_trackers[m][5])
+	end
+
 	cmTrackers = [SimulatedCandidateModelTracker(
 		length(input.parameter_priors[m]),
 		[rejection_trackers[m][1]],
@@ -190,7 +195,7 @@ function model_selection(input::SimulatedModelSelectionInput,
 
 		# Avoid infinite loop if no particles are accepted
 		if sum([tracker.model_trackers[m].n_accepted[end] for m = 1:tracker.M]) == 0
-			warn("No particles were accepted in population $i - exiting")
+			warn("No particles were accepted in population $i - terminating model selection algorithm")
 			break
 		end
 	end
@@ -218,3 +223,113 @@ end
 #
 # EMULATION
 #
+
+# Initialises the model selection run and runs the first (rejection) population
+function initialise_modelselection(input::EmulatedModelSelectionInput, reference_data::AbstractArray{Float64,2})
+
+	#
+	# Check input sizes
+	#
+	if span(input.model_prior) != input.M
+		throw(ArgumentError("There are $(input.M) models but the span of the model prior support is $(span(input.model_prior))"))
+	end
+
+	if length(input.emulation_settings_arr) != input.M
+		throw(ArgumentError("There are $(input.M) models but $(length(input.emulation_settings_arr)) emulation settings"))
+	end
+
+	if length(input.parameter_priors) != input.M
+		throw(ArgumentError("There are $(input.M) models but $(length(input.parameter_priors)) sets of parameter priors"))
+	end
+
+	total_n_accepted = 0
+	n_iterations = 1
+
+	#
+	# Initialise arrays that will track rejection ABC run for each model - these 
+	# will be used to create SimulatedCandidateModelTrackers after the rejection ABC run
+	# n_accepted(model), n_tries, parameters, distances, weights
+	#
+	rejection_trackers = [[0, 0, zeros(0,length(input.parameter_priors[m])), Array{Float64,1}(), Array{Float64,1}()]
+		for m in 1:input.M]
+
+	#
+	# Train the emulators
+	#
+	prior_samplers = [f(n_design_points) = generate_parameters(input.parameter_priors[m], n_design_points)[1] for m in 1:input.M]
+	emulators = [input.emulation_settings_arr[m].train_emulator_function(prior_samplers[m]) for m in 1:input.M]
+	println("Trained emulators")
+
+	#
+	# Compute first population using rejection-ABC
+	#
+	while total_n_accepted < input.n_particles && n_iterations <= input.max_iter
+		sampled_models = rand(input.model_prior, min(input.batch_size, input.n_particles-total_n_accepted))
+		
+		tries_this_it = [size(sampled_models[sampled_models.==m],1) for m=1:input.M]
+
+	 	println("Number of sampled models: ", join([string("Model ", m, ": ",  tries_this_it[m]) for m in 1:input.M], "\t"))
+
+		[rejection_trackers[m][2] += tries_this_it[m] for m=1:input.M]
+
+		for m=1:input.M
+			if tries_this_it[m] > 0
+				out = ABCrejection(
+						EmulatedABCRejectionInput(length(input.parameter_priors[m]),
+											tries_this_it[m],
+											input.threshold_schedule[1],
+											input.parameter_priors[m],
+											input.emulation_settings_arr[m],
+											tries_this_it[m],
+											1),
+				reference_data,
+				emulator = emulators[m],
+				normalise_weights = false,
+				hide_maxiter_warning = true)
+
+				# If particle accepted
+				if size(out.population,1) >= 1
+					println("Accepted $(size(out.population,1)) particles for model $m")
+					total_n_accepted += out.n_accepted
+					rejection_trackers[m][1] += out.n_accepted
+					rejection_trackers[m][3] = vcat(rejection_trackers[m][3], out.population)
+					rejection_trackers[m][4] = vcat(rejection_trackers[m][4], out.distances)
+					rejection_trackers[m][5] = vcat(rejection_trackers[m][5], out.weights.values)
+				elseif size(out.population, 1) > tries_this_it[m]
+					error("$(size(out.population,1)) particles were accepted when model $m was only sampled $(tries_this_it[m]) times!")
+				end
+			end
+		end
+
+		n_iterations += 1
+	end
+
+	println("Completed $(n_iterations-1) iterations, accepting $total_n_accepted particles in total")
+
+	if n_iterations == input.max_iter+1
+		warn("Emulated model selection reached maximum number of iterations ($(input.max_iter)) on the first population - consider trying more iterations.")
+	end
+
+	# cmTrackers = [SimulatedCandidateModelTracker(
+	# 	length(input.parameter_priors[m]),
+	# 	[rejection_trackers[m][1]],
+	# 	[rejection_trackers[m][2]],
+	# 	[rejection_trackers[m][3]],
+	# 	[rejection_trackers[m][4]],
+	# 	[StatsBase.Weights(rejection_trackers[m][5], 1.0)],
+	# 	input.parameter_priors[m],
+	# 	input.simulator_functions[m]
+	# 	)
+	# 		for m in 1:input.M]
+
+	# 	println("Number of accepted parameters: ", join([string("Model ", m, ": ",  cmTrackers[m].n_accepted[end]) for m in 1:input.M], "\t"))
+
+	# return SimulatedModelSelectionTracker(input.M,
+	# 	input.n_particles,
+	# 	[input.threshold_schedule[1]],
+	# 	input.model_prior,
+	# 	cmTrackers,
+	# 	build_summary_statistic(input.summary_statistic),
+	# 	input.distance_function,
+	# 	input.max_iter)
+end	

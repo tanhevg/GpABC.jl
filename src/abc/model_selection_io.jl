@@ -1,4 +1,4 @@
-abstract type AbstractModelSelectionInput end
+abstract type ModelSelectionInput end
 
 """
 	SimulatedModelSelectionInput
@@ -15,27 +15,52 @@ An object that defines settings for a simulation-based model selection computati
 - `simulator_functions::AbstractArray{Function,1}`: Each element is a function that takes a parameter vector as an argument and outputs model results for a single model.
 - `max_iter::Integer`: The maximum number of iterations in each population before algorithm termination.
 """
-struct SimulatedModelSelectionInput <: AbstractModelSelectionInput
+struct SimulatedModelSelectionInput <: ModelSelectionInput
 	M::Int64
 	n_particles::Int64
 	threshold_schedule::AbstractArray{Float64,1}
 	model_prior::DiscreteUnivariateDistribution
 	parameter_priors::AbstractArray{AbstractArray{ContinuousUnivariateDistribution,1},1}
-    summary_statistic::Union{String,AbstractArray{String,1},Function}
-    distance_function::Function
-    simulator_functions::AbstractArray{Function,1}
-    max_iter::Integer
+	summary_statistic::Union{String,AbstractArray{String,1},Function}
+	distance_function::Function
+	simulator_functions::AbstractArray{Function,1}
+	max_iter::Integer
 end
 
-mutable struct CandidateModelTracker
+struct EmulatedModelSelectionInput <: ModelSelectionInput
+	M::Int64
+	n_particles::Int64
+	threshold_schedule::AbstractArray{Float64,1}
+	model_prior::DiscreteUnivariateDistribution
+	parameter_priors::AbstractArray{AbstractArray{ContinuousUnivariateDistribution,1},1}
+    emulation_settings_arr::AbstractArray{AbcEmulationSettings,1}
+	batch_size::Int64
+	max_iter::Integer
+end
+
+abstract type CandidateModelTracker end
+
+mutable struct SimulatedCandidateModelTracker <: CandidateModelTracker
 	n_params::Integer
-    n_accepted::AbstractArray{Int64,1}
-    n_tries::AbstractArray{Int64,1}
+	n_accepted::AbstractArray{Int64,1}
+	n_tries::AbstractArray{Int64,1}
 	population::AbstractArray{AbstractArray{Float64,2},1}
-    distances::AbstractArray{AbstractArray{Float64,1},1}
-    weights::AbstractArray{StatsBase.Weights,1}
-    priors::AbstractArray{ContinuousUnivariateDistribution,1}
-    simulator_function::Function
+	distances::AbstractArray{AbstractArray{Float64,1},1}
+	weights::AbstractArray{StatsBase.Weights,1}
+	priors::AbstractArray{ContinuousUnivariateDistribution,1}
+	simulator_function::Function
+end
+
+mutable struct EmulatedCandidateModelTracker <: CandidateModelTracker
+	n_params::Integer
+	n_accepted::AbstractArray{Int64,1}
+	n_tries::AbstractArray{Int64,1}
+	population::AbstractArray{AbstractArray{Float64,2},1}
+	distances::AbstractArray{AbstractArray{Float64,1},1}
+	weights::AbstractArray{StatsBase.Weights,1}
+	priors::AbstractArray{ContinuousUnivariateDistribution,1}
+	emulation_settings::AbcEmulationSettings
+	emulators::AbstractArray{Any,1}
 end
 
 abstract type ModelSelectionTracker end
@@ -45,9 +70,9 @@ mutable struct SimulatedModelSelectionTracker <: ModelSelectionTracker
 	n_particles::Int64
 	threshold_schedule::AbstractArray{Float64,1}
 	model_prior::DiscreteUnivariateDistribution
-	model_trackers::AbstractArray{CandidateModelTracker,1}
+	model_trackers::AbstractArray{SimulatedCandidateModelTracker,1}
 	summary_statistic::Union{String,AbstractArray{String,1},Function}
-    distance_function::Function
+	distance_function::Function
 	max_iter::Integer
 end
 

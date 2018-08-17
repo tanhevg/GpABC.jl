@@ -131,4 +131,9 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
 	
 	# Can't have more than max_iter tries in total at each population
 	@test all([sum([ms_res.smc_outputs[m].n_tries[i] for m=1:ms_res.M]) <= max_iter for i=1:length(ms_res.threshold_schedule)])
+
+	# Weights must sum to 1 for all models in all cases where the model accepted at least one particle
+	weight_sums = vcat([[sum(ms_res.smc_outputs[m].weights[i]) for i = 1:length(ms_res.threshold_schedule)] for m in 1:3]...)
+	nonzero_weights = vcat([[size(ms_res.smc_outputs[m].weights[i],1) > 0 for i = 1:length(ms_res.threshold_schedule)] for m in 1:3]...)
+	@test all(weight_sums[nonzero_weights] .== 1.0)
 end

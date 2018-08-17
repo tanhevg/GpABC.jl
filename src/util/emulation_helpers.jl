@@ -31,7 +31,7 @@ function abc_train_emulator(
     rt_count = 0
     while rt_count < rts.rt_iterations
         retraining_sample = prior_sampling_function(rts.rt_sample_size)
-        mean, variance = gp_regression(retraining_sample, gpem)
+        _, variance = gp_regression(retraining_sample, gpem)
         variance_perm = sortperm(variance, rev=true)
         idx = variance_perm[1:rts.rt_extra_training_points]
         extra_x = retraining_sample[idx, :]
