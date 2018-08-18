@@ -23,11 +23,10 @@ function abc_train_emulator(
         distance_metric::Function;
         gpkernel::AbstractGPKernel=SquaredExponentialArdKernel(),
         repetitive_training::RepetitiveTraining = RepetitiveTraining(),
-        out_stream::IO=STDOUT)
+        kwargs...)
     X = prior_sampling_function(n_design_points)
     y = simulate_distance(X,
         simulator_function, summary_statistic, distance_metric, reference_summary_statistic)
-    write(out_stream, string(DateTime(now())), " Training data for emulator: \nX=", string(X), "\ny=", string(y), "\n")
     gpem = GPModel(training_x=X, training_y=y, kernel=gpkernel)
     gp_train(gpem)
     rt_count = 0
@@ -39,10 +38,6 @@ function abc_train_emulator(
         extra_x = retraining_sample[idx, :]
         extra_y = simulate_distance(extra_x,
             simulator_function, summary_statistic, distance_metric, reference_summary_statistic)
-        # println("Repetitive training. Adding extra $(repetitive_training.rt_extra_training_points) training points.")
-        # println("X = $extra_x")
-        # println("y = $extra_y")
-        # println("variance = $(variance[idx])")
         new_training_x = vcat(gpem.gp_training_x, extra_x)
         new_training_y = vcat(gpem.gp_training_y, extra_y)
         gpem = GPModel(training_x=new_training_x, training_y=new_training_y, kernel=gpem.kernel)

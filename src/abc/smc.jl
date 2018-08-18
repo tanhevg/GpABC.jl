@@ -30,12 +30,10 @@ end
 function generate_parameters(
         batch_size::Int64,
         priors::AbstractArray{D1,1},
-        old_parameters::AbstractArray{F,2},
         old_weights::StatsBase.Weights,
         kernels::AbstractArray{D2,2},
         ) where {
-        D1, D2<:ContinuousUnivariateDistribution,
-        F<:AbstractFloat,
+        D1, D2<:ContinuousUnivariateDistribution
         }
 
     n_params = length(priors)
@@ -45,7 +43,7 @@ function generate_parameters(
     # the kernels must be centered around the old particles
     # and truncated to the priors.
 
-    particles = StatsBase.sample(indices(old_parameters, 1), old_weights, batch_size)
+    particles = StatsBase.sample(indices(kernels, 1), old_weights, batch_size)
     # println("particle: $particles")
     perturbed_parameters = rand.(kernels[particles,:])
     # println("perturbed_parameters = $perturbed_parameters")
@@ -66,25 +64,18 @@ function generate_parameters(
     return perturbed_parameters, weight
 end
 
-function generate_parameters_no_weights(
-        n_batch_size::Int64,
-        old_parameters::AbstractArray{F,2},
-        old_weights::StatsBase.Weights,
-        kernels::AbstractArray{D2,2},
-        out_stream::IO=STDOUT
-        ) where {
-        D2<:ContinuousUnivariateDistribution,
-        F<:AbstractFloat,
-        }
-    write(out_stream, string(DateTime(now())), " generate_parameters_no_weights old_parameters: ", string(old_parameters), "\n")
-    particles = StatsBase.sample(indices(old_parameters, 1), old_weights, n_batch_size)
-    write(out_stream, string(DateTime(now())), " generate_parameters_no_weights particles: ",  string(particles), "\n")
-    write(out_stream, string(DateTime(now())), " generate_parameters_no_weights means: ", string(mean.(kernels[particles,:])), "\n")
-    write(out_stream, string(DateTime(now())), " generate_parameters_no_weights stds: ", string(std.(kernels[particles,:])), "\n")
-    ret = rand.(kernels[particles,:])
-    write(out_stream, string(DateTime(now())), " generate_parameters_no_weights return values: ", string(ret), "\n")
-    return ret
-end
+# function generate_parameters_no_weights(
+#         n_batch_size::Int64,
+#         old_parameters::AbstractArray{F,2},
+#         old_weights::StatsBase.Weights,
+#         kernels::AbstractArray{D2,2}
+#         ) where {
+#         D2<:ContinuousUnivariateDistribution,
+#         F<:AbstractFloat,
+#         }
+#     particles = StatsBase.sample(indices(old_parameters, 1), old_weights, n_batch_size)
+#     return rand.(kernels[particles,:])
+# end
 
 function normalise(
         weights::StatsBase.AbstractWeights;
@@ -214,8 +205,7 @@ function iterateABCSMC!(tracker::SimulatedABCSMCTracker,
     iter_no = 1
     # simulate
     while tracker.n_accepted[end] < n_toaccept && iter_no <= tracker.max_iter
-        parameters, weight = generate_parameters(1, tracker.priors,
-            tracker.population[end-1], tracker.weights[end-1], kernels)
+        parameters, weight = generate_parameters(1, tracker.priors, tracker.weights[end-1], kernels)
         parameters = parameters[1, :]
         weight = weight[1]
         simulated_data = tracker.simulator_function(parameters)
@@ -269,7 +259,7 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
         progress_every = 1000,
         )
     if write_progress
-        write(out_stream, string(DateTime(now())), " xxx ABCSMC Emulation ϵ = $threshold.\n")
+        write(out_stream, string(DateTime(now())), " ABCSMC Emulation ϵ = $threshold.\n")
     end
 
     # initialise
@@ -288,11 +278,14 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
     push!(tracker.weights, StatsBase.Weights(ones(n_toaccept)))
 
     kernels = generate_kernels(old_population, tracker.priors)
-    prior_sampling_function(n_design_points) = generate_parameters_no_weights(n_design_points,
-        old_population,
-        old_weights,
-        kernels,
-        out_stream)
+    # prior_sampling_function(n_design_points) = generate_parameters_no_weights(n_design_points,
+    #     old_population,
+    #     old_weights,
+    #     kernels)
+    prior_sampling_function = function(n_design_points)
+        ret_idx = StatsBase.sample(indices(old_population, 1), old_weights, n_design_points)
+        return old_population[ret_idx, :]
+    end
     emulator = tracker.emulation_settings.train_emulator_function(prior_sampling_function)
     n_accepted = 0
 
@@ -300,19 +293,19 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
     while tracker.n_accepted[end] < n_toaccept && iter_no <= tracker.max_iter
         parameters, weights = generate_parameters(tracker.batch_size,
                                                  tracker.priors,
-                                                 old_population,
                                                  old_weights,
                                                  kernels)
 
-        distance = tracker.emulation_settings.emulate_distance_function(parameters, emulator)
-        tracker.n_tries[end] += length(distance)
-        accepted_indices = find(distance .<= threshold)
+        distances, vars = tracker.emulation_settings.emulate_distance_function(parameters, emulator)
+        tracker.n_tries[end] += length(distances)
+        accepted_indices = find((distances .<= threshold) .& (vars .<= threshold))
+        # accepted_indices = find(distances .<= threshold)
         n_include = length(accepted_indices)
         if n_accepted + n_include > n_toaccept
             n_include = n_toaccept - n_accepted
             accepted_indices = accepted_indices[1:n_include]
         end
-        distance = distance[accepted_indices]
+        distances = distances[accepted_indices]
         weights = weights[accepted_indices]
         parameters = parameters[accepted_indices, :]
         store_slice = n_accepted + 1 : n_accepted + n_include
@@ -320,7 +313,7 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
         tracker.n_accepted[end] += n_include
         n_accepted = tracker.n_accepted[end]
         tracker.population[end][store_slice,:] = parameters
-        tracker.distances[end][store_slice] = distance
+        tracker.distances[end][store_slice] = distances
         tracker.weights[end].values[store_slice] = weights
 
         if write_progress
@@ -343,8 +336,6 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
         tracker.weights[end] = StatsBase.Weights(tracker.weights[end][1:n_accepted])
         tracker.distances[end] = tracker.distances[end][1:n_accepted]
         warn("Emulation reached maximum $(tracker.max_iter) iterations before finding $(n_toaccept) particles - will return $n_accepted")
-    else
-        write(out_stream, string(DateTime(now())), " ABCSMC Emulation end. Accepted $(tracker.n_accepted[end])/$(n_toaccept)\n")
     end
     tracker.weights[end] = deepcopy(normalise(tracker.weights[end], tosum=1.0))
     push!(tracker.emulators, emulator)
@@ -402,6 +393,7 @@ function ABCSMC(
                                write_progress = write_progress)
 
     for i in 2:length(input.threshold_schedule)
+        @assert size(tracker.population[end], 1) > 0 "No particles were accepted by step #$(i-1) of ABC SMC"
         threshold = input.threshold_schedule[i]
         iterateABCSMC!(tracker,
                        threshold,
