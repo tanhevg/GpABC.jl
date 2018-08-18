@@ -120,7 +120,7 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
           n_particles,
           0.5,
           priors,
-          AbcEmulationSettings(n_design_points, gp_train_function, gp_regression_sample),
+          AbcEmulationSettings(n_design_points, gp_train_function, gp_regression),
           batch_size,
           max_iter)
 
