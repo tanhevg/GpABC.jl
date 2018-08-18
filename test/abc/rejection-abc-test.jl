@@ -136,7 +136,7 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
         priors, "keep_all", simulator_function)
     @test size(emu_out.population, 1) > 0
 
-    emu_out = EmulatedABCRejection(n_design_points, reference_data, n_particles, 0.5,
+    emu_out = EmulatedABCRejection(n_design_points, reference_data, n_particles, 1.0,
         priors, "keep_all", simulator_function,
         repetitive_training = RepetitiveTraining(rt_iterations=1, rt_extra_training_points=2),
         write_progress=false)
