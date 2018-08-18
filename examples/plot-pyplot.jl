@@ -8,8 +8,6 @@ function plot_emulation_vs_simulation(emu_out, sim_out, plot_emu_iterations)
             sim_handle = nothing
             kernel_bandwidth_scale = 0.09
             bounds_scale = 1.2
-            # population_colors = ["#c2e699", "#78c679", "#31a354", "#006837"]
-            # population_colors = ["#b2e2e2", "#66c2a4", "#2ca25f", "#006d2c"]
             population_colors = ["#DDF4F7", "#B1E9DE", "#63D3BB", "#00BD8B", "#007731"]
 
             contour_colors = ["white", "#FFE9EC", "#FFBBC5", "#FF8B9C", "#FF5D75", "#FF2F4E", "#D0001F", "#A20018", "#990017", "#800013"]
