@@ -1,14 +1,14 @@
 using GpABC, DifferentialEquations, Distances, Distributions
 
-srand(2)
+srand(4)
 
 #
 # ABC settings
 #
-n_var_params = 3
+
 n_particles = 1000
-threshold_schedule = [3.0, 2.0, 1.0]
-priors = [Uniform(0., 5.), Uniform(0., 5.), Uniform(0., 30.)]
+threshold_schedule = [3.0, 2.0, 1.0, 0.5, 0.2]
+# threshold_schedule = [3.0, 2.0, 1.0]
 distance_metric = euclidean
 progress_every = 1000
 
@@ -23,6 +23,14 @@ max_iter = 1000
 # True parameters
 #
 true_params =  [2.0, 1.0, 15.0, 1.0, 1.0, 1.0, 100.0, 1.0, 1.0, 1.0]
+priors = [Uniform(0., 5.), Uniform(0., 5.), Uniform(0., 30.),
+            Uniform(0., 2.), Uniform(0., 2.), Uniform(0., 2.),
+            Uniform(75., 125.),
+            Uniform(0., 2.), Uniform(0., 2.), Uniform(0., 2.)]
+param_indices = [2, 3, 9, 10]
+# param_indices = [1, 2, 3]
+n_var_params = length(param_indices)
+
 
 #
 # ODE solver settings
@@ -56,20 +64,19 @@ GeneReg = function(params::AbstractArray{Float64,1},
 end
 
 reference_data = GeneReg(true_params, Tspan, x0, solver, saveat)
-simulator_function(var_params) = GeneReg(vcat(var_params, true_params[n_var_params+1:end]), Tspan, x0, solver, saveat)
+# simulator_function(var_params) = GeneReg(vcat(var_params, true_params[n_var_params+1:end]), Tspan, x0, solver, saveat)
+function simulator_function(var_params)
+    params = copy(true_params)
+    params[param_indices] .= var_params
+    GeneReg(params, Tspan, x0, solver, saveat)
+end
 
 println("SIMULATION")
-sim_out = SimulatedABCSMC(reference_data, 100, threshold_schedule,
-    priors, "keep_all", simulator_function, max_iter=10000)
+sim_out = SimulatedABCSMC(reference_data, n_particles, [3.0, 2.0, 1.0, 0.5],
+    priors[param_indices], "keep_all", simulator_function)
 
 println("EMULATION")
-emu_out = EmulatedABCSMC(n_design_points, reference_data, n_particles, threshold_schedule,
-    priors, "keep_all", simulator_function,
-    repetitive_training=RepetitiveTraining(rt_iterations=3, rt_extra_training_points=5))
-
-
-# using Plots
-# plot(emu_out, population_colors=["blue", "green", "black"])
-# plot(emu_out)
-# plot(sim_out, population_colors=["blue", "green", "black"])
-# plot(sim_out)
+emu_out = EmulatedABCSMC(n_design_points, reference_data, n_particles, [3.0, 2.0, 1.0, 0.5, 0.2],
+    priors[param_indices], "keep_all", simulator_function,
+    repetitive_training=RepetitiveTraining(rt_iterations=3, rt_extra_training_points=5),
+    )

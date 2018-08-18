@@ -46,7 +46,7 @@ function EmulatedABCRejection{D<:ContinuousUnivariateDistribution}(n_design_poin
 
     emulation_settings = AbcEmulationSettings(n_design_points,
         gp_train_function,
-        (x, em) -> gp_regression(x, em)[1])
+        gp_regression)
 
     input = EmulatedABCRejectionInput(length(priors), n_particles, threshold,
         priors, emulation_settings, batch_size, max_iter)
@@ -96,14 +96,14 @@ function EmulatedABCSMC{D<:ContinuousUnivariateDistribution}(n_design_points::In
                 reference_summary_statistic,
                 simulator_function,
                 summary_statistic,
-                distance_metric,
-                rts=repetitive_training,
-                gpkernel=gpkernel)
+                distance_metric;
+                kwargs...
+                )
     end
 
     emulation_settings = AbcEmulationSettings(n_design_points,
         gp_train_function,
-        (x, em) -> gp_regression(x, em)[1])
+        gp_regression)
 
     input = EmulatedABCSMCInput(length(priors), n_particles, threshold_schedule,
         priors, emulation_settings, batch_size, max_iter)
