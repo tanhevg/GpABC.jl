@@ -298,7 +298,7 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
 
         distances, vars = tracker.emulation_settings.emulate_distance_function(parameters, emulator)
         tracker.n_tries[end] += length(distances)
-        accepted_indices = find((distances .<= threshold) .& (vars .<= threshold))
+        accepted_indices = find((distances .<= threshold) .& (sqrt.(vars) .<= threshold))
         # accepted_indices = find(distances .<= threshold)
         n_include = length(accepted_indices)
         if n_accepted + n_include > n_toaccept

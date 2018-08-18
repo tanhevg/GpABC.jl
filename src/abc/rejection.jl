@@ -106,7 +106,7 @@ function ABCrejection(input::SimulatedABCRejectionInput,
         end
 
     end
-    if write_progress
+    if write_progress && (n_tries % progress_every != 0)
         write(out_stream, string(DateTime(now())),
                           " Rejection ABC simulation accepted ",
                           string(n_accepted),
@@ -192,7 +192,7 @@ function ABCrejection(input::EmulatedABCRejectionInput,
         #
         # Check which parameter indices were accepted
         #
-        accepted_batch_idxs = find((distances .<= input.threshold) .& (vars .<= input.threshold))
+        accepted_batch_idxs = find((distances .<= input.threshold) .& (sqrt.(vars) .<= input.threshold))
         # accepted_batch_idxs = find(distances .<= input.threshold)
         n_accepted_batch = length(accepted_batch_idxs)
 

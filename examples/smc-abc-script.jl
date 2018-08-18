@@ -1,6 +1,6 @@
 using GpABC, DifferentialEquations, Distances, Distributions
 
-srand(2)
+srand(4)
 
 #
 # ABC settings
@@ -8,7 +8,7 @@ srand(2)
 
 n_particles = 1000
 threshold_schedule = [3.0, 2.0, 1.0, 0.5, 0.2]
-threshold_schedule = [3.0, 2.0, 1.0]
+# threshold_schedule = [3.0, 2.0, 1.0]
 distance_metric = euclidean
 progress_every = 1000
 
@@ -28,7 +28,7 @@ priors = [Uniform(0., 5.), Uniform(0., 5.), Uniform(0., 30.),
             Uniform(75., 125.),
             Uniform(0., 2.), Uniform(0., 2.), Uniform(0., 2.)]
 param_indices = [2, 3, 9, 10]
-param_indices = [1, 2, 3]
+# param_indices = [1, 2, 3]
 n_var_params = length(param_indices)
 
 
@@ -72,18 +72,11 @@ function simulator_function(var_params)
 end
 
 println("SIMULATION")
-sim_out = SimulatedABCSMC(reference_data, 1000, threshold_schedule,
-    priors[param_indices], "keep_all", simulator_function, max_iter=10000)
+sim_out = SimulatedABCSMC(reference_data, n_particles, [3.0, 2.0, 1.0, 0.5],
+    priors[param_indices], "keep_all", simulator_function)
 
 println("EMULATION")
-emu_out = EmulatedABCSMC(n_design_points, reference_data, n_particles, threshold_schedule,
+emu_out = EmulatedABCSMC(n_design_points, reference_data, n_particles, [3.0, 2.0, 1.0, 0.5, 0.2],
     priors[param_indices], "keep_all", simulator_function,
     repetitive_training=RepetitiveTraining(rt_iterations=3, rt_extra_training_points=5),
     )
-
-
-import Plots
-Plots.plot(sim_out, population_colors=["blue", "orange", "green", "black", "red"])
-# plot(emu_out)
-# plot(sim_out, population_colors=["blue", "green", "black"])
-# plot(sim_out)
