@@ -21,6 +21,12 @@ function plot_emulation_vs_simulation(emu_out, sim_out, plot_emu_iterations)
                         y_data_emu = emu_out.population[end][:,i]
                         x_data_sim = sim_out.population[end][:,j]
                         y_data_sim = sim_out.population[end][:,i]
+                        sim_size = size(sim_out.population[end], 1)
+                        if sim_size > 20
+                            # idx = sample(range(1,sim_size))
+                            x_data_sim = x_data_sim[1:20]
+                            y_data_sim = y_data_sim[1:20]
+                        end
                         x_extr_emu = extrema(x_data_emu)
                         y_extr_emu = extrema(y_data_emu)
                         x_extr_sim = extrema(x_data_sim)
@@ -101,7 +107,7 @@ emu_out1 = GpABC.EmulatedABCSMCOutput(emu_out.n_params, emu_out.n_accepted[1:end
 ion()
 fig = figure()
 ioff()
-plot_emulation_vs_simulation(emu_out, sim_out, false)
+plot_emulation_vs_simulation(emu_out, sim_out, true)
 subplots_adjust(
 left    =  0.08,
 bottom  =  0.06,
@@ -111,4 +117,4 @@ wspace  =  0.26,
 hspace  =  0.26)
 show(fig)
 
-savefig("/Users/tanhevg/Desktop/projects/gaussian_processes/Bioinformatics paper/fig-1b-res-3-gene-no-pop.eps")
+# savefig("/Users/tanhevg/Desktop/projects/gaussian_processes/Bioinformatics paper/fig-1b-res-3-gene-no-pop.eps")
