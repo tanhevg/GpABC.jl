@@ -8,6 +8,7 @@ function plot_emulation_vs_simulation(emu_out, sim_out, plot_emu_iterations)
             sim_handle = nothing
             kernel_bandwidth_scale = 0.09
             bounds_scale = 1.2
+            # population_colors = ["#B1E9DE", "#007731"]
             population_colors = ["#DDF4F7", "#B1E9DE", "#63D3BB", "#00BD8B", "#007731"]
 
             contour_colors = ["white", "#FFE9EC", "#FFBBC5", "#FF8B9C", "#FF5D75", "#FF2F4E", "#D0001F", "#A20018", "#990017", "#800013"]
@@ -86,13 +87,6 @@ function plot_emulation_vs_simulation(emu_out, sim_out, plot_emu_iterations)
                     end
                 end
             end
-            # if grid_size > 1
-            #     subplot2grid((grid_size, grid_size), (0, 1))
-            #     legend([emu_handle; sim_handle], ["Emulation", "Simulation"], loc="upper left")
-            #     axis("off")
-            # else
-            # figlegend([emu_handle; sim_handle], ["Emulation", "Simulation"], loc="upper right")
-            # end
 end
 
 sim_out1 = GpABC.SimulatedABCSMCOutput(sim_out.n_params, sim_out.n_accepted[1:end-1],
@@ -117,4 +111,4 @@ wspace  =  0.26,
 hspace  =  0.26)
 show(fig)
 
-# savefig("/Users/tanhevg/Desktop/projects/gaussian_processes/Bioinformatics paper/fig-1b-res-3-gene-no-pop.eps")
+# savefig("/project/home17/et517/Dropbox/GaussianProcesses/Bioinformatics paper/fig-1b-res-3-gene-3-param-noise.eps")

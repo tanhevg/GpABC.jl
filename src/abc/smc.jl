@@ -241,7 +241,7 @@ function iterateABCSMC!(tracker::SimulatedABCSMCTracker,
         distances = distances[1:n_accepted]
         warn("Simulation reached maximum $(tracker.max_iter) iterations before finding $(n_toaccept) particles - will return $n_accepted")
     else
-        write(out_stream, string(DateTime(now())), " ABCSMC Simulation end. Accepted $(tracker.n_accepted[end])/$(n_toaccept)\n")
+        write(out_stream, string(DateTime(now())), " ABCSMC Simulation end. Accepted $(n_accepted)/$(n_toaccept)\n")
     end
     push!(tracker.n_accepted, n_accepted)
     push!(tracker.n_tries, n_tries)
