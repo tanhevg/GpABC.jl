@@ -1,6 +1,6 @@
 using GpABC, DifferentialEquations, Distances, Distributions
 
-srand(4)
+# srand(4)
 
 #
 # ABC settings
@@ -23,12 +23,12 @@ max_iter = 1000
 # True parameters
 #
 true_params =  [2.0, 1.0, 15.0, 1.0, 1.0, 1.0, 100.0, 1.0, 1.0, 1.0]
-priors = [Uniform(0., 5.), Uniform(0., 5.), Uniform(0., 30.),
+priors = [Uniform(0., 5.), Uniform(0., 5.), Uniform(10., 20.),
             Uniform(0., 2.), Uniform(0., 2.), Uniform(0., 2.),
             Uniform(75., 125.),
             Uniform(0., 2.), Uniform(0., 2.), Uniform(0., 2.)]
-param_indices = [2, 3, 9, 10]
-# param_indices = [1, 2, 3]
+# param_indices = [2, 3, 9, 10]
+param_indices = [1, 2, 3]
 n_var_params = length(param_indices)
 
 
@@ -64,11 +64,15 @@ GeneReg = function(params::AbstractArray{Float64,1},
 end
 
 reference_data = GeneReg(true_params, Tspan, x0, solver, saveat)
+reference_data += randn(size(reference_data)) * 0.1
 # simulator_function(var_params) = GeneReg(vcat(var_params, true_params[n_var_params+1:end]), Tspan, x0, solver, saveat)
 function simulator_function(var_params)
     params = copy(true_params)
     params[param_indices] .= var_params
     GeneReg(params, Tspan, x0, solver, saveat)
+    # ret = GeneReg(params, Tspan, x0, solver, saveat)
+    # noise = randn(size(ret)) * 0.05
+    # return ret + noise
 end
 
 println("SIMULATION")

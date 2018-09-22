@@ -87,6 +87,10 @@ function normalise(
     return weights
 end
 
+function normalise(weight_values::AbstractArray{F, 1}, tosum = 1.0) where F<:AbstractFloat
+    return StatsBase.Weights(weight_values .* (sum(weight_values) / tosum), tosum)
+end
+
 #
 # Initialise a simulated ABC-SMC run
 #
@@ -186,65 +190,67 @@ function iterateABCSMC!(tracker::SimulatedABCSMCTracker,
     if write_progress
         write(out_stream, string(DateTime(now())), " ABCSMC Simulation ϵ = $threshold.\n")
     end
-
-    # initialise
-    push!(tracker.n_accepted, 0)
-    push!(tracker.n_tries, 0)
     if threshold > tracker.threshold_schedule[end]
         println("Warning: current threshold less strict than previous one.")
     end
-    push!(tracker.threshold_schedule, threshold)
-    push!(tracker.population, zeros(n_toaccept, tracker.n_params))
-    push!(tracker.distances, zeros(n_toaccept))
-    push!(tracker.weights, StatsBase.Weights(ones(n_toaccept)))
-
-    kernels = generate_kernels(tracker.population[end-1], tracker.priors)
-
+    kernels = generate_kernels(tracker.population[end], tracker.priors)
     reference_data_sum_stat = tracker.summary_statistic(reference_data)
+    n_tries = 0
+    n_accepted = 0
+    population = zeros(n_toaccept, tracker.n_params)
+    distances = zeros(n_toaccept)
+    weights = zeros(n_toaccept)
 
-    iter_no = 1
     # simulate
-    while tracker.n_accepted[end] < n_toaccept && iter_no <= tracker.max_iter
-        parameters, weight = generate_parameters(1, tracker.priors, tracker.weights[end-1], kernels)
+    while n_accepted < n_toaccept && n_tries < tracker.max_iter
+        parameters, weight = generate_parameters(1, tracker.priors, tracker.weights[end], kernels)
         parameters = parameters[1, :]
         weight = weight[1]
         simulated_data = tracker.simulator_function(parameters)
         simulated_data_sum_stat = tracker.summary_statistic(simulated_data)
         distance = tracker.distance_function(reference_data_sum_stat, simulated_data_sum_stat)
-        tracker.n_tries[end] += 1
+        n_tries += 1
 
         if distance <= threshold
-            tracker.n_accepted[end] += 1
-            n_accepted = tracker.n_accepted[end]
-            tracker.population[end][n_accepted,:] = parameters
-            tracker.distances[end][n_accepted] = distance
-            tracker.weights[end].values[n_accepted] = weight
+            n_accepted += 1
+            population[n_accepted,:] = parameters
+            distances[n_accepted] = distance
+            weights[n_accepted] = weight
         end
 
-        if write_progress && (tracker.n_tries[end] % progress_every == 0)
+        if write_progress && (n_tries % progress_every == 0)
             write(out_stream, string(DateTime(now())),
                               " ABCSMC Simulation accepted ",
-                              string(tracker.n_accepted[end]),
+                              string(n_accepted),
                               "/",
-                              string(tracker.n_tries[end]),
+                              string(n_tries),
                               " particles.\n"
                               )
             flush(out_stream)
         end
-        iter_no += 1
     end
 
-    if tracker.n_accepted[end] < n_toaccept
-        n_accepted = tracker.n_accepted[end]
-        tracker.population[end] = tracker.population[end][1:n_accepted, :]
-        tracker.weights[end] = StatsBase.Weights(tracker.weights[end][1:n_accepted])
-        warn("Emulation reached maximum $(tracker.max_iter) iterations before finding $(n_toaccept) particles - will return $n_accepted")
+    if n_accepted == 0
+        warn("Simulation reached maximum $(tracker.max_iter) iterations without selecting any particles")
+        return false
+    end
+
+    if n_accepted < n_toaccept
+        population = population[1:n_accepted, :]
+        weights = weights[1:n_accepted]
+        distances = distances[1:n_accepted]
+        warn("Simulation reached maximum $(tracker.max_iter) iterations before finding $(n_toaccept) particles - will return $n_accepted")
     else
-        write(out_stream, string(DateTime(now())), " ABCSMC Simulation end. Accepted $(tracker.n_accepted[end])/$(n_toaccept)\n")
+        write(out_stream, string(DateTime(now())), " ABCSMC Simulation end. Accepted $(n_accepted)/$(n_toaccept)\n")
     end
-    tracker.weights[end] = deepcopy(normalise(tracker.weights[end], tosum=1.0))
+    push!(tracker.n_accepted, n_accepted)
+    push!(tracker.n_tries, n_tries)
+    push!(tracker.threshold_schedule, threshold)
+    push!(tracker.population, population)
+    push!(tracker.distances, distances)
+    push!(tracker.weights, normalise(weights))
 
-    return tracker
+    return true
 end
 
 #
@@ -262,20 +268,12 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
         write(out_stream, string(DateTime(now())), " ABCSMC Emulation ϵ = $threshold.\n")
     end
 
-    # initialise
-    iter_no = 1
     old_population = tracker.population[end]
     old_weights = tracker.weights[end]
 
-    push!(tracker.n_accepted, 0)
-    push!(tracker.n_tries, 0)
     if threshold > tracker.threshold_schedule[end]
         println("Warning: current threshold less strict than previous one.")
     end
-    push!(tracker.threshold_schedule, threshold)
-    push!(tracker.population, zeros(n_toaccept, tracker.n_params))
-    push!(tracker.distances, zeros(n_toaccept))
-    push!(tracker.weights, StatsBase.Weights(ones(n_toaccept)))
 
     kernels = generate_kernels(old_population, tracker.priors)
     # prior_sampling_function(n_design_points) = generate_parameters_no_weights(n_design_points,
@@ -287,18 +285,25 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
         return old_population[ret_idx, :]
     end
     emulator = tracker.emulation_settings.train_emulator_function(prior_sampling_function)
+
+    # initialise
+    iter_no = 0
     n_accepted = 0
+    all_weights = zeros(n_toaccept)
+    population = zeros(n_toaccept, tracker.n_params)
+    all_distances = zeros(n_toaccept)
+    n_tries = 0
 
     # emulate
-    while tracker.n_accepted[end] < n_toaccept && iter_no <= tracker.max_iter
+    while n_accepted < n_toaccept && iter_no < tracker.max_iter
         parameters, weights = generate_parameters(tracker.batch_size,
                                                  tracker.priors,
                                                  old_weights,
                                                  kernels)
 
         distances, vars = tracker.emulation_settings.emulate_distance_function(parameters, emulator)
-        tracker.n_tries[end] += length(distances)
-        accepted_indices = find((distances .<= threshold) .& (sqrt.(vars) .<= threshold))
+        n_tries += length(distances)
+        accepted_indices = find((distances .<= threshold) .& (sqrt.(vars) .<= threshold)) # todo more variance controls
         # accepted_indices = find(distances .<= threshold)
         n_include = length(accepted_indices)
         if n_accepted + n_include > n_toaccept
@@ -309,19 +314,17 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
         weights = weights[accepted_indices]
         parameters = parameters[accepted_indices, :]
         store_slice = n_accepted + 1 : n_accepted + n_include
-
-        tracker.n_accepted[end] += n_include
-        n_accepted = tracker.n_accepted[end]
-        tracker.population[end][store_slice,:] = parameters
-        tracker.distances[end][store_slice] = distances
-        tracker.weights[end].values[store_slice] = weights
+        n_accepted += n_include
+        population[store_slice,:] = parameters
+        all_distances[store_slice] = distances
+        all_weights[store_slice] = weights
 
         if write_progress
             write(out_stream, string(DateTime(now())),
                               " ABCSMC Emulation accepted ",
-                              string(tracker.n_accepted[end]),
+                              string(n_accepted),
                               "/",
-                              string(tracker.n_tries[end]),
+                              string(n_tries),
                               " particles.\n"
                               )
             flush(out_stream)
@@ -330,17 +333,26 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
         iter_no += 1
     end
 
-    if tracker.n_accepted[end] < n_toaccept
-        n_accepted = tracker.n_accepted[end]
-        tracker.population[end] = tracker.population[end][1:n_accepted, :]
-        tracker.weights[end] = StatsBase.Weights(tracker.weights[end][1:n_accepted])
-        tracker.distances[end] = tracker.distances[end][1:n_accepted]
+    if n_accepted == 0
+        warn("Emulation reached maximum $(tracker.max_iter) iterations without selecting any particles")
+        return false
+    end
+
+    if n_accepted < n_toaccept
+        population = population[1:n_accepted, :]
+        all_weights = all_weights[1:n_accepted]
+        all_distances = all_distances[1:n_accepted]
         warn("Emulation reached maximum $(tracker.max_iter) iterations before finding $(n_toaccept) particles - will return $n_accepted")
     end
-    tracker.weights[end] = deepcopy(normalise(tracker.weights[end], tosum=1.0))
+    push!(tracker.n_accepted, n_accepted)
+    push!(tracker.n_tries, n_tries)
+    push!(tracker.threshold_schedule, threshold)
+    push!(tracker.population, population)
+    push!(tracker.distances, all_distances)
+    push!(tracker.weights, normalise(all_weights))
     push!(tracker.emulators, emulator)
 
-    return tracker
+    return true
 end
 
 function buildAbcSmcOutput(input::EmulatedABCSMCInput, tracker::EmulatedABCSMCTracker)
@@ -392,17 +404,24 @@ function ABCSMC(
                                out_stream = out_stream,
                                write_progress = write_progress)
 
-    for i in 2:length(input.threshold_schedule)
-        @assert size(tracker.population[end], 1) > 0 "No particles were accepted by step #$(i-1) of ABC SMC"
-        threshold = input.threshold_schedule[i]
-        iterateABCSMC!(tracker,
-                       threshold,
-                       input.n_particles,
-                       reference_data;
-                       out_stream = out_stream,
-                       write_progress = write_progress,
-                       progress_every = progress_every,
-                       )
+    if tracker.n_accepted[1] > 0
+        for i in 2:length(input.threshold_schedule)
+            # @assert size(tracker.population[end], 1) > 0 "No particles were accepted by step #$(i-1) of ABC SMC"
+            threshold = input.threshold_schedule[i]
+            complete_threshold = iterateABCSMC!(tracker,
+                           threshold,
+                           input.n_particles,
+                           reference_data;
+                           out_stream = out_stream,
+                           write_progress = write_progress,
+                           progress_every = progress_every,
+                           )
+            if !complete_threshold
+                break
+            end
+        end
+    else
+        warn("No particles selected at initial rejection ABC step of SMC ABC")
     end
 
     return buildAbcSmcOutput(input, tracker)
