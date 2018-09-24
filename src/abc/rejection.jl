@@ -10,8 +10,8 @@ function generate_parameters(
     parameters = zeros(n_dims)
 
     weight = 1.
-    for i in 1:n_dims
-        @inbounds parameters[i] = rand(priors[i])
+    @inbounds for i in 1:n_dims
+        parameters[i] = rand(priors[i])
         weight *= pdf(priors[i], parameters[i])
     end
 
@@ -29,14 +29,9 @@ function generate_parameters(
         }
     n_dims = length(priors)
     parameters = zeros(batch_size, n_dims)
-    weights = ones(batch_size)
-
-    for j in 1:n_dims
-        for i in 1:batch_size
-            @inbounds parameters[i,j] = rand(priors[j])
-            weights[i] *= pdf(priors[j], parameters[j])
-        end
-    end
+    priors = reshape(priors, 1, n_dims)
+    parameters .= rand.(priors)
+    weights = prod(pdf.(priors, parameters), 2)
 
     return parameters, weights
 end
@@ -74,6 +69,9 @@ function ABCrejection(input::SimulatedABCRejectionInput,
     hide_maxiter_warning::Bool = false)
 
 	checkABCInput(input)
+    if write_progress
+        write(out_stream, string(DateTime(now())), " Rejection ABC simulation ϵ = $(input.threshold).\n")
+    end
 
 	# initialise
     n_tries = 0
@@ -122,6 +120,17 @@ function ABCrejection(input::SimulatedABCRejectionInput,
 
     end
 
+    if write_progress && (n_tries % progress_every != 0)
+        write(out_stream, string(DateTime(now())),
+                          " Rejection ABC simulation accepted ",
+                          string(n_accepted),
+                          "/",
+                          string(n_tries),
+                          " particles.\n"
+                          )
+        flush(out_stream)
+    end
+
     if n_accepted < input.n_particles
         if !hide_maxiter_warning
             warn("Simulation reached maximum iterations $(input.max_iter) before finding $(input.n_particles) particles - will return $n_accepted")
@@ -131,7 +140,7 @@ function ABCrejection(input::SimulatedABCRejectionInput,
         weights = weights[1:n_accepted]
     end
 
-    if normalise_weights
+    if normalise_weights   
         weights = weights ./ sum(weights)
     end
 
@@ -180,6 +189,9 @@ function ABCrejection(input::EmulatedABCRejectionInput,
 
 	checkABCInput(input)
 
+    if write_progress
+        write(out_stream, string(DateTime(now())), " Rejection ABC emulation ϵ = $(input.threshold).\n")
+    end
 	# initialise
     n_accepted = 0
     n_tries = 0
@@ -204,13 +216,14 @@ function ABCrejection(input::EmulatedABCRejectionInput,
 
         parameter_batch, weight_batch = generate_parameters(input.priors, input.batch_size)
 
-        distances = input.emulation_settings.emulate_distance_function(parameter_batch, emulator)
+        (distances, vars) = input.emulation_settings.emulate_distance_function(parameter_batch, emulator)
         n_tries += input.batch_size
 
         #
         # Check which parameter indices were accepted
         #
-        accepted_batch_idxs = find(distances .<= input.threshold)
+        accepted_batch_idxs = find((distances .<= input.threshold) .& (sqrt.(vars) .<= input.threshold))
+        # accepted_batch_idxs = find(distances .<= input.threshold)
         n_accepted_batch = length(accepted_batch_idxs)
 
         #
@@ -250,7 +263,7 @@ function ABCrejection(input::EmulatedABCRejectionInput,
 
     if n_accepted < input.n_particles
         if !hide_maxiter_warning
-            warn("Emulation reached maximum iterations before finding $(input.n_particles) particles - will return $n_accepted")
+                warn("Emulation reached maximum $(input.max_iter) iterations before finding $(input.n_particles) particles - will return $n_accepted")
         end
         accepted_parameters = accepted_parameters[1:n_accepted, :]
         accepted_distances = accepted_distances[1:n_accepted]
