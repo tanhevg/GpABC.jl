@@ -245,25 +245,9 @@ function iterateABCSMC!(tracker::SimulatedABCSMCTracker,
         end
     end
 
-<<<<<<< HEAD
-    if tracker.n_accepted[end] < n_toaccept
-        n_accepted = tracker.n_accepted[end]
-        tracker.population[end] = tracker.population[end][1:n_accepted, :]
-        tracker.weights[end] = StatsBase.Weights(tracker.weights[end][1:n_accepted])
-        if !hide_maxiter_warning
-            warn("Simulation reached maximum $(tracker.max_iter) iterations before finding $(n_toaccept) particles - will return $n_accepted")
-        end
-    end
-
-    # Do not want to normalise weights now if doing model selection - will do at 
-    # end of population at model selection level
-    if normalise_weights
-        tracker.weights[end] = deepcopy(normalise(tracker.weights[end], tosum=1.0))
-=======
     if n_accepted == 0
         warn("Simulation reached maximum $(tracker.max_iter) iterations without selecting any particles")
         return false
->>>>>>> 9ee9f148783ba5153aa8ceb31033cf2c0f3fc414
     end
 
     if n_accepted < n_toaccept
@@ -279,7 +263,12 @@ function iterateABCSMC!(tracker::SimulatedABCSMCTracker,
     push!(tracker.threshold_schedule, threshold)
     push!(tracker.population, population)
     push!(tracker.distances, distances)
-    push!(tracker.weights, normalise(weights))
+    # Do not want to normalise weights now if doing model selection - will do at 
+    # end of population at model selection level
+    if normalise_weights
+        weights = normalise(weights)
+    end
+    push!(tracker.weights, weights)
 
     return true
 end

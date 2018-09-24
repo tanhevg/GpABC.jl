@@ -127,8 +127,7 @@ function iterate_modelselection!(tracker::SimulatedModelSelectionTracker,
 			tracker.model_trackers[m].n_tries[end] += 1
 		end
 
-		abcsmc_tracker = iterateABCSMC!(
-			SimulatedABCSMCTracker(
+		abcsmc_tracker = SimulatedABCSMCTracker(
 				tracker.model_trackers[m].n_params,
 				deepcopy(tracker.model_trackers[m].n_accepted[1:end-1]),
 				[0],
@@ -140,14 +139,17 @@ function iterate_modelselection!(tracker::SimulatedModelSelectionTracker,
 				tracker.summary_statistic,
 				tracker.distance_function,
 				tracker.model_trackers[m].simulator_function,
-				1),
+				1)
+
+		particle_accepted = iterateABCSMC!(
+			abcsmc_tracker,
 			threshold,
 			1,
 			reference_data,
 			normalise_weights = false,
 			hide_maxiter_warning=true)
 
-		if abcsmc_tracker.n_accepted[end] == 1
+		if particle_accepted
 			total_n_accepted += 1
 			tracker.model_trackers[m].n_accepted[end] += 1
 			tracker.model_trackers[m].population[end] = vcat(tracker.model_trackers[m].population[end], abcsmc_tracker.population[end][1,:]')
