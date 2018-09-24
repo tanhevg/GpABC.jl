@@ -12,7 +12,12 @@ function generate_kernels(
     n_particles = size(population, 1)
     n_params = size(population, 2)
 
-    stds = std(population, 1)[:]
+    if n_particles > 1
+        stds = std(population, 1)[:]
+    else
+        stds = 1e-3 * ones(n_params) # If there is only one particle we cannot compute the sd - use a small value instead?
+    end
+
     lowers = minimum.(priors)
     uppers = maximum.(priors)
 
@@ -20,7 +25,7 @@ function generate_kernels(
     kernels = Matrix{CUD}(n_particles, n_params)
     for j in 1:n_params
         means = population[:, j]
-        kernels[:, j] = TruncatedNormal.(means, stds[j]*sqrt(2), lowers[j], uppers[j])
+        kernels[:, j] = TruncatedNormal.(means, stds[j]*sqrt(2.0), lowers[j], uppers[j])
     end
 
     return kernels
@@ -95,7 +100,7 @@ end
 # Initialise a simulated ABC-SMC run
 #
 function initialiseABCSMC(input::SimulatedABCSMCInput,
-        reference_data;
+        reference_data::AbstractArray{Float64,2};
         out_stream::IO =  STDOUT,
         write_progress = true,
         progress_every = 1000,
@@ -141,8 +146,9 @@ end
 #
 # Initialise an emulated ABC-SMC run
 #
-function initialiseABCSMC(input::EmulatedABCSMCInput,
-        reference_data;
+function initialiseABCSMC(
+        input::EmulatedABCSMCInput,
+        reference_data::AbstractArray{Float64,2};
         out_stream::IO =  STDOUT,
         write_progress = true)
     # the first run is an ABC rejection simulation
@@ -182,10 +188,12 @@ end
 function iterateABCSMC!(tracker::SimulatedABCSMCTracker,
         threshold::AbstractFloat,
         n_toaccept::Integer,
-        reference_data;
+        reference_data::AbstractArray{Float64,2};
         out_stream::IO = STDOUT,
         write_progress = true,
         progress_every = 1000,
+        normalise_weights::Bool = true,
+        hide_maxiter_warning::Bool = false
         )
     if write_progress
         write(out_stream, string(DateTime(now())), " ABCSMC Simulation ϵ = $threshold.\n")
@@ -208,6 +216,13 @@ function iterateABCSMC!(tracker::SimulatedABCSMCTracker,
         weight = weight[1]
         simulated_data = tracker.simulator_function(parameters)
         simulated_data_sum_stat = tracker.summary_statistic(simulated_data)
+        # This prevents the whole code from failing if there is a problem with solving the
+        # differential equation(s)
+        if size(simulated_data_sum_stat) != size(reference_data_sum_stat)
+            warn("Summarised simulated and reference data do not have the same size ( $(size(simulated_data_sum_stat)) and $(size(reference_data_sum_stat)) ).
+                This may be due to the behaviour of DifferentialEquations::solve - please check for dt-related warnings. Continuing to the next iteration.")
+            continue
+        end
         distance = tracker.distance_function(reference_data_sum_stat, simulated_data_sum_stat)
         n_tries += 1
 
@@ -248,7 +263,12 @@ function iterateABCSMC!(tracker::SimulatedABCSMCTracker,
     push!(tracker.threshold_schedule, threshold)
     push!(tracker.population, population)
     push!(tracker.distances, distances)
-    push!(tracker.weights, normalise(weights))
+    # Do not want to normalise weights now if doing model selection - will do at 
+    # end of population at model selection level
+    if normalise_weights
+        weights = normalise(weights)
+    end
+    push!(tracker.weights, weights)
 
     return true
 end
@@ -259,7 +279,7 @@ end
 function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
         threshold::AbstractFloat,
         n_toaccept::Integer,
-        reference_data;
+        reference_data::AbstractArray{Float64,2};
         out_stream::IO = STDOUT,
         write_progress = true,
         progress_every = 1000,
@@ -330,7 +350,6 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
             flush(out_stream)
         end
 
-        iter_no += 1
     end
 
     if n_accepted == 0
@@ -383,12 +402,15 @@ Run a ABC-SMC computation using either simulation (the model is simulated in ful
 distance to observed data is used to construct the posterior) or emulation (a regression model trained to predict the distance from the
 parameter vector directly is used to construct the posterior). Whether simulation or emulation is used is controlled by the type of `input`.
 
-# Fields
-- `input::ABCSMCInput`: An ['SimulatedABCSMCInput'](@ref) or ['EmulatedABCSMCInput'](@ref) object that defines the settings for thw ABC-SMC run.
+# Arguments
+- `input::ABCSMCInput`: An ['SimulatedABCSMCInput'](@ref) or ['EmulatedABCSMCInput'](@ref) object that defines the settings for the ABC-SMC run.
 - `reference_data::AbstractArray{Float64,2}`: The observed data to which the simulated model output will be compared. Size: (n_model_trajectories, n_time_points)
 - `out_stream::IO`: The output stream to which progress will be written. An optional argument whose default is `STDOUT`.
 - `write_progress::Bool`: Optional argument controlling whether progress is written to `out_stream`.
 - `progress_every::Int`: Progress will be written to `out_stream` every `progress_every` simulations (optional, ignored if `write_progress` is `False`).
+
+# Return
+An object that inherits from ['ABCSMCOutput'](@ref), depending on whether a `input` is a ['SimulatedABCSMCInput'](@ref) or ['EmulatedABCSMCInput'](@ref).
 """
 function ABCSMC(
         input::ABCSMCInput,
