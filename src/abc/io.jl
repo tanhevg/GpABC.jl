@@ -33,13 +33,16 @@ end
 """
     RepetitiveTraining
 
-A structure that holds the settings for repetitive training of the emulator. On each iteration of re-training a certain number of points is sampled from the prior.
-Emulator prediction variance is then obtained for this sample. The point with the highest variance is added to the training set. The model is then simulated for
-this additional parameter, and the emulator is re-trained.
+A structure that holds the settings for repetitive training of the emulator.
+On each iteration of re-training a certain number of points (`rt_sample_size`) is sampled from the prior.
+Variance of emulator prediction is then obtained for this sample.
+Particles with the highest variance are added to the training set.
+The model is then simulated for this additional parameters, and the emulator is re-trained.
 
 # Fields
 - `rt_iterations`: Number of times the emulator will be re-trained.
 - `rt_sample_size`: Size of the sample that will be used to evaluate emulator variance.
+- `rt_extra_training_points`: Number of particles with highest variance to add to the training set on each iteration.
 """
 struct RepetitiveTraining
     rt_iterations::Int64
