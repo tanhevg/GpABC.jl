@@ -38,6 +38,18 @@ struct EmulatedModelSelectionInput <: ModelSelectionInput
 	max_iter::Integer
 end
 
+mutable struct ModelSelectionRejectionTracker
+	n_accepted::Int64
+	n_tries::Int64
+	population::AbstractArray{Float64,2}
+	distances::AbstractArray{Float64,1}
+	weight_values::AbstractArray{Float64,1}
+end
+
+function ModelSelectionRejectionTracker(n_params::Int64)
+	return ModelSelectionRejectionTracker(0, 0, zeros(0, n_params), zeros(0), zeros(0))
+end
+
 abstract type CandidateModelTracker end
 
 mutable struct SimulatedCandidateModelTracker <: CandidateModelTracker
@@ -76,7 +88,15 @@ mutable struct SimulatedModelSelectionTracker <: ModelSelectionTracker
 	max_iter::Integer
 end
 
-abstract type ModelSelectionOutput end
+mutable struct EmulatedModelSelectionTracker <: ModelSelectionTracker
+	M::Int64
+	n_particles::Int64
+	threshold_schedule::AbstractArray{Float64,1}
+	model_prior::DiscreteUnivariateDistribution
+	model_trackers::AbstractArray{EmulatedCandidateModelTracker,1}
+	batch_size::Int64
+	max_iter::Integer
+end
 
 """
 	SimulatedModelSelectionOutput
@@ -87,7 +107,7 @@ abstract type ModelSelectionOutput end
 - `threshold_schedule::AbstractArray{Float64,1}`: A set of maximum distances from the summarised model output to summarised observed data for a parameter vector to be included in the posterior.
 - `smc_outputs::AbstractArray{SimulatedABCSMCOutput,1}`: A ['SimulatedABCSMCOutput']@(ref) for each model. Use to find details of the ABC results at each population.
 """
-struct SimulatedModelSelectionOutput <: ModelSelectionOutput
+struct ModelSelectionOutput
 	M::Int64
 	n_accepted::AbstractArray{AbstractArray{Int64,1},1}
 	threshold_schedule::AbstractArray{Float64,1}

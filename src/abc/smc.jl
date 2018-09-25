@@ -193,9 +193,9 @@ function iterateABCSMC!(tracker::SimulatedABCSMCTracker,
         write_progress = true,
         progress_every = 1000,
         normalise_weights::Bool = true,
-        hide_maxiter_warning::Bool = false
+        for_model_selection::Bool = false
         )
-    if write_progress
+    if write_progress && !for_model_selection
         write(out_stream, string(DateTime(now())), " ABCSMC Simulation ϵ = $threshold.\n")
     end
     if threshold > tracker.threshold_schedule[end]
@@ -246,7 +246,9 @@ function iterateABCSMC!(tracker::SimulatedABCSMCTracker,
     end
 
     if n_accepted == 0
-        warn("Simulation reached maximum $(tracker.max_iter) iterations without selecting any particles")
+        if !for_model_selection
+            warn("Simulation reached maximum $(tracker.max_iter) iterations without selecting any particles")
+        end
         return false
     end
 
@@ -254,21 +256,25 @@ function iterateABCSMC!(tracker::SimulatedABCSMCTracker,
         population = population[1:n_accepted, :]
         weights = weights[1:n_accepted]
         distances = distances[1:n_accepted]
-        warn("Simulation reached maximum $(tracker.max_iter) iterations before finding $(n_toaccept) particles - will return $n_accepted")
+        if !for_model_selection
+            warn("Simulation reached maximum $(tracker.max_iter) iterations before finding $(n_toaccept) particles - will return $n_accepted")
+        end
     else
-        write(out_stream, string(DateTime(now())), " ABCSMC Simulation end. Accepted $(n_accepted)/$(n_toaccept)\n")
+        if !for_model_selection
+            write(out_stream, string(DateTime(now())), " ABCSMC Simulation end. Accepted $(n_accepted)/$(n_toaccept)\n")
+        end
     end
     push!(tracker.n_accepted, n_accepted)
     push!(tracker.n_tries, n_tries)
     push!(tracker.threshold_schedule, threshold)
     push!(tracker.population, population)
     push!(tracker.distances, distances)
-    # Do not want to normalise weights now if doing model selection - will do at 
+    # Do not want to normalise weights now if doing model selection - will do at
     # end of population at model selection level
     if normalise_weights
         weights = normalise(weights)
     end
-    push!(tracker.weights, weights)
+    push!(tracker.weights, StatsBase.Weights(weights))
 
     return true
 end
@@ -283,8 +289,11 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
         out_stream::IO = STDOUT,
         write_progress = true,
         progress_every = 1000,
+        emulator = Union{GPModel,Void}=nothing,
+        normalise_weights::Bool = true,
+        for_model_selection::Bool = false
         )
-    if write_progress
+    if write_progress && !for_model_selection
         write(out_stream, string(DateTime(now())), " ABCSMC Emulation ϵ = $threshold.\n")
     end
 
@@ -300,11 +309,14 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
     #     old_population,
     #     old_weights,
     #     kernels)
-    prior_sampling_function = function(n_design_points)
-        ret_idx = StatsBase.sample(indices(old_population, 1), old_weights, n_design_points)
-        return old_population[ret_idx, :]
+
+    if emulator == nothing
+        prior_sampling_function = function(n_design_points)
+            ret_idx = StatsBase.sample(indices(old_population, 1), old_weights, n_design_points)
+            return old_population[ret_idx, :]
+        end
+        emulator = tracker.emulation_settings.train_emulator_function(prior_sampling_function)
     end
-    emulator = tracker.emulation_settings.train_emulator_function(prior_sampling_function)
 
     # initialise
     iter_no = 0
@@ -339,7 +351,7 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
         all_distances[store_slice] = distances
         all_weights[store_slice] = weights
 
-        if write_progress
+        if write_progress && !for_model_selection
             write(out_stream, string(DateTime(now())),
                               " ABCSMC Emulation accepted ",
                               string(n_accepted),
@@ -353,7 +365,9 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
     end
 
     if n_accepted == 0
-        warn("Emulation reached maximum $(tracker.max_iter) iterations without selecting any particles")
+        if !for_model_selection
+            warn("Emulation reached maximum $(tracker.max_iter) iterations without selecting any particles")
+        end
         return false
     end
 
@@ -361,14 +375,21 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
         population = population[1:n_accepted, :]
         all_weights = all_weights[1:n_accepted]
         all_distances = all_distances[1:n_accepted]
-        warn("Emulation reached maximum $(tracker.max_iter) iterations before finding $(n_toaccept) particles - will return $n_accepted")
+        if !for_model_selection
+            warn("Emulation reached maximum $(tracker.max_iter) iterations before finding $(n_toaccept) particles - will return $n_accepted")
+        end
     end
     push!(tracker.n_accepted, n_accepted)
     push!(tracker.n_tries, n_tries)
     push!(tracker.threshold_schedule, threshold)
     push!(tracker.population, population)
     push!(tracker.distances, all_distances)
-    push!(tracker.weights, normalise(all_weights))
+    if normalise_weights
+        all_weights = normalise(all_weights)
+    else
+        all_weights = StatsBase.Weights(all_weights)
+    end
+    push!(tracker.weights, all_weights)
     push!(tracker.emulators, emulator)
 
     return true

@@ -66,10 +66,10 @@ function ABCrejection(input::SimulatedABCRejectionInput,
     write_progress::Bool = true,
     progress_every::Int = 1000,
     normalise_weights::Bool = true,
-    hide_maxiter_warning::Bool = false)
+    for_model_selection::Bool = false)
 
 	checkABCInput(input)
-    if write_progress
+    if write_progress && !for_model_selection
         write(out_stream, string(DateTime(now())), " Rejection ABC simulation ϵ = $(input.threshold).\n")
     end
 
@@ -107,7 +107,7 @@ function ABCrejection(input::SimulatedABCRejectionInput,
             weights[n_accepted] = weight
         end
 
-        if write_progress && (n_tries % progress_every == 0)
+        if write_progress && (n_tries % progress_every == 0) && !for_model_selection
             write(out_stream, string(DateTime(now())),
                               " Rejection ABC simulation accepted ",
                               string(n_accepted),
@@ -120,7 +120,7 @@ function ABCrejection(input::SimulatedABCRejectionInput,
 
     end
 
-    if write_progress && (n_tries % progress_every != 0)
+    if write_progress && (n_tries % progress_every != 0) && !for_model_selection
         write(out_stream, string(DateTime(now())),
                           " Rejection ABC simulation accepted ",
                           string(n_accepted),
@@ -132,7 +132,7 @@ function ABCrejection(input::SimulatedABCRejectionInput,
     end
 
     if n_accepted < input.n_particles
-        if !hide_maxiter_warning
+        if !for_model_selection
             warn("Simulation reached maximum iterations $(input.max_iter) before finding $(input.n_particles) particles - will return $n_accepted")
         end
         accepted_parameters = accepted_parameters[1:n_accepted, :]
@@ -140,7 +140,7 @@ function ABCrejection(input::SimulatedABCRejectionInput,
         weights = weights[1:n_accepted]
     end
 
-    if normalise_weights   
+    if normalise_weights
         weights = weights ./ sum(weights)
     end
 
@@ -151,7 +151,7 @@ function ABCrejection(input::SimulatedABCRejectionInput,
                                 input.threshold,
                                 accepted_parameters,
                                 accepted_distances,
-                                StatsBase.Weights(weights, 1.0),
+                                StatsBase.Weights(weights),
                                 )
 
     #write(out_stream, output)
@@ -182,14 +182,14 @@ function ABCrejection(input::EmulatedABCRejectionInput,
 	reference_data::AbstractArray{Float64,2};
 	out_stream::IO = STDOUT,
     write_progress = true,
-    progress_every = 1000, 
+    progress_every = 1000,
     emulator::Union{GPModel,Void}=nothing, # In model selection an emulator is provided - not finished
     normalise_weights::Bool = true,
-    hide_maxiter_warning::Bool = false)
+    for_model_selection::Bool = false)
 
 	checkABCInput(input)
 
-    if write_progress
+    if write_progress && !for_model_selection
         write(out_stream, string(DateTime(now())), " Rejection ABC emulation ϵ = $(input.threshold).\n")
     end
 	# initialise
@@ -199,7 +199,7 @@ function ABCrejection(input::EmulatedABCRejectionInput,
     accepted_parameters = zeros(input.n_particles, input.n_params)
     accepted_distances = zeros(input.n_particles)
     weights = ones(input.n_particles)
-    println("initialised rejection ABC")
+    #println("initialised rejection ABC")
 
     # TODO: get returned emulator from first rejection run (train it in model selection function)
     #       then re-use it in subsequent rejection runs - put it in the tracker?
@@ -212,12 +212,18 @@ function ABCrejection(input::EmulatedABCRejectionInput,
     end
     # emulate
     while n_accepted < input.n_particles && batch_no <= input.max_iter
-        println("Batch number $batch_no")
+        #println("Batch number $batch_no")
 
         parameter_batch, weight_batch = generate_parameters(input.priors, input.batch_size)
 
+        #println("parameter_batch size = $(size(parameter_batch))")
+        #println("weight_batch size = $(size(weight_batch))")
+
         (distances, vars) = input.emulation_settings.emulate_distance_function(parameter_batch, emulator)
         n_tries += input.batch_size
+
+        #println("distances size = $(size(distances))")
+        #println(distances)
 
         #
         # Check which parameter indices were accepted
@@ -225,6 +231,8 @@ function ABCrejection(input::EmulatedABCRejectionInput,
         accepted_batch_idxs = find((distances .<= input.threshold) .& (sqrt.(vars) .<= input.threshold))
         # accepted_batch_idxs = find(distances .<= input.threshold)
         n_accepted_batch = length(accepted_batch_idxs)
+
+        #println("n_accepted_batch = $n_accepted_batch")
 
         #
         # If some parameters were accepted, store their values, (predicted) distances and weights
@@ -243,7 +251,7 @@ function ABCrejection(input::EmulatedABCRejectionInput,
 
         end
 
-        if write_progress
+        if write_progress && !for_model_selection
             write(out_stream, string(DateTime(now())),
                               " Rejection ABC emulation accepted ",
                               string(n_accepted),
@@ -262,8 +270,8 @@ function ABCrejection(input::EmulatedABCRejectionInput,
     end
 
     if n_accepted < input.n_particles
-        if !hide_maxiter_warning
-                warn("Emulation reached maximum $(input.max_iter) iterations before finding $(input.n_particles) particles - will return $n_accepted")
+        if !for_model_selection
+            warn("Emulation reached maximum $(input.max_iter) iterations before finding $(input.n_particles) particles - will return $n_accepted")
         end
         accepted_parameters = accepted_parameters[1:n_accepted, :]
         accepted_distances = accepted_distances[1:n_accepted]
@@ -281,7 +289,7 @@ function ABCrejection(input::EmulatedABCRejectionInput,
                                 input.threshold,
                                 accepted_parameters,
                                 accepted_distances,
-                                StatsBase.Weights(weights, 1.0),
+                                StatsBase.Weights(weights),
                                 emulator
                                 )
 

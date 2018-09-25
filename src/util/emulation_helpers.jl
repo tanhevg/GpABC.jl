@@ -47,6 +47,7 @@ function abc_train_emulator(
     gpem
 end
 
+# not exported
 function build_simulator_function(ode_function::Function,
     Tspan::Tuple{Float64,Float64}, x0::AbstractArray{Float64,1};
     solver::OrdinaryDiffEq.OrdinaryDiffEqAlgorithm=RK4(), kwargs...)
