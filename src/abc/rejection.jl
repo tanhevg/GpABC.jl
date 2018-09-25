@@ -93,12 +93,12 @@ function ABCrejection(input::SimulatedABCRejectionInput,
         end
 
         if write_progress && (n_tries % progress_every == 0)
-            info(string(DateTime(now())), "Accepted $(n_accepted)/$(n_tries) particles.", prefix="GpABC rejection simulation ")
+            info(string(DateTime(now())), " Accepted $(n_accepted)/$(n_tries) particles.", prefix="GpABC rejection simulation ")
         end
     end
 
     if write_progress && (n_tries % progress_every != 0)
-        info(string(DateTime(now())), "Accepted $(n_accepted)/$(n_tries) particles.", prefix="GpABC rejection simulation ")
+        info(string(DateTime(now())), " Accepted $(n_accepted)/$(n_tries) particles.", prefix="GpABC rejection simulation ")
     end
 
     if n_accepted < input.n_particles
@@ -144,7 +144,7 @@ function ABCrejection(input::EmulatedABCRejectionInput,
 	checkABCInput(input)
 
     if write_progress
-        info(string(DateTime(now())), "ϵ = $(input.threshold).", prefix="GpABC rejection emulation ")
+        info(string(DateTime(now())), " ϵ = $(input.threshold).", prefix="GpABC rejection emulation ")
     end
 	# initialise
     n_accepted = 0
@@ -157,14 +157,14 @@ function ABCrejection(input::EmulatedABCRejectionInput,
     # todo: consolidate sample_from_priors with generate_parameters
     prior_sampling_function(n_design_points) = generate_parameters(input.priors, n_design_points)[1]
 
-    emulator = input.emulation_settings.train_emulator_function(prior_sampling_function)
+    emulator = input.train_emulator_function(prior_sampling_function)
 
     # emulate
     while n_accepted < input.n_particles && batch_no <= input.max_iter
 
         parameter_batch, weight_batch = generate_parameters(input.priors, input.batch_size)
 
-        (distances, vars) = input.emulation_settings.emulate_distance_function(parameter_batch, emulator)
+        (distances, vars) = gp_regression(parameter_batch, emulator)
         n_tries += input.batch_size
 
         #

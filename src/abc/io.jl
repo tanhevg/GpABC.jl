@@ -53,11 +53,8 @@ end
 RepetitiveTraining(; rt_iterations::Int64=0, rt_extra_training_points::Int64=1, rt_sample_size::Int64=1000) =
     RepetitiveTraining(rt_iterations, rt_extra_training_points, rt_sample_size)
 
-struct AbcEmulationSettings
-    n_design_points::Int64
-    train_emulator_function::Function
-    emulate_distance_function::Function
-end
+abstract type AbstractEmulationType end
+type DefaultGpEmulationType <: AbstractEmulationType end
 
 """
     EmulatedABCRejectionInput
@@ -69,7 +66,6 @@ An object that defines the settings for a emulation-based rejection-ABC computat
 - `n_particles::Int64`: The number of parameter vectors (particles) that will be included in the final posterior.
 - `threshold::Float64`: The maximum distance from the summarised model output to summarised observed data for a parameter vector to be included in the posterior.
 - `priors::AbstractArray{ContinuousUnivariateDistribution,1}`: A 1D Array of distributions with length `n_params` from which candidate parameter vectors will be sampled.
-- `distance_prediction_function::Function`: A function that takes a parameter vector as an argument and outputs a distance to the observed data.
 - `batch_size::Int64`: The number of predictions to be made in each batch.
 - `max_iter::Int64`: The maximum number of iterations/batches before termination.
 """
@@ -78,9 +74,9 @@ struct EmulatedABCRejectionInput <: ABCRejectionInput
 	n_particles::Int64
 	threshold::Float64
 	priors::AbstractArray{ContinuousUnivariateDistribution,1}
-    emulation_settings::AbcEmulationSettings
 	batch_size::Int64
     max_iter::Int64
+    train_emulator_function::Function
 end
 
 abstract type ABCSMCInput <: ABCInput end
@@ -120,7 +116,6 @@ An object that defines the settings for a emulation-based rejection-ABC computat
 - `n_particles::Int64`: The number of parameter vectors (particles) that will be included in the final posterior.
 - `threshold_schedule::AbstractArray{Float64}`: A set of maximum distances from the summarised model output to summarised observed data for a parameter vector to be included in the posterior. Each distance will be used in a single run of the ABC-SMC algorithm.
 - `priors::AbstractArray{ContinuousUnivariateDistribution,1}`: A 1D Array of distributions with length `n_params` from which candidate parameter vectors will be sampled.
-- `distance_prediction_function::Function`: A function that takes a parameter vector as an argument and outputs a distance to the observed data.
 - `batch_size::Int64`: The number of predictions to be made in each batch.
 - `max_iter::Int64`: The maximum number of iterations/batches before termination.
 """
@@ -129,9 +124,9 @@ struct EmulatedABCSMCInput <: ABCSMCInput
     n_particles::Int64
     threshold_schedule::AbstractArray{Float64,1}
     priors::AbstractArray{ContinuousUnivariateDistribution,1}
-    emulation_settings::AbcEmulationSettings
     batch_size::Int64
     max_iter::Int64
+    train_emulator_function::Function
 end
 
 #
@@ -163,7 +158,7 @@ mutable struct EmulatedABCSMCTracker <: ABCSMCTracker
     distances::AbstractArray{AbstractArray{Float64,1},1}
     weights::AbstractArray{StatsBase.Weights,1}
     priors::AbstractArray{ContinuousUnivariateDistribution,1}
-    emulation_settings::AbcEmulationSettings
+    train_emulator_function::Function
     batch_size::Int64
     max_iter::Int64
     emulators::AbstractArray{Any,1}

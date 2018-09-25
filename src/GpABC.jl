@@ -26,7 +26,9 @@ export
 	get_training_data,
 	read_rejection_output, read_smc_output,
 
-	RepetitiveTraining, AbcEmulationSettings;
+	RepetitiveTraining,
+
+    AbstractEmulationType, DefaultGpEmulationType, train_emulator;
 
 using Optim, Distributions, Distances, DifferentialEquations
 

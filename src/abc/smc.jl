@@ -147,15 +147,15 @@ function initialiseABCSMC(input::EmulatedABCSMCInput,
                                         input.n_particles,
                                         input.threshold_schedule[1],
                                         input.priors,
-                                        input.emulation_settings,
                                         input.batch_size,
-                                        input.max_iter)
+                                        input.max_iter,
+                                        input.train_emulator_function)
 
     rejection_output = ABCrejection(rejection_input,
                                     reference_data;
                                     write_progress = write_progress)
 
-    tracker =  EmulatedABCSMCTracker(input.n_params,
+    tracker = EmulatedABCSMCTracker(input.n_params,
                              [rejection_output.n_accepted],
                              [rejection_output.n_tries],
                              [rejection_output.threshold],
@@ -163,7 +163,7 @@ function initialiseABCSMC(input::EmulatedABCSMCInput,
                              [rejection_output.distances],
                              [rejection_output.weights],
                              input.priors,
-                             input.emulation_settings,
+                             input.train_emulator_function,
                              input.batch_size,
                              input.max_iter,
                              [rejection_output.emulator] # emulators
@@ -271,7 +271,7 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
         ret_idx = StatsBase.sample(indices(old_population, 1), old_weights, n_design_points)
         return old_population[ret_idx, :]
     end
-    emulator = tracker.emulation_settings.train_emulator_function(prior_sampling_function)
+    emulator = tracker.train_emulator_function(prior_sampling_function)
 
     # initialise
     iter_no = 0
@@ -288,7 +288,7 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
                                                  old_weights,
                                                  kernels)
 
-        distances, vars = tracker.emulation_settings.emulate_distance_function(parameters, emulator)
+        distances, vars = gp_regression(parameters, emulator)
         n_tries += length(distances)
         accepted_indices = find((distances .<= threshold) .& (sqrt.(vars) .<= threshold)) # todo more variance controls
         # accepted_indices = find(distances .<= threshold)
