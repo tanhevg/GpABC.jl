@@ -26,8 +26,10 @@ export
 	get_training_data,
 	read_rejection_output, read_smc_output,
 
-	SimulatedModelSelectionInput, SimulatedModelSelectionOutput,
-	EmulatedModelSelectionInput, model_selection,
+	model_selection,
+	SimulatedModelSelectionInput,
+	EmulatedModelSelectionInput,
+	ModelSelectionOutput,
 
 	RepetitiveTraining, AbcEmulationSettings;
 

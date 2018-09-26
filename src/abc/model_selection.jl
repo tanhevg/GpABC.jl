@@ -170,7 +170,7 @@ function iterate_modelselection!(tracker::SimulatedModelSelectionTracker,
 	# Normalise weights for subsequent ABC-SMC run
 	for mtracker in tracker.model_trackers
 		if size(mtracker.weights[end],1) > 0
-			mtracker.weights[end] = deepcopy(normalise(mtracker.weights[end], tosum=1.0))
+			mtracker.weights[end] = normalise(mtracker.weights[end], tosum=1.0)
 		end
 	end
 
@@ -204,7 +204,7 @@ function model_selection(input::SimulatedModelSelectionInput,
 	return build_modelselection_output(tracker)
 end
 
-function build_modelselection_output(tracker::ModelSelectionTracker)
+function build_modelselection_output(tracker::SimulatedModelSelectionTracker)
 	return ModelSelectionOutput(
 		tracker.M,
 		[[tracker.model_trackers[m].n_accepted[i] for m = 1:tracker.M] for i in 1:length(tracker.threshold_schedule)],
@@ -221,9 +221,23 @@ function build_modelselection_output(tracker::ModelSelectionTracker)
 		)
 end
 
-#
-# EMULATION - UNFINISHED
-#
+function build_modelselection_output(tracker::EmulatedModelSelectionTracker)
+	return ModelSelectionOutput(
+		tracker.M,
+		[[tracker.model_trackers[m].n_accepted[i] for m = 1:tracker.M] for i in 1:length(tracker.threshold_schedule)],
+		tracker.threshold_schedule,
+		[EmulatedABCSMCOutput(
+			tracker.model_trackers[m].n_params,
+			tracker.model_trackers[m].n_accepted,
+			tracker.model_trackers[m].n_tries,
+			tracker.threshold_schedule,
+			tracker.model_trackers[m].population,
+			tracker.model_trackers[m].distances,
+			tracker.model_trackers[m].weights,
+			tracker.model_trackers[m].emulators)
+				for m in 1:tracker.M]
+		)
+end
 
 # Initialises the model selection run and runs the first (rejection) population
 function initialise_modelselection(input::EmulatedModelSelectionInput, reference_data::AbstractArray{Float64,2})
@@ -264,18 +278,15 @@ function initialise_modelselection(input::EmulatedModelSelectionInput, reference
 	# Compute first population using rejection-ABC
 	#
 	while total_n_accepted < input.n_particles && n_iterations <= input.max_iter
-		println("ITERATION $n_iterations")
-		println("$total_n_accepted particles accepted in total")
-		sampled_models = rand(input.model_prior, min(input.batch_size, input.n_particles-total_n_accepted))
+		sampled_models = rand(input.model_prior, min(input.max_batch_size, input.n_particles-total_n_accepted))
 		tries_this_it = [size(sampled_models[sampled_models.==m],1) for m=1:input.M]
 
-	 	println("Number of sampled models: ", join([string("Model ", m, ": ",  tries_this_it[m]) for m in 1:input.M], "\t"))
 
 		[rejection_trackers[m].n_tries += tries_this_it[m] for m=1:input.M]
 
 		for m=1:input.M
 			if tries_this_it[m] > 0
-				println("Running rejection batch of size $(tries_this_it[m]) for model $m")
+				#println("Running rejection batch of size $(tries_this_it[m]) for model $m")
 				out = ABCrejection(
 						EmulatedABCRejectionInput(length(input.parameter_priors[m]),
 											tries_this_it[m],
@@ -291,7 +302,7 @@ function initialise_modelselection(input::EmulatedModelSelectionInput, reference
 
 				# If particle accepted
 				if size(out.population,1) >= 1
-					println("Accepted $(size(out.population,1)) particles for model $m")
+					#println("Accepted $(size(out.population,1)) particles for model $m")
 					total_n_accepted += out.n_accepted
 					rejection_trackers[m].n_accepted += out.n_accepted
 					rejection_trackers[m].population = vcat(rejection_trackers[m].population, out.population)
@@ -304,7 +315,6 @@ function initialise_modelselection(input::EmulatedModelSelectionInput, reference
 		end
 
 		n_iterations += 1
-		println("\n")
 	end
 
 	println("Completed $(n_iterations-1) iterations, accepting $total_n_accepted particles in total")
@@ -338,18 +348,18 @@ function initialise_modelselection(input::EmulatedModelSelectionInput, reference
 				[input.threshold_schedule[1]],
 				input.model_prior,
 				cmTrackers,
-				input.batch_size,
+				input.max_batch_size,
 				input.max_iter)
 end
 
 function model_selection(input::EmulatedModelSelectionInput,
 	reference_data::AbstractArray{Float64,2})
 
-	println("Emulated model selection\nPopulation 1")
+	println("Emulated model selection\nPopulation 1 - ABC Rejection ϵ = $(input.threshold_schedule[1])")
 	tracker = initialise_modelselection(input, reference_data)
 
 	for i in 2:length(input.threshold_schedule)
-		println("Population $i")
+		println("Population $i - ABCSMC ϵ = $(input.threshold_schedule[i])")
 		iterate_modelselection!(tracker, input.threshold_schedule[i], reference_data)
 
 		# Avoid infinite loop if no particles are accepted for all models
@@ -396,18 +406,13 @@ function iterate_modelselection!(tracker::EmulatedModelSelectionTracker, thresho
 	n_iterations = 1
 
 	while total_n_accepted < tracker.n_particles && n_iterations <= tracker.max_iter
-		println("ITERATION $n_iterations")
-		println("$total_n_accepted particles accepted in total")
-		sampled_models = rand(tracker.model_prior, min(tracker.batch_size, tracker.n_particles-total_n_accepted))
+		sampled_models = rand(tracker.model_prior, min(tracker.max_batch_size, tracker.n_particles-total_n_accepted))
 		tries_this_it = [size(sampled_models[sampled_models.==m],1) for m=1:tracker.M]
 
-		println("Number of sampled models: ", join([string("Model ", m, ": ",  tries_this_it[m]) for m in 1:tracker.M], "\t"))
-
 		for m = 1:tracker.M
-			if tries_this_it[m] > 0 && tracker.model_trackers[m].n_accepted[end-1] > 0
-				println("Running ABCSMC batch of size $(tries_this_it[m]) for model $m")
-			else
-				println("Skipping model $m")
+			# Skip a model that wasn't sampled in this iteration or had no accepted particles in the previous population
+			if tries_this_it[m] < 0 || tracker.model_trackers[m].n_accepted[end-1] == 0
+				#println("Skipping model $m")
 				continue
 			end
 
@@ -432,15 +437,14 @@ function iterate_modelselection!(tracker::EmulatedModelSelectionTracker, thresho
 									reference_data,
 									emulator = tracker.model_trackers[m].emulators[end],
 									normalise_weights = false,
-									for_model_selection = true )
+									for_model_selection = true)
 
 			if particles_accepted
-				println("Accepted $(size(smc_tracker.population[end],1)) particles for model $m")
 				total_n_accepted += smc_tracker.n_accepted[end]
-				tracker.model_tracker[m].n_accepted += smc_tracker.n_accepted[end]
-				tracker.model_tracker[m].population = vcat(tracker.model_tracker[m].population, smc_tracker.population[end])
-				tracker.model_tracker[m].distances = vcat(tracker.model_tracker[m].distances, smc_tracker.distances[end])
-				tracker.model_tracker[m].weights = vcat(tracker.model_tracker[m].weights, smc_tracker.weights[end])
+				tracker.model_trackers[m].n_accepted[end] += smc_tracker.n_accepted[end]
+				tracker.model_trackers[m].population[end] = vcat(tracker.model_trackers[m].population[end], smc_tracker.population[end])
+				tracker.model_trackers[m].distances[end] = vcat(tracker.model_trackers[m].distances[end], smc_tracker.distances[end])
+				tracker.model_trackers[m].weights[end].values = vcat(tracker.model_trackers[m].weights[end], smc_tracker.weights[end])
 			end
 
 
@@ -460,9 +464,8 @@ function iterate_modelselection!(tracker::EmulatedModelSelectionTracker, thresho
 	# Normalise weights for subsequent ABC-SMC run
 	for mtracker in tracker.model_trackers
 		if size(mtracker.weights[end],1) > 0
-			mtracker.weights[end] = deepcopy(normalise(mtracker.weights[end], tosum=1.0))
+			mtracker.weights[end] = normalise(mtracker.weights[end], tosum=1.0)
 		end
 	end
-
 
 end

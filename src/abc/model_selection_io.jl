@@ -34,7 +34,7 @@ struct EmulatedModelSelectionInput <: ModelSelectionInput
 	model_prior::DiscreteUnivariateDistribution
 	parameter_priors::AbstractArray{AbstractArray{ContinuousUnivariateDistribution,1},1}
     emulation_settings_arr::AbstractArray{AbcEmulationSettings,1}
-	batch_size::Int64
+	max_batch_size::Int64
 	max_iter::Integer
 end
 
@@ -94,22 +94,22 @@ mutable struct EmulatedModelSelectionTracker <: ModelSelectionTracker
 	threshold_schedule::AbstractArray{Float64,1}
 	model_prior::DiscreteUnivariateDistribution
 	model_trackers::AbstractArray{EmulatedCandidateModelTracker,1}
-	batch_size::Int64
+	max_batch_size::Int64
 	max_iter::Integer
 end
 
 """
-	SimulatedModelSelectionOutput
+	ModelSelectionOutput
 
 # Fields
 - `M::Int64`: The number of models.
 - `n_accepted::AbstractArray{AbstractArray{Int64,1},1}`: The number of parameters accepted by each model at each population. `n_accepted[i][j]` contains the number of acceptances for model `j` at population `i`.
 - `threshold_schedule::AbstractArray{Float64,1}`: A set of maximum distances from the summarised model output to summarised observed data for a parameter vector to be included in the posterior.
-- `smc_outputs::AbstractArray{SimulatedABCSMCOutput,1}`: A ['SimulatedABCSMCOutput']@(ref) for each model. Use to find details of the ABC results at each population.
+- `smc_outputs::AbstractArray{ABCSMCOutput,1}`: A ['SimulatedABCSMCOutput']@(ref) or ['EmulatedABCSMCOutput']@(ref) for each model. Use to find details of the ABC results at each population.
 """
 struct ModelSelectionOutput
 	M::Int64
 	n_accepted::AbstractArray{AbstractArray{Int64,1},1}
 	threshold_schedule::AbstractArray{Float64,1}
-	smc_outputs::AbstractArray{SimulatedABCSMCOutput,1}
+	smc_outputs::AbstractArray{ABCSMCOutput,1}
 end

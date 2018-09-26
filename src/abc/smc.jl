@@ -289,7 +289,7 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
         out_stream::IO = STDOUT,
         write_progress = true,
         progress_every = 1000,
-        emulator = Union{GPModel,Void}=nothing,
+        emulator::Union{GPModel,Void}=nothing,
         normalise_weights::Bool = true,
         for_model_selection::Bool = false
         )
@@ -361,6 +361,8 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
                               )
             flush(out_stream)
         end
+
+        iter_no += 1
 
     end
 
