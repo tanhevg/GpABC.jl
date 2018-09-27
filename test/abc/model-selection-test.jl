@@ -3,10 +3,11 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
 @testset "Model selection test" begin
 
 	#threshold_schedule = [20, 15, 10, 5, 3, 2.5, 2, 1.7, 1.5]
-	threshold_schedule = [20, 15, 10]
+	threshold_schedule = [20.0, 15.0, 10.0]
 	summary_statistic = "keep_all"
 	max_iter = 1e4
 	n_particles = 200
+	distance_metric = euclidean
 
 	#
 	# Experimental data - from ABCSysBio example at
@@ -79,7 +80,7 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
 	#
 	n_params = [4,5]
 
-	function test_ms_output(ms_res::ModelSelectionOutput)
+	function test_ms_output(ms_res::ModelSelectionOutput, is_simulation::Bool)
 		# 2nd dimension of population should always be the number of parameters
 		@test all(vcat([[size(ms_res.smc_outputs[m].population[i],2) == n_params[m]
 			for i in 1:length(ms_res.threshold_schedule)]
@@ -108,8 +109,10 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
 		@test all([size(ms_res.smc_outputs[m].distances,1) == length(ms_res.threshold_schedule) for m in 1:ms_res.M])
 		@test all([size(ms_res.smc_outputs[m].weights,1) == length(ms_res.threshold_schedule) for m in 1:ms_res.M])
 		
-		# Can't have more than max_iter tries in total at each population
-		@test all([sum([ms_res.smc_outputs[m].n_tries[i] for m=1:ms_res.M]) <= max_iter for i=1:length(ms_res.threshold_schedule)])
+		# Can't have more than max_iter tries in total at each population - this is only true for simulation
+		if is_simulation
+			@test all([sum([ms_res.smc_outputs[m].n_tries[i] for m=1:ms_res.M]) <= max_iter for i=1:length(ms_res.threshold_schedule)])
+		end
 
 		# Weights must sum to 1 for all models in all cases where the model accepted at least one particle
 		weight_sums = vcat([[sum(ms_res.smc_outputs[m].weights[i]) for i = 1:length(ms_res.threshold_schedule)] for m in 1:ms_res.M]...)
@@ -122,23 +125,20 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
 	# Do model selection using simulation
 	#
 	input = SimulatedModelSelectionInput(2, n_particles, threshold_schedule, modelprior,
-	    [priors1, priors2], summary_statistic, euclidean, [simulator1, simulator2], max_iter)
+	    [priors1, priors2], summary_statistic, distance_metric, [simulator1, simulator2], max_iter)
 
 	ms_res = model_selection(input, data);
-	test_ms_output(ms_res)
+	test_ms_output(ms_res, true)
 	
-	# Use helper function for the same computation
+	# User-level function for the same computation
 	ms_res  = model_selection(data, n_particles, threshold_schedule, [priors1, priors2],
 		summary_statistic, [simulator1, simulator2])
-	test_ms_output(ms_res)
+	test_ms_output(ms_res, true)
 
 	#
 	# Do model selection using emulation
 	#
 	n_design_points = 200
-	distance_metric = euclidean
-	rt = RepetitiveTraining()
-	gpkernel = SquaredExponentialArdKernel()
 
 	#
 	# A set of functions that return a trained emulator with a prior sampling function as an argument
@@ -159,12 +159,12 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
 	    emulator_settings, 100, 1e3)
 
 	ms_res = model_selection(input, data)
-	test_ms_output(ms_res)
+	test_ms_output(ms_res, false)
 
 	# The same computation using user-level function
 	model_selection(n_design_points, data, n_particles, threshold_schedule, [priors1, priors2],
 		summary_statistic, [simulator1, simulator2])
-	test_ms_output(ms_res)
+	test_ms_output(ms_res, false)
 
 
 end

@@ -17,7 +17,7 @@ Run a simulation-based ABC-rejection computation. This is a convenience wrapper 
 # Returns
 A ['SimulatedABCRejectionOutput'](@ref) object.
 """
-function SimulatedABCRejection{D<:ContinuousUnivariateDistribution}(reference_data::AbstractArray{Float64,2},
+function SimulatedABCRejection(reference_data::AbstractArray{Float64,2},
     n_particles::Int64,
     threshold::Float64,
     priors::AbstractArray{D,1},
@@ -26,7 +26,9 @@ function SimulatedABCRejection{D<:ContinuousUnivariateDistribution}(reference_da
     distance_function::Function=Distances.euclidean,
     max_iter::Integer=10 * n_particles,
     kwargs...
-    )
+    ) where {
+    D<:ContinuousUnivariateDistribution
+    }
 
     n_params = length(priors)
 
@@ -58,7 +60,7 @@ Run a emulation-based ABC-rejection computation. This is a convenience wrapper t
 # Returns
 A ['SimulatedABCSMCOutput'](@ref) object that contains the posteriors at each ABC-SMC population and other information.
 """
-function SimulatedABCSMC{D<:ContinuousUnivariateDistribution}(
+function SimulatedABCSMC(
     reference_data::AbstractArray{Float64,2},
     n_particles::Integer,
     threshold_schedule::AbstractArray{Float64,1},
@@ -68,7 +70,9 @@ function SimulatedABCSMC{D<:ContinuousUnivariateDistribution}(
     distance_function::Function=Distances.euclidean,
     max_iter::Integer=10 * n_particles,
     kwargs...
-    )
+    ) where {
+    D<:ContinuousUnivariateDistribution
+    }
 
     n_params = length(priors)
 

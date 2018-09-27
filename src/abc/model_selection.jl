@@ -272,7 +272,6 @@ function initialise_modelselection(input::EmulatedModelSelectionInput, reference
 	#
 	prior_samplers = [f(n_design_points) = generate_parameters(input.parameter_priors[m], n_design_points)[1] for m in 1:input.M]
 	emulators = [input.emulation_settings_arr[m].train_emulator_function(prior_samplers[m]) for m in 1:input.M]
-	println("Trained emulators")
 
 	#
 	# Compute first population using rejection-ABC

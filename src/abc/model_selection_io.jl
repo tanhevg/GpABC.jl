@@ -101,6 +101,8 @@ end
 """
 	ModelSelectionOutput
 
+Contains results of a model selection computation, including which models are best supported by the observed data and the parameter poseteriors at each population for each model. 
+
 # Fields
 - `M::Int64`: The number of models.
 - `n_accepted::AbstractArray{AbstractArray{Int64,1},1}`: The number of parameters accepted by each model at each population. `n_accepted[i][j]` contains the number of acceptances for model `j` at population `i`.

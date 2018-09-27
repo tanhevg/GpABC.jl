@@ -208,7 +208,6 @@ function ABCrejection(input::EmulatedABCRejectionInput,
     if emulator == nothing
         prior_sampling_function(n_design_points) = generate_parameters(input.priors, n_design_points)[1]
         emulator = input.emulation_settings.train_emulator_function(prior_sampling_function)
-        println("trained emulator")
     end
     # emulate
     while n_accepted < input.n_particles && batch_no <= input.max_iter
