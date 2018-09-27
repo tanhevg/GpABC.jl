@@ -28,7 +28,7 @@ export
 
 	RepetitiveTraining,
 
-    AbstractEmulationType, DefaultGpEmulationType, train_emulator;
+    AbstractEmulatorTrainingSettings, DefaultEmulatorTraining, train_emulator;
 
 using Optim, Distributions, Distances, DifferentialEquations
 

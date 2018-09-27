@@ -21,7 +21,7 @@ function abc_train_emulator(
         simulator_function::Function,
         summary_statistic::Function,
         distance_metric::Function,
-        emulation_type::AbstractEmulationType = DefaultGpEmulationType(),
+        emulation_type::AbstractEmulatorTrainingSettings = DefaultEmulatorTraining(),
         repetitive_training::RepetitiveTraining = RepetitiveTraining())
     X = prior_sampling_function(n_design_points)
     y = simulate_distance(X, simulator_function, summary_statistic, distance_metric, reference_summary_statistic)
@@ -50,12 +50,12 @@ function abc_train_emulator(
     gpem
 end
 
-function train_emulator(training_x::AbstractArray{T, 2}, y::AbstractArray{T, 2}, emulation_type::AbstractEmulationType) where {T<:Real}
+function train_emulator(training_x::AbstractArray{T, 2}, y::AbstractArray{T, 2}, training_settings::AbstractEmulatorTrainingSettings) where {T<:Real}
     throw("train_emulator(...$(emulation_type)) not implemented")
 end
 
-function train_emulator(training_x::AbstractArray{T, 2}, y::AbstractArray{T, 2}, emulation_type::DefaultGpEmulationType) where {T<:Real}
-    gpem = GPModel(training_x=training_x, training_y=y, kernel=SquaredExponentialArdKernel())
+function train_emulator(training_x::AbstractArray{T, 2}, y::AbstractArray{T, 2}, training_settings::DefaultEmulatorTraining) where {T<:Real}
+    gpem = GPModel(training_x=training_x, training_y=y, kernel=training_settings.kernel)
     gp_train(gpem)
     gpem
 end

@@ -53,8 +53,11 @@ end
 RepetitiveTraining(; rt_iterations::Int64=0, rt_extra_training_points::Int64=1, rt_sample_size::Int64=1000) =
     RepetitiveTraining(rt_iterations, rt_extra_training_points, rt_sample_size)
 
-abstract type AbstractEmulationType end
-type DefaultGpEmulationType <: AbstractEmulationType end
+abstract type AbstractEmulatorTrainingSettings end
+type DefaultEmulatorTraining{K<:AbstractGPKernel} <: AbstractEmulatorTrainingSettings
+    kernel::K
+end
+DefaultEmulatorTraining() = DefaultEmulatorTraining(SquaredExponentialArdKernel())
 
 """
     EmulatedABCRejectionInput
