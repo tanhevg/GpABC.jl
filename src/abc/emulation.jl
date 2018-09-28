@@ -19,7 +19,7 @@ the emulator, creates the [`EmulatedABCRejectionInput`](@ref) object then calls 
 - `max_iter::Int64`: The maximum number of iterations/batches before termination.
 - `kwargs`: optional keyword arguments passed to ['ABCrejection'](@ref).
 """
-function EmulatedABCRejection{D<:ContinuousUnivariateDistribution}(n_design_points::Int64,
+function EmulatedABCRejection(n_design_points::Int64,
     reference_data::AbstractArray{Float64,2},
     n_particles::Int64, threshold::Float64, priors::AbstractArray{D,1},
     summary_statistic::Union{String,AbstractArray{String,1},Function},
@@ -28,7 +28,9 @@ function EmulatedABCRejection{D<:ContinuousUnivariateDistribution}(n_design_poin
     gpkernel::AbstractGPKernel=SquaredExponentialArdKernel(),
     batch_size::Int64=10*n_particles, max_iter::Int64=1000,
     repetitive_training::RepetitiveTraining=RepetitiveTraining(),
-    kwargs...)
+    kwargs...) where {
+    D<:ContinuousUnivariateDistribution
+    }
 
     summary_statistic = build_summary_statistic(summary_statistic)
     reference_summary_statistic = summary_statistic(reference_data)
@@ -75,7 +77,7 @@ the emulator, creates the [`EmulatedABCSMCInput`](@ref) object then calls [`ABCS
 - `max_iter::Int64`: The maximum number of iterations/batches before termination.
 - `kwargs`: optional keyword arguments passed to ['ABCSMC'](@ref).
 """
-function EmulatedABCSMC{D<:ContinuousUnivariateDistribution}(
+function EmulatedABCSMC(
     n_design_points::Int64,
     reference_data::AbstractArray{Float64,2},
     n_particles::Int64,
@@ -87,7 +89,9 @@ function EmulatedABCSMC{D<:ContinuousUnivariateDistribution}(
     gpkernel::AbstractGPKernel=SquaredExponentialArdKernel(),
     batch_size::Int64=10*n_particles, max_iter::Int64=20,
     repetitive_training::RepetitiveTraining=RepetitiveTraining(),
-    kwargs...)
+    kwargs...) where {
+    D<:ContinuousUnivariateDistribution
+    }
 
 
     summary_statistic = build_summary_statistic(summary_statistic)
