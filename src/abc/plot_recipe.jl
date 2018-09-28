@@ -65,3 +65,12 @@ using RecipesBase
             end # for j, par2
       end # for i, par1
 end # @recipe
+
+# Plot recipe for mdoel selection output
+@recipe function modelselection_plotrecipe(::Type{ModelSelectionOutput}, mso::ModelSelectionOutput)
+    seriestype := :line
+    xlabel --> "Population"
+    ylabel --> "Number of accepted particles"
+    labels --> [string("Model ", m) for m in 1:mso.M]
+    data = [[mso.n_accepted[i][j] for i in 1:size(mso.n_accepted,1)] for j in 1:mso.M]
+end
