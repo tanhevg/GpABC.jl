@@ -35,7 +35,7 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
 	#
 
 	#
-	# Priors and initial conditions - these are model-specfic as each model can 
+	# Priors and initial conditions - these are model-specfic as each model can
 	# have different numbers of parameters/species
 	#
 	priors1 = [Uniform(0.0, 5.0) for i in 1:4]
@@ -74,7 +74,7 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
 	# so that it can be compared to the reference data "data", which only contains S, I and R
 	simulator2(params) = Array{Float64,2}(
 	    solve(ODEProblem(model2, ics[2], (times[1], times[end]), params), saveat=times, force_dtmin=true))[[1,3,4],:]
-	
+
 	#
 	# For tests on output shapes
 	#
@@ -101,14 +101,14 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
 			for i in 1:length(ms_res.threshold_schedule)]
 					for m in 1:ms_res.M]...))
 
-		# Total number of accepted particles at each population can't be more than n_particles 
+		# Total number of accepted particles at each population can't be more than n_particles
 		@test all([sum(arr) <= n_particles for arr in ms_res.n_accepted])
 
 		# There should be as many populations, distances as weights as populations
 		@test all([size(ms_res.smc_outputs[m].population,1) == length(ms_res.threshold_schedule) for m in 1:ms_res.M])
 		@test all([size(ms_res.smc_outputs[m].distances,1) == length(ms_res.threshold_schedule) for m in 1:ms_res.M])
 		@test all([size(ms_res.smc_outputs[m].weights,1) == length(ms_res.threshold_schedule) for m in 1:ms_res.M])
-		
+
 		# Can't have more than max_iter tries in total at each population - this is only true for simulation
 		if is_simulation
 			@test all([sum([ms_res.smc_outputs[m].n_tries[i] for m=1:ms_res.M]) <= max_iter for i=1:length(ms_res.threshold_schedule)])
@@ -129,7 +129,7 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
 
 	ms_res = model_selection(input, data);
 	test_ms_output(ms_res, true)
-	
+
 	# User-level function for the same computation
 	ms_res  = model_selection(data, n_particles, threshold_schedule, [priors1, priors2],
 		summary_statistic, [simulator1, simulator2])
@@ -150,13 +150,13 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
 	        GpABC.build_summary_statistic(summary_statistic),
 	        distance_metric)
 	    for sim in [simulator1, simulator2]]
-
-	emulator_settings = [AbcEmulationSettings(n_design_points,
-	        trainer,
-	        (x, em) -> gp_regression(x, em)) for trainer in emulator_trainers]
+    #
+	# emulator_settings = [AbcEmulationSettings(n_design_points,
+	#         trainer,
+	#         (x, em) -> gp_regression(x, em)) for trainer in emulator_trainers]
 
 	input = EmulatedModelSelectionInput(2, 200, threshold_schedule, modelprior, [priors1, priors2],
-	    emulator_settings, 100, 1e3)
+	    emulator_trainers, 100, 1e3)
 
 	ms_res = model_selection(input, data)
 	test_ms_output(ms_res, false)

@@ -53,7 +53,6 @@ included in the posterior.
 # Arguments
 - `input::SimulatedABCRejectionInput`: A ['SimulatedABCRejectionInput'](@ref) object that defines the settings for the simulated rejection-ABC run.
 - `reference_data::AbstractArray{Float64,2}`: The observed data to which the simulated model output will be compared. Size: (n_model_trajectories, n_time_points)
-- `out_stream::IO`: The output stream to which progress will be written. An optional argument whose default is `STDOUT`.
 - `write_progress::Bool`: Optional argument controlling whether progress is written to `out_stream`.
 - `progress_every::Int`: Progress will be written to `out_stream` every `progress_every` simulations (optional, ignored if `write_progress` is `False`).
 
@@ -62,7 +61,6 @@ A ['SimulatedABCRejectionOutput'](@ref) object.
 """
 function ABCrejection(input::SimulatedABCRejectionInput,
 	reference_data::AbstractArray{Float64,2};
-	out_stream::IO = STDOUT,
     write_progress::Bool = true,
     progress_every::Int = 1000,
     normalise_weights::Bool = true,
@@ -70,7 +68,7 @@ function ABCrejection(input::SimulatedABCRejectionInput,
 
 	checkABCInput(input)
     if write_progress && !for_model_selection
-        write(out_stream, string(DateTime(now())), " Rejection ABC simulation ϵ = $(input.threshold).\n")
+        info(string(DateTime(now())), " ϵ = $(input.threshold)."; prefix="GpABC rejection simulation ")
     end
 
 	# initialise
@@ -108,27 +106,12 @@ function ABCrejection(input::SimulatedABCRejectionInput,
         end
 
         if write_progress && (n_tries % progress_every == 0) && !for_model_selection
-            write(out_stream, string(DateTime(now())),
-                              " Rejection ABC simulation accepted ",
-                              string(n_accepted),
-                              "/",
-                              string(n_tries),
-                              " particles.\n"
-                              )
-            flush(out_stream)
+            info(string(DateTime(now())), " Accepted $(n_accepted)/$(n_tries) particles.", prefix="GpABC rejection simulation ")
         end
-
     end
 
     if write_progress && (n_tries % progress_every != 0) && !for_model_selection
-        write(out_stream, string(DateTime(now())),
-                          " Rejection ABC simulation accepted ",
-                          string(n_accepted),
-                          "/",
-                          string(n_tries),
-                          " particles.\n"
-                          )
-        flush(out_stream)
+        info(string(DateTime(now())), " Accepted $(n_accepted)/$(n_tries) particles.", prefix="GpABC rejection simulation ")
     end
 
     if n_accepted < input.n_particles
@@ -143,8 +126,6 @@ function ABCrejection(input::SimulatedABCRejectionInput,
     if normalise_weights
         weights = weights ./ sum(weights)
     end
-
-    # output
     output = SimulatedABCRejectionOutput(input.n_params,
                                 n_accepted,
                                 n_tries,
@@ -153,8 +134,6 @@ function ABCrejection(input::SimulatedABCRejectionInput,
                                 accepted_distances,
                                 StatsBase.Weights(weights),
                                 )
-
-    #write(out_stream, output)
 
     return output
 
@@ -171,16 +150,14 @@ included in the posterior.
 # Arguments
 - `input::EmulatedABCRejectionInput`: An ['EmulatedABCRejectionInput'](@ref) object that defines the settings for the emulated rejection-ABC run.
 - `reference_data::AbstractArray{Float64,2}`: The observed data to which the simulated model output will be compared. Size: (n_model_trajectories, n_time_points)
-- `out_stream::IO`: The output stream to which progress will be written. An optional argument whose default is `STDOUT`.
-- `write_progress::Bool`: Optional argument controlling whether progress is written to `out_stream`.
-- `progress_every::Int`: Progress will be written to `out_stream` every `progress_every` simulations (optional, ignored if `write_progress` is `False`).
+- `write_progress::Bool`: Optional argument controlling whether progress is logged.
+- `progress_every::Int`: Progress will be logged every `progress_every` simulations (optional, ignored if `write_progress` is `False`).
 
 # Returns
 An ['EmulatedABCRejectionOutput'](@ref) object.
 """
 function ABCrejection(input::EmulatedABCRejectionInput,
 	reference_data::AbstractArray{Float64,2};
-	out_stream::IO = STDOUT,
     write_progress = true,
     progress_every = 1000,
     emulator::Union{GPModel,Void}=nothing, # In model selection an emulator is provided - not finished
@@ -190,7 +167,7 @@ function ABCrejection(input::EmulatedABCRejectionInput,
 	checkABCInput(input)
 
     if write_progress && !for_model_selection
-        write(out_stream, string(DateTime(now())), " Rejection ABC emulation ϵ = $(input.threshold).\n")
+        info(string(DateTime(now())), " ϵ = $(input.threshold).", prefix="GpABC rejection emulation ")
     end
 	# initialise
     n_accepted = 0
@@ -201,13 +178,15 @@ function ABCrejection(input::EmulatedABCRejectionInput,
     weights = ones(input.n_particles)
     #println("initialised rejection ABC")
 
-    # TODO: get returned emulator from first rejection run (train it in model selection function)
-    #       then re-use it in subsequent rejection runs - put it in the tracker?
+    # todo: consolidate sample_from_priors with generate_parameters
+    # prior_sampling_function(n_design_points) = generate_parameters(input.priors, n_design_points)[1]
+    #
+    # emulator = input.train_emulator_function(prior_sampling_function)
 
     # todo: consolidate sample_from_priors with generate_parameters
     if emulator == nothing
         prior_sampling_function(n_design_points) = generate_parameters(input.priors, n_design_points)[1]
-        emulator = input.emulation_settings.train_emulator_function(prior_sampling_function)
+        emulator = input.train_emulator_function(prior_sampling_function)
     end
     # emulate
     while n_accepted < input.n_particles && batch_no <= input.max_iter
@@ -215,10 +194,7 @@ function ABCrejection(input::EmulatedABCRejectionInput,
 
         parameter_batch, weight_batch = generate_parameters(input.priors, input.batch_size)
 
-        #println("parameter_batch size = $(size(parameter_batch))")
-        #println("weight_batch size = $(size(weight_batch))")
-
-        (distances, vars) = input.emulation_settings.emulate_distance_function(parameter_batch, emulator)
+        (distances, vars) = gp_regression(parameter_batch, emulator)
         n_tries += input.batch_size
 
         #println("distances size = $(size(distances))")
@@ -251,18 +227,9 @@ function ABCrejection(input::EmulatedABCRejectionInput,
         end
 
         if write_progress && !for_model_selection
-            write(out_stream, string(DateTime(now())),
-                              " Rejection ABC emulation accepted ",
-                              string(n_accepted),
-                              "/",
-                              string(n_tries),
-                              " particles (",
-                              string(batch_no),
-                              " batches of size ",
-                              string(input.batch_size),
-                              ").\n"
-                              )
-            flush(out_stream)
+            info(string(DateTime(now())),
+                " accepted $(n_accepted)/$(n_tries) particles ($(batch_no) batches of size $(input.batch_size)).",
+                prefix="GpABC rejection emulation ")
         end
 
         batch_no += 1
@@ -291,8 +258,6 @@ function ABCrejection(input::EmulatedABCRejectionInput,
                                 StatsBase.Weights(weights),
                                 emulator
                                 )
-
-    #write(out_stream, output)
 
     return output
 

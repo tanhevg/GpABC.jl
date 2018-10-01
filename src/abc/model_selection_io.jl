@@ -33,7 +33,7 @@ struct EmulatedModelSelectionInput <: ModelSelectionInput
 	threshold_schedule::AbstractArray{Float64,1}
 	model_prior::DiscreteUnivariateDistribution
 	parameter_priors::AbstractArray{AbstractArray{ContinuousUnivariateDistribution,1},1}
-    emulation_settings_arr::AbstractArray{AbcEmulationSettings,1}
+	emulator_trainers::AbstractArray{Function, 1}
 	max_batch_size::Int64
 	max_iter::Integer
 end
@@ -71,7 +71,7 @@ mutable struct EmulatedCandidateModelTracker <: CandidateModelTracker
 	distances::AbstractArray{AbstractArray{Float64,1},1}
 	weights::AbstractArray{StatsBase.Weights,1}
 	priors::AbstractArray{ContinuousUnivariateDistribution,1}
-	emulation_settings::AbcEmulationSettings
+	emulator_trainer::Function
 	emulators::AbstractArray{Any,1}
 end
 
@@ -101,7 +101,7 @@ end
 """
 	ModelSelectionOutput
 
-Contains results of a model selection computation, including which models are best supported by the observed data and the parameter poseteriors at each population for each model. 
+Contains results of a model selection computation, including which models are best supported by the observed data and the parameter poseteriors at each population for each model.
 
 # Fields
 - `M::Int64`: The number of models.

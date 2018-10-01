@@ -119,9 +119,9 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
         n_particles,
         threshold_schedule,
         priors,
-        AbcEmulationSettings(n_design_points, gp_train_function, gp_regression),
         batch_size,
-        max_iter)
+        max_iter,
+        gp_train_function)
 
     emu_abcsmc_res = ABCSMC(emu_abcsmc_input, reference_data, write_progress=false)
     @test size(emu_abcsmc_res.population, 1) > 0
@@ -133,6 +133,11 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
 
     emu_out = EmulatedABCSMC(n_design_points, reference_data, n_particles, threshold_schedule,
         priors, "keep_all", simulator_function, write_progress=false)
+    @test size(emu_out.population, 1) > 0
+
+    emu_out = EmulatedABCSMC(n_design_points, reference_data, n_particles, threshold_schedule,
+        priors, "keep_all", simulator_function; write_progress=false,
+        emulator_training=DefaultEmulatorTraining(SquaredExponentialIsoKernel()))
     @test size(emu_out.population, 1) > 0
 
     emu_out = EmulatedABCSMC(n_design_points, reference_data, n_particles, threshold_schedule,

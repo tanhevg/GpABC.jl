@@ -24,8 +24,9 @@ function EmulatedABCRejection(n_design_points::Int64,
     n_particles::Int64, threshold::Float64, priors::AbstractArray{D,1},
     summary_statistic::Union{String,AbstractArray{String,1},Function},
     simulator_function::Function;
+    emulation_type::AbstractEmulatorTrainingSettings = DefaultEmulatorTraining(),
     distance_metric::Function=Distances.euclidean,
-    gpkernel::AbstractGPKernel=SquaredExponentialArdKernel(),
+    # gpkernel::AbstractGPKernel=SquaredExponentialArdKernel(),
     batch_size::Int64=10*n_particles, max_iter::Int64=1000,
     repetitive_training::RepetitiveTraining=RepetitiveTraining(),
     kwargs...) where {
@@ -42,16 +43,13 @@ function EmulatedABCRejection(n_design_points::Int64,
                 simulator_function,
                 summary_statistic,
                 distance_metric,
-                rts=repetitive_training,
-                gpkernel=gpkernel)
+                emulation_type,
+                repetitive_training,
+                )
     end
 
-    emulation_settings = AbcEmulationSettings(n_design_points,
-        gp_train_function,
-        gp_regression)
-
     input = EmulatedABCRejectionInput(length(priors), n_particles, threshold,
-        priors, emulation_settings, batch_size, max_iter)
+        priors, batch_size, max_iter, gp_train_function)
 
     return ABCrejection(input, reference_data; kwargs...)
 end
@@ -85,8 +83,9 @@ function EmulatedABCSMC(
     priors::AbstractArray{D,1},
     summary_statistic::Union{String,AbstractArray{String,1},Function},
     simulator_function::Function;
+    emulator_training::AbstractEmulatorTrainingSettings = DefaultEmulatorTraining(),
     distance_metric::Function=Distances.euclidean,
-    gpkernel::AbstractGPKernel=SquaredExponentialArdKernel(),
+    # gpkernel::AbstractGPKernel=SquaredExponentialArdKernel(),
     batch_size::Int64=10*n_particles, max_iter::Int64=20,
     repetitive_training::RepetitiveTraining=RepetitiveTraining(),
     kwargs...) where {
@@ -102,17 +101,14 @@ function EmulatedABCSMC(
                 reference_summary_statistic,
                 simulator_function,
                 summary_statistic,
-                distance_metric;
-                kwargs...
+                distance_metric,
+                emulator_training,
+                repetitive_training,
                 )
     end
 
-    emulation_settings = AbcEmulationSettings(n_design_points,
-        gp_train_function,
-        gp_regression)
-
     input = EmulatedABCSMCInput(length(priors), n_particles, threshold_schedule,
-        priors, emulation_settings, batch_size, max_iter)
+        priors, batch_size, max_iter, gp_train_function)
 
     return ABCSMC(input, reference_data; kwargs...)
 end
@@ -165,12 +161,8 @@ function model_selection(
             distance_function)
         for sim in simulator_functions]
 
-    emulator_settings = [AbcEmulationSettings(n_design_points,
-            trainer,
-            (x, em) -> gp_regression(x, em)) for trainer in emulator_trainers]
-
     input = EmulatedModelSelectionInput(length(parameter_priors), n_particles, threshold_schedule, model_prior,
-        parameter_priors, emulator_settings, max_batch_size, max_iter)
+        parameter_priors, emulator_trainers, max_batch_size, max_iter)
 
     return model_selection(input, reference_data)
 end

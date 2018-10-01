@@ -101,7 +101,6 @@ end
 #
 function initialiseABCSMC(input::SimulatedABCSMCInput,
         reference_data::AbstractArray{Float64,2};
-        out_stream::IO =  STDOUT,
         write_progress = true,
         progress_every = 1000,
         )
@@ -121,7 +120,6 @@ function initialiseABCSMC(input::SimulatedABCSMCInput,
 
     rejection_output = ABCrejection(rejection_input,
                                     reference_data;
-                                    out_stream = out_stream,
                                     write_progress = write_progress,
                                     progress_every = progress_every,
                                     )
@@ -146,26 +144,23 @@ end
 #
 # Initialise an emulated ABC-SMC run
 #
-function initialiseABCSMC(
-        input::EmulatedABCSMCInput,
+function initialiseABCSMC(input::EmulatedABCSMCInput,
         reference_data::AbstractArray{Float64,2};
-        out_stream::IO =  STDOUT,
         write_progress = true)
     # the first run is an ABC rejection simulation
     rejection_input = EmulatedABCRejectionInput(input.n_params,
                                         input.n_particles,
                                         input.threshold_schedule[1],
                                         input.priors,
-                                        input.emulation_settings,
                                         input.batch_size,
-                                        input.max_iter)
+                                        input.max_iter,
+                                        input.train_emulator_function)
 
     rejection_output = ABCrejection(rejection_input,
                                     reference_data;
-                                    out_stream = out_stream,
                                     write_progress = write_progress)
 
-    tracker =  EmulatedABCSMCTracker(input.n_params,
+    tracker = EmulatedABCSMCTracker(input.n_params,
                              [rejection_output.n_accepted],
                              [rejection_output.n_tries],
                              [rejection_output.threshold],
@@ -173,7 +168,7 @@ function initialiseABCSMC(
                              [rejection_output.distances],
                              [rejection_output.weights],
                              input.priors,
-                             input.emulation_settings,
+                             input.train_emulator_function,
                              input.batch_size,
                              input.max_iter,
                              [rejection_output.emulator] # emulators
@@ -189,17 +184,16 @@ function iterateABCSMC!(tracker::SimulatedABCSMCTracker,
         threshold::AbstractFloat,
         n_toaccept::Integer,
         reference_data::AbstractArray{Float64,2};
-        out_stream::IO = STDOUT,
         write_progress = true,
         progress_every = 1000,
         normalise_weights::Bool = true,
         for_model_selection::Bool = false
         )
     if write_progress && !for_model_selection
-        write(out_stream, string(DateTime(now())), " ABCSMC Simulation ϵ = $threshold.\n")
+        info(string(DateTime(now())), " ϵ = $threshold.", prefix="GpABC SMC Simulation ")
     end
     if threshold > tracker.threshold_schedule[end]
-        println("Warning: current threshold less strict than previous one.")
+        warn("current threshold less strict than previous one.")
     end
     kernels = generate_kernels(tracker.population[end], tracker.priors)
     reference_data_sum_stat = tracker.summary_statistic(reference_data)
@@ -234,14 +228,7 @@ function iterateABCSMC!(tracker::SimulatedABCSMCTracker,
         end
 
         if write_progress && (n_tries % progress_every == 0)
-            write(out_stream, string(DateTime(now())),
-                              " ABCSMC Simulation accepted ",
-                              string(n_accepted),
-                              "/",
-                              string(n_tries),
-                              " particles.\n"
-                              )
-            flush(out_stream)
+            info(string(DateTime(now())), " Accepted $(n_accepted)/$(n_tries) particles.", prefix="GpABC SMC Simulation ")
         end
     end
 
@@ -261,7 +248,7 @@ function iterateABCSMC!(tracker::SimulatedABCSMCTracker,
         end
     else
         if !for_model_selection
-            write(out_stream, string(DateTime(now())), " ABCSMC Simulation end. Accepted $(n_accepted)/$(n_toaccept)\n")
+            info(string(DateTime(now())), " Finished. Accepted $(n_accepted)/$(n_toaccept).", prefix="GpABC SMC Simulation ")
         end
     end
     push!(tracker.n_accepted, n_accepted)
@@ -286,7 +273,6 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
         threshold::AbstractFloat,
         n_toaccept::Integer,
         reference_data::AbstractArray{Float64,2};
-        out_stream::IO = STDOUT,
         write_progress = true,
         progress_every = 1000,
         emulator::Union{GPModel,Void}=nothing,
@@ -294,7 +280,7 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
         for_model_selection::Bool = false
         )
     if write_progress && !for_model_selection
-        write(out_stream, string(DateTime(now())), " ABCSMC Emulation ϵ = $threshold.\n")
+        info(string(DateTime(now())), " ϵ = $threshold.", prefix="GpABC SMC Emulation ")
     end
 
     old_population = tracker.population[end]
@@ -315,7 +301,7 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
             ret_idx = StatsBase.sample(indices(old_population, 1), old_weights, n_design_points)
             return old_population[ret_idx, :]
         end
-        emulator = tracker.emulation_settings.train_emulator_function(prior_sampling_function)
+        emulator = tracker.train_emulator_function(prior_sampling_function)
     end
 
     # initialise
@@ -333,7 +319,7 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
                                                  old_weights,
                                                  kernels)
 
-        distances, vars = tracker.emulation_settings.emulate_distance_function(parameters, emulator)
+        distances, vars = gp_regression(parameters, emulator)
         n_tries += length(distances)
         accepted_indices = find((distances .<= threshold) .& (sqrt.(vars) .<= threshold)) # todo more variance controls
         # accepted_indices = find(distances .<= threshold)
@@ -352,14 +338,7 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
         all_weights[store_slice] = weights
 
         if write_progress && !for_model_selection
-            write(out_stream, string(DateTime(now())),
-                              " ABCSMC Emulation accepted ",
-                              string(n_accepted),
-                              "/",
-                              string(n_tries),
-                              " particles.\n"
-                              )
-            flush(out_stream)
+            info(string(DateTime(now())), " Accepted $(n_accepted)/$(n_tries) particles.", prefix="GpABC SMC Emulation ")
         end
 
         iter_no += 1
@@ -428,7 +407,6 @@ parameter vector directly is used to construct the posterior). Whether simulatio
 # Arguments
 - `input::ABCSMCInput`: An ['SimulatedABCSMCInput'](@ref) or ['EmulatedABCSMCInput'](@ref) object that defines the settings for the ABC-SMC run.
 - `reference_data::AbstractArray{Float64,2}`: The observed data to which the simulated model output will be compared. Size: (n_model_trajectories, n_time_points)
-- `out_stream::IO`: The output stream to which progress will be written. An optional argument whose default is `STDOUT`.
 - `write_progress::Bool`: Optional argument controlling whether progress is written to `out_stream`.
 - `progress_every::Int`: Progress will be written to `out_stream` every `progress_every` simulations (optional, ignored if `write_progress` is `False`).
 
@@ -438,7 +416,6 @@ An object that inherits from ['ABCSMCOutput'](@ref), depending on whether a `inp
 function ABCSMC(
         input::ABCSMCInput,
         reference_data::AbstractArray{Float64,2};
-        out_stream::IO = STDOUT,
         write_progress = true,
         progress_every = 1000,
         )
@@ -446,7 +423,6 @@ function ABCSMC(
 
     tracker = initialiseABCSMC(input,
                                reference_data;
-                               out_stream = out_stream,
                                write_progress = write_progress)
 
     if tracker.n_accepted[1] > 0
@@ -457,7 +433,6 @@ function ABCSMC(
                            threshold,
                            input.n_particles,
                            reference_data;
-                           out_stream = out_stream,
                            write_progress = write_progress,
                            progress_every = progress_every,
                            )

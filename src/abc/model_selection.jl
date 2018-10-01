@@ -249,7 +249,7 @@ function initialise_modelselection(input::EmulatedModelSelectionInput, reference
 		throw(ArgumentError("There are $(input.M) models but the span of the model prior support is $(span(input.model_prior))"))
 	end
 
-	if length(input.emulation_settings_arr) != input.M
+	if length(input.emulator_trainers) != input.M
 		throw(ArgumentError("There are $(input.M) models but $(length(input.emulation_settings_arr)) emulation settings"))
 	end
 
@@ -271,7 +271,7 @@ function initialise_modelselection(input::EmulatedModelSelectionInput, reference
 	# Train the emulators
 	#
 	prior_samplers = [f(n_design_points) = generate_parameters(input.parameter_priors[m], n_design_points)[1] for m in 1:input.M]
-	emulators = [input.emulation_settings_arr[m].train_emulator_function(prior_samplers[m]) for m in 1:input.M]
+	emulators = [input.emulator_trainers[m](prior_samplers[m]) for m in 1:input.M]
 
 	#
 	# Compute first population using rejection-ABC
@@ -291,9 +291,9 @@ function initialise_modelselection(input::EmulatedModelSelectionInput, reference
 											tries_this_it[m],
 											input.threshold_schedule[1],
 											input.parameter_priors[m],
-											input.emulation_settings_arr[m],
 											tries_this_it[m],
-											1),
+											1,
+											input.emulator_trainers[m]),
 				reference_data,
 				emulator = emulators[m],
 				normalise_weights = false,
@@ -335,7 +335,7 @@ function initialise_modelselection(input::EmulatedModelSelectionInput, reference
 		[rejection_trackers[m].distances],
 		[StatsBase.Weights(rejection_trackers[m].weight_values, 1.0)],
 		input.parameter_priors[m],
-		input.emulation_settings_arr[m],
+		input.emulator_trainers[m],
 		[emulators[m]])
 			for m = 1:input.M]
 
@@ -424,7 +424,7 @@ function iterate_modelselection!(tracker::EmulatedModelSelectionTracker, thresho
 					deepcopy(tracker.model_trackers[m].distances[1:end-1]),
 					deepcopy(tracker.model_trackers[m].weights[1:end-1]),
 					tracker.model_trackers[m].priors,
-					tracker.model_trackers[m].emulation_settings,
+					tracker.model_trackers[m].emulator_trainer,
 					tries_this_it[m],
 					1,
 					deepcopy(tracker.model_trackers[m].emulators[1:end-1]))
