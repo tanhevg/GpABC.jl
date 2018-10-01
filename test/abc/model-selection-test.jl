@@ -2,8 +2,7 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
 
 @testset "Model selection test" begin
 
-	#threshold_schedule = [20, 15, 10, 5, 3, 2.5, 2, 1.7, 1.5]
-	threshold_schedule = [20, 15, 10]
+	threshold_schedule = [20.0, 15.0, 10.0] 
 	summary_statistic = "keep_all"
 	max_iter = 1e4
 	n_particles = 200
@@ -162,9 +161,17 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
 	test_ms_output(ms_res)
 
 	# The same computation using user-level function
-	model_selection(n_design_points, data, n_particles, threshold_schedule, [priors1, priors2],
+	ms_res = model_selection(n_design_points, data, n_particles, threshold_schedule, [priors1, priors2],
 		summary_statistic, [simulator1, simulator2])
 	test_ms_output(ms_res)
+
+	# Repeat above with thresholds that are too small - check for warnings
+	ms_res = model_selection(data, n_particles, [0.4, 0.2], [priors1, priors2],
+		summary_statistic, [simulator1, simulator2])
+	@test !ms_res.completed_all_populations
+	ms_res = model_selection(n_design_points, data, n_particles, [0.4, 0.2], [priors1, priors2],
+		summary_statistic, [simulator1, simulator2])
+	@test !ms_res.completed_all_populations
 
 
 end
