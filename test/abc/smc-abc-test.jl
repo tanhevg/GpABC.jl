@@ -136,6 +136,11 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
     @test size(emu_out.population, 1) > 0
 
     emu_out = EmulatedABCSMC(n_design_points, reference_data, n_particles, threshold_schedule,
+        priors, "keep_all", simulator_function; write_progress=false,
+        emulator_training=DefaultEmulatorTraining(SquaredExponentialIsoKernel()))
+    @test size(emu_out.population, 1) > 0
+
+    emu_out = EmulatedABCSMC(n_design_points, reference_data, n_particles, threshold_schedule,
         priors, "keep_all", simulator_function,
         repetitive_training = RepetitiveTraining(rt_iterations=1, rt_extra_training_points=1),
         write_progress=false)
