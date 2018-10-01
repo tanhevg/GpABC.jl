@@ -396,7 +396,8 @@ function model_selection(input::EmulatedModelSelectionInput,
 
 		if all_but_one_models_dead(tracker)
 			warn("All but one model is dead after population $i - terminating model selection algorithm")
-		return build_modelselection_output(tracker, true)
+			return build_modelselection_output(tracker, true)
+		end
 	end
 
 	return build_modelselection_output(tracker, true)

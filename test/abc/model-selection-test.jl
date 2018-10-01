@@ -6,6 +6,7 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
 	summary_statistic = "keep_all"
 	max_iter = 1e4
 	n_particles = 200
+	distance_metric = euclidean
 
 	#
 	# Experimental data - from ABCSysBio example at
@@ -33,11 +34,7 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
 	#
 
 	#
-<<<<<<< HEAD
-	# Priors and initial conditions - these are model-specfic as each model can 
-=======
 	# Priors and initial conditions - these are model-specfic as each model can
->>>>>>> a3489f8089d4f73ecf24f4e43ebb55bf73a16241
 	# have different numbers of parameters/species
 	#
 	priors1 = [Uniform(0.0, 5.0) for i in 1:4]
@@ -83,7 +80,6 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
 	n_params = [4,5]
 
 	function test_ms_output(ms_res::ModelSelectionOutput, is_simulation::Bool)
->>>>>>> a3489f8089d4f73ecf24f4e43ebb55bf73a16241
 		# 2nd dimension of population should always be the number of parameters
 		@test all(vcat([[size(ms_res.smc_outputs[m].population[i],2) == n_params[m]
 			for i in 1:length(ms_res.threshold_schedule)]

@@ -91,10 +91,6 @@ function EmulatedABCSMC(
     kwargs...) where {
     D<:ContinuousUnivariateDistribution
     }
-<<<<<<< HEAD
-
-=======
->>>>>>> a3489f8089d4f73ecf24f4e43ebb55bf73a16241
 
     summary_statistic = build_summary_statistic(summary_statistic)
     reference_summary_statistic = summary_statistic(reference_data)
@@ -165,20 +161,8 @@ function model_selection(
             distance_function)
         for sim in simulator_functions]
 
-<<<<<<< HEAD
-    emulator_settings = [AbcEmulationSettings(n_design_points,
-            trainer,
-            (x, em) -> gp_regression(x, em)) for trainer in emulator_trainers]
-
-    input = EmulatedModelSelectionInput(length(parameter_priors), n_particles, threshold_schedule, model_prior,
-        parameter_priors, emulator_settings, max_batch_size, max_iter)
-
-    return model_selection(input, reference_data)
-end
-=======
     input = EmulatedModelSelectionInput(length(parameter_priors), n_particles, threshold_schedule, model_prior,
         parameter_priors, emulator_trainers, max_batch_size, max_iter)
 
     return model_selection(input, reference_data)
 end
->>>>>>> a3489f8089d4f73ecf24f4e43ebb55bf73a16241
