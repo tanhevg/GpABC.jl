@@ -61,7 +61,7 @@ function plot_emulation_vs_simulation(emu_out, sim_out, plot_emu_iterations)
                         subplot2grid((grid_size, grid_size), (i - 1, j - 1))
                         for iter_idx in 1:length(emu_out.population)
                             scatter(emu_out.population[iter_idx][:,j], emu_out.population[iter_idx][:,i],
-                                color=population_colors[iter_idx], zorder=iter_idx)
+                                color=population_colors[iter_idx], zorder=iter_idx, marker=".")
                         end
                     elseif i == j
                         subplot2grid((grid_size, grid_size), (i - 1, j - 1))

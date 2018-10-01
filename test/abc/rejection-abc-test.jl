@@ -120,9 +120,9 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
           n_particles,
           0.5,
           priors,
-          AbcEmulationSettings(n_design_points, gp_train_function, gp_regression),
           batch_size,
-          max_iter)
+          max_iter,
+          gp_train_function)
 
     emu_result = ABCrejection(emu_rej_input, reference_data)
     @test size(emu_result.population, 1) > 0

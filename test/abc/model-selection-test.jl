@@ -33,7 +33,11 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
 	#
 
 	#
+<<<<<<< HEAD
 	# Priors and initial conditions - these are model-specfic as each model can 
+=======
+	# Priors and initial conditions - these are model-specfic as each model can
+>>>>>>> a3489f8089d4f73ecf24f4e43ebb55bf73a16241
 	# have different numbers of parameters/species
 	#
 	priors1 = [Uniform(0.0, 5.0) for i in 1:4]
@@ -72,13 +76,14 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
 	# so that it can be compared to the reference data "data", which only contains S, I and R
 	simulator2(params) = Array{Float64,2}(
 	    solve(ODEProblem(model2, ics[2], (times[1], times[end]), params), saveat=times, force_dtmin=true))[[1,3,4],:]
-	
+
 	#
 	# For tests on output shapes
 	#
 	n_params = [4,5]
 
-	function test_ms_output(ms_res::ModelSelectionOutput)
+	function test_ms_output(ms_res::ModelSelectionOutput, is_simulation::Bool)
+>>>>>>> a3489f8089d4f73ecf24f4e43ebb55bf73a16241
 		# 2nd dimension of population should always be the number of parameters
 		@test all(vcat([[size(ms_res.smc_outputs[m].population[i],2) == n_params[m]
 			for i in 1:length(ms_res.threshold_schedule)]
@@ -106,9 +111,11 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
 		@test all([size(ms_res.smc_outputs[m].population,1) == length(ms_res.threshold_schedule) for m in 1:ms_res.M])
 		@test all([size(ms_res.smc_outputs[m].distances,1) == length(ms_res.threshold_schedule) for m in 1:ms_res.M])
 		@test all([size(ms_res.smc_outputs[m].weights,1) == length(ms_res.threshold_schedule) for m in 1:ms_res.M])
-		
-		# Can't have more than max_iter tries in total at each population
-		@test all([sum([ms_res.smc_outputs[m].n_tries[i] for m=1:ms_res.M]) <= max_iter for i=1:length(ms_res.threshold_schedule)])
+
+		# Can't have more than max_iter tries in total at each population - this is only true for simulation
+		if is_simulation
+			@test all([sum([ms_res.smc_outputs[m].n_tries[i] for m=1:ms_res.M]) <= max_iter for i=1:length(ms_res.threshold_schedule)])
+		end
 
 		# Weights must sum to 1 for all models in all cases where the model accepted at least one particle
 		weight_sums = vcat([[sum(ms_res.smc_outputs[m].weights[i]) for i = 1:length(ms_res.threshold_schedule)] for m in 1:ms_res.M]...)
@@ -121,15 +128,15 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
 	# Do model selection using simulation
 	#
 	input = SimulatedModelSelectionInput(2, n_particles, threshold_schedule, modelprior,
-	    [priors1, priors2], summary_statistic, euclidean, [simulator1, simulator2], max_iter)
+	    [priors1, priors2], summary_statistic, distance_metric, [simulator1, simulator2], max_iter)
 
 	ms_res = model_selection(input, data);
-	test_ms_output(ms_res)
-	
-	# Use helper function for the same computation
+	test_ms_output(ms_res, true)
+
+	# User-level function for the same computation
 	ms_res  = model_selection(data, n_particles, threshold_schedule, [priors1, priors2],
 		summary_statistic, [simulator1, simulator2])
-	test_ms_output(ms_res)
+	test_ms_output(ms_res, true)
 
 	#
 	# Do model selection using emulation
@@ -150,20 +157,21 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
 	        distance_metric)
 	    for sim in [simulator1, simulator2]]
 
-	emulator_settings = [AbcEmulationSettings(n_design_points,
-	        trainer,
-	        (x, em) -> gp_regression(x, em)) for trainer in emulator_trainers]
+    #
+	# emulator_settings = [AbcEmulationSettings(n_design_points,
+	#         trainer,
+	#         (x, em) -> gp_regression(x, em)) for trainer in emulator_trainers]
 
 	input = EmulatedModelSelectionInput(2, 200, threshold_schedule, modelprior, [priors1, priors2],
-	    emulator_settings, 100, 1e3)
+	    emulator_trainers, 100, 1e3)
 
 	ms_res = model_selection(input, data)
-	test_ms_output(ms_res)
+	test_ms_output(ms_res, false)
 
 	# The same computation using user-level function
-	ms_res = model_selection(n_design_points, data, n_particles, threshold_schedule, [priors1, priors2],
+	model_selection(n_design_points, data, n_particles, threshold_schedule, [priors1, priors2],
 		summary_statistic, [simulator1, simulator2])
-	test_ms_output(ms_res)
+	test_ms_output(ms_res, false)
 
 	# Repeat above with thresholds that are too small - check for warnings
 	ms_res = model_selection(data, n_particles, [0.4, 0.2], [priors1, priors2],
@@ -172,6 +180,4 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
 	ms_res = model_selection(n_design_points, data, n_particles, [0.4, 0.2], [priors1, priors2],
 		summary_statistic, [simulator1, simulator2])
 	@test !ms_res.completed_all_populations
-
-
 end
