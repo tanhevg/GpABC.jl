@@ -26,6 +26,11 @@ export
 	get_training_data,
 	read_rejection_output, read_smc_output,
 
+	model_selection,
+	SimulatedModelSelectionInput,
+	EmulatedModelSelectionInput,
+	ModelSelectionOutput,
+
 	RepetitiveTraining,
 
     AbstractEmulatorTrainingSettings, DefaultEmulatorTraining, train_emulator;
@@ -46,10 +51,12 @@ include("gp/gp_optimisation.jl")
 include("util/mv_uniform.jl")
 include("util/latin_hypercube_sampler.jl")
 
-include("abc/summary_stats.jl")
 include("abc/io.jl")
+include("abc/summary_stats.jl")
 include("abc/rejection.jl")
 include("abc/smc.jl")
+include("abc/model_selection_io.jl")
+include("abc/model_selection.jl")
 include("abc/simulation.jl")
 include("util/emulation_helpers.jl")
 include("abc/emulation.jl")
