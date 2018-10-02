@@ -10,8 +10,8 @@ function generate_parameters(
     parameters = zeros(n_dims)
 
     weight = 1.
-    for i in 1:n_dims
-        @inbounds parameters[i] = rand(priors[i])
+    @inbounds for i in 1:n_dims
+        parameters[i] = rand(priors[i])
         weight *= pdf(priors[i], parameters[i])
     end
 
@@ -29,14 +29,9 @@ function generate_parameters(
         }
     n_dims = length(priors)
     parameters = zeros(batch_size, n_dims)
-    weights = ones(batch_size)
-
-    for j in 1:n_dims
-        for i in 1:batch_size
-            @inbounds parameters[i,j] = rand(priors[j])
-            weights[i] *= pdf(priors[j], parameters[j])
-        end
-    end
+    priors = reshape(priors, 1, n_dims)
+    parameters .= rand.(priors)
+    weights = prod(pdf.(priors, parameters), 2)
 
     return parameters, weights
 end
@@ -51,25 +46,30 @@ end
     ABCrejection
 
 Run a simulationed-based rejection-ABC computation. Parameter posteriors are obtained by simulating the model
-for a parameter vector, computing the summary statistic of the output then computing the distance to the 
+for a parameter vector, computing the summary statistic of the output then computing the distance to the
 summary statistic of the reference data. If this distance is sufficiently small the parameter vector is
 included in the posterior.
 
-# Fields
+# Arguments
 - `input::SimulatedABCRejectionInput`: A ['SimulatedABCRejectionInput'](@ref) object that defines the settings for the simulated rejection-ABC run.
 - `reference_data::AbstractArray{Float64,2}`: The observed data to which the simulated model output will be compared. Size: (n_model_trajectories, n_time_points)
-- `out_stream::IO`: The output stream to which progress will be written. An optional argument whose default is `STDOUT`.
 - `write_progress::Bool`: Optional argument controlling whether progress is written to `out_stream`.
 - `progress_every::Int`: Progress will be written to `out_stream` every `progress_every` simulations (optional, ignored if `write_progress` is `False`).
+
+# Returns
+A ['SimulatedABCRejectionOutput'](@ref) object.
 """
-function ABCrejection(
-	input::SimulatedABCRejectionInput,
+function ABCrejection(input::SimulatedABCRejectionInput,
 	reference_data::AbstractArray{Float64,2};
-	out_stream::IO = STDOUT,
     write_progress::Bool = true,
-    progress_every::Int = 1000)
+    progress_every::Int = 1000,
+    normalise_weights::Bool = true,
+    for_model_selection::Bool = false)
 
 	checkABCInput(input)
+    if write_progress && !for_model_selection
+        info(string(DateTime(now())), " ϵ = $(input.threshold)."; prefix="GpABC rejection simulation ")
+    end
 
 	# initialise
     n_tries = 0
@@ -83,11 +83,19 @@ function ABCrejection(
     reference_data_sum_stat = summary_statistic(reference_data)
 
     # simulate
-    while n_accepted < input.n_particles
+    while n_accepted < input.n_particles && n_tries < input.max_iter
         parameters, weight = generate_parameters(input.priors)
         simulated_data = input.simulator_function(parameters)
         simulated_data_sum_stat = summary_statistic(simulated_data)
+        # This prevents the whole code from failing if there is a problem with solving the
+        # differential equation(s)
+        if size(simulated_data_sum_stat) != size(reference_data_sum_stat)
+            warn("Summarised simulated and reference data do not have the same size ( $(size(simulated_data_sum_stat)) and $(size(reference_data_sum_stat)) ).
+                This may be due to the behaviour of DifferentialEquations::solve - please check for related warnings. Continuing to the next iteration.")
+            continue
+        end
         distance = input.distance_function(reference_data_sum_stat, simulated_data_sum_stat)
+        #println("computed distance")
         n_tries += 1
 
         if distance <= input.threshold
@@ -97,31 +105,36 @@ function ABCrejection(
             weights[n_accepted] = weight
         end
 
-        if write_progress && (n_tries % progress_every == 0)
-            write(out_stream, string(DateTime(now())),
-                              " Accepted ",
-                              string(n_accepted),
-                              "/",
-                              string(n_tries),
-                              " particles.\n"
-                              )
-            flush(out_stream)
+        if write_progress && (n_tries % progress_every == 0) && !for_model_selection
+            info(string(DateTime(now())), " Accepted $(n_accepted)/$(n_tries) particles.", prefix="GpABC rejection simulation ")
         end
     end
 
-    weights = weights ./ sum(weights)
+    if write_progress && (n_tries % progress_every != 0) && !for_model_selection
+        info(string(DateTime(now())), " Accepted $(n_accepted)/$(n_tries) particles.", prefix="GpABC rejection simulation ")
+    end
 
+    if n_accepted < input.n_particles
+        if !for_model_selection
+            warn("Simulation reached maximum iterations $(input.max_iter) before finding $(input.n_particles) particles - will return $n_accepted")
+        end
+        accepted_parameters = accepted_parameters[1:n_accepted, :]
+        accepted_distances = accepted_distances[1:n_accepted]
+        weights = weights[1:n_accepted]
+    end
+
+    if normalise_weights
+        weights = weights ./ sum(weights)
+    end
     # output
-    output = ABCRejectionOutput(input.n_params,
+    output = SimulatedABCRejectionOutput(input.n_params,
                                 n_accepted,
                                 n_tries,
                                 input.threshold,
                                 accepted_parameters,
                                 accepted_distances,
-                                StatsBase.Weights(weights, 1.0),
+                                StatsBase.Weights(weights),
                                 )
-
-    #write(out_stream, output)
 
     return output
 
@@ -129,58 +142,70 @@ end
 
 """
     ABCrejection
-
 Run a emulation-based rejection-ABC computation. Parameter posteriors are obtained using a regression model
-(the emulator), that has learnt a mapping from parameter vectors to the distance between the 
+(the emulator), that has learnt a mapping from parameter vectors to the distance between the
 model output and observed data in summary statistic space. If this distance is sufficiently small the parameter vector is
 included in the posterior.
-
-# Fields
+# Arguments
 - `input::EmulatedABCRejectionInput`: An ['EmulatedABCRejectionInput'](@ref) object that defines the settings for the emulated rejection-ABC run.
 - `reference_data::AbstractArray{Float64,2}`: The observed data to which the simulated model output will be compared. Size: (n_model_trajectories, n_time_points)
-- `out_stream::IO`: The output stream to which progress will be written. An optional argument whose default is `STDOUT`.
-- `write_progress::Bool`: Optional argument controlling whether progress is written to `out_stream`.
-- `progress_every::Int`: Progress will be written to `out_stream` every `progress_every` simulations (optional, ignored if `write_progress` is `False`).
+- `write_progress::Bool`: Optional argument controlling whether progress is logged.
+- `progress_every::Int`: Progress will be logged every `progress_every` simulations (optional, ignored if `write_progress` is `False`).
+# Returns
+An ['EmulatedABCRejectionOutput'](@ref) object.
 """
-function ABCrejection(
-	input::EmulatedABCRejectionInput,
-	reference_data::AbstractArray{Float64,2};
-	out_stream::IO = STDOUT,
+function ABCrejection(input::EmulatedABCRejectionInput,
+    reference_data::AbstractArray{Float64,2};
     write_progress = true,
-    progress_every = 1000)
+    progress_every = 1000,
+    emulator::Union{GPModel,Void}=nothing, # In model selection an emulator is provided - not finished
+    normalise_weights::Bool = true,
+    for_model_selection::Bool = false)
 
-	checkABCInput(input)
+    checkABCInput(input)
 
-	# initialise
+    if write_progress && !for_model_selection
+        info(string(DateTime(now())), " ϵ = $(input.threshold).", prefix="GpABC rejection emulation ")
+    end
+    # initialise
     n_accepted = 0
     n_tries = 0
     batch_no = 1
     accepted_parameters = zeros(input.n_particles, input.n_params)
     accepted_distances = zeros(input.n_particles)
     weights = ones(input.n_particles)
+    #println("initialised rejection ABC")
 
+    # todo: consolidate sample_from_priors with generate_parameters
+    # prior_sampling_function(n_design_points) = generate_parameters(input.priors, n_design_points)[1]
+    #
+    # emulator = input.train_emulator_function(prior_sampling_function)
+
+    # todo: consolidate sample_from_priors with generate_parameters
+    if emulator == nothing
+        prior_sampling_function(n_design_points) = generate_parameters(input.priors, n_design_points)[1]
+        emulator = input.train_emulator_function(prior_sampling_function)
+    end
     # emulate
     while n_accepted < input.n_particles && batch_no <= input.max_iter
-
-        if batch_no > input.max_iter
-            warn("Emulation reached maximum iterations before finding $(input.n_particles) particles - will return $n_accepted")
-            accepted_parameters = accepted_parameters[1:n_accepted,:]
-            accepted_distances = accepted_distances[1:n_accepted]
-            weights = weights[1:n_accepted]
-
-            break
-        end
+        #println("Batch number $batch_no")
 
         parameter_batch, weight_batch = generate_parameters(input.priors, input.batch_size)
 
-        distances = input.distance_prediction_function(parameter_batch)
+        (distances, vars) = gp_regression(parameter_batch, emulator)
         n_tries += input.batch_size
+
+        #println("distances size = $(size(distances))")
+        #println(distances)
 
         #
         # Check which parameter indices were accepted
         #
-        accepted_batch_idxs = find(distances .<= input.threshold)
+        accepted_batch_idxs = find((distances .<= input.threshold) .& (sqrt.(vars) .<= input.threshold))
+        # accepted_batch_idxs = find(distances .<= input.threshold)
         n_accepted_batch = length(accepted_batch_idxs)
+
+        #println("n_accepted_batch = $n_accepted_batch")
 
         #
         # If some parameters were accepted, store their values, (predicted) distances and weights
@@ -199,37 +224,38 @@ function ABCrejection(
 
         end
 
-        if write_progress && (batch_no % progress_every == 0)
-            write(out_stream, string(DateTime(now())),
-                              " Accepted ",
-                              string(n_accepted),
-                              "/",
-                              string(n_tries),
-                              " particles (",
-                              string(batch_no),
-                              " batches of size ",
-                              string(input.batch_size),
-                              ").\n"
-                              )
-            flush(out_stream)
+        if write_progress && !for_model_selection
+            info(string(DateTime(now())),
+                " accepted $(n_accepted)/$(n_tries) particles ($(batch_no) batches of size $(input.batch_size)).",
+                prefix="GpABC rejection emulation ")
         end
 
         batch_no += 1
     end
 
-    weights = weights ./ sum(weights)
+    if n_accepted < input.n_particles
+        if !for_model_selection
+            warn("Emulation reached maximum $(input.max_iter) iterations before finding $(input.n_particles) particles - will return $n_accepted")
+        end
+        accepted_parameters = accepted_parameters[1:n_accepted, :]
+        accepted_distances = accepted_distances[1:n_accepted]
+        weights = weights[1:n_accepted]
+    end
+
+    if normalise_weights
+        weights = weights ./ sum(weights)
+    end
 
     # output
-    output = ABCRejectionOutput(input.n_params,
+    output = EmulatedABCRejectionOutput(input.n_params,
                                 n_accepted,
                                 n_tries,
                                 input.threshold,
                                 accepted_parameters,
                                 accepted_distances,
-                                StatsBase.Weights(weights, 1.0),
+                                StatsBase.Weights(weights),
+                                emulator
                                 )
-
-    #write(out_stream, output)
 
     return output
 

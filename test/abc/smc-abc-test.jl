@@ -66,9 +66,10 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
         priors,
         "keep_all",
         distance_metric,
-        simulator_function)
+        simulator_function,
+        max_iter)
 
-    sim_abcsmc_res = ABCSMC(sim_abcsmc_input, reference_data, write_progress = false)
+    sim_abcsmc_res = ABCSMC(sim_abcsmc_input, reference_data)
     @test size(sim_abcsmc_res.population, 1) > 0
 
     #
@@ -81,9 +82,10 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
         ["mean", "variance", "max", "min", "range", "median",
         "q1", "q3", "iqr"],
         distance_metric,
-        simulator_function)
+        simulator_function,
+        max_iter)
 
-    sim_abcsmc_res = ABCSMC(sim_abcsmc_input, reference_data, write_progress = false)
+    sim_abcsmc_res = ABCSMC(sim_abcsmc_input, reference_data)
     @test size(sim_abcsmc_res.population, 1) > 0
 
     #
@@ -98,39 +100,50 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
         priors,
         sum_stat,
         distance_metric,
-        simulator_function)
+        simulator_function,
+        max_iter)
 
-    sim_abcsmc_res = ABCSMC(sim_abcsmc_input, reference_data, write_progress = false)
+    sim_abcsmc_res = ABCSMC(sim_abcsmc_input, reference_data)
     @test size(sim_abcsmc_res.population, 1) > 0
 
-    X, y = get_training_data(n_design_points, priors, simulator_function, "keep_all", distance_metric, reference_data)
-
-    gpem = GPModel(training_x=X, training_y=y, kernel=SquaredExponentialArdKernel())
-    gp_train(gpem)
-
-    function predict_distance(p::AbstractArray{Float64})
-        result = gp_regression(p,gpem)[1]
-        return result
+    gp_train_function = function(prior_sampling_function::Function)
+        GpABC.abc_train_emulator(prior_sampling_function,
+                n_design_points,
+                GpABC.keep_all_summary_statistic(reference_data),
+                simulator_function,
+                GpABC.build_summary_statistic("keep_all"),
+                distance_metric)
     end
 
     emu_abcsmc_input = EmulatedABCSMCInput(n_var_params,
         n_particles,
         threshold_schedule,
         priors,
-        predict_distance,
         batch_size,
-        max_iter)
+        max_iter,
+        gp_train_function)
 
     emu_abcsmc_res = ABCSMC(emu_abcsmc_input, reference_data, write_progress=false)
     @test size(emu_abcsmc_res.population, 1) > 0
 
     # Now repeat using user-level functions
-    sim_out = SimulatedABCSMC(reference_data, n_particles, threshold_schedule, 
+    sim_out = SimulatedABCSMC(reference_data, n_particles, threshold_schedule,
         priors, "keep_all", simulator_function, write_progress=false)
     @test size(sim_out.population, 1) > 0
 
-    emu_out = EmulatedABCSMC(n_design_points, reference_data, n_particles, threshold_schedule, 
+    emu_out = EmulatedABCSMC(n_design_points, reference_data, n_particles, threshold_schedule,
         priors, "keep_all", simulator_function, write_progress=false)
+    @test size(emu_out.population, 1) > 0
+
+    emu_out = EmulatedABCSMC(n_design_points, reference_data, n_particles, threshold_schedule,
+        priors, "keep_all", simulator_function; write_progress=false,
+        emulator_training=DefaultEmulatorTraining(SquaredExponentialIsoKernel()))
+    @test size(emu_out.population, 1) > 0
+
+    emu_out = EmulatedABCSMC(n_design_points, reference_data, n_particles, threshold_schedule,
+        priors, "keep_all", simulator_function,
+        repetitive_training = RepetitiveTraining(rt_iterations=1, rt_extra_training_points=1),
+        write_progress=false)
     @test size(emu_out.population, 1) > 0
 
 end

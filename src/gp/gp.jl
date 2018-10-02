@@ -333,3 +333,14 @@ function update_cache!(kernel::AbstractGPKernel, cache::HPOptimisationCache,
     end
     0
 end
+
+"""
+    gp_regression_sample(params::Union{AbstractArray{Float64, 1}, AbstractArray{Float64, 2}}, gpem::GPModel)
+
+Return a random sample from a multivariate Gaussian distrubution, obtained by calling [`gp_regression`](@ref)
+"""
+function gp_regression_sample(params::Union{AbstractArray{Float64, 1}, AbstractArray{Float64, 2}}, gpem::GPModel)
+    mu, sigma = gp_regression(params, gpem)
+    distr = MvNormal(mu, sigma)
+    return rand(distr)
+end

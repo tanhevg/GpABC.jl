@@ -1,7 +1,7 @@
 using RecipesBase
 
 @recipe function abc_output_recipe(abco::ABCOutput;
-            runs=nothing, params=nothing)
+      runs=nothing, params=nothing, population_colors=nothing)
       if params === nothing
             params = [i for i in 1:abco.n_params]
       end
@@ -14,11 +14,12 @@ using RecipesBase
       layout := length(params) ^ 2
       for (i, par1) in enumerate(params)
             for (j, par2) in enumerate(params)
-                  @series begin
-                        subplot := (i - 1) * length(params) + j
-                        if i == j
+                  subplot := (i - 1) * length(params) + j
+                  if i == j
+                        @series begin
                               seriestype := :histogram
                               xlabel --> "Parameter $(par1)"
+                              ylabel := ""
                               yaxis := false
                               bins := 50
                               if isa(abco.population, Vector)
@@ -26,31 +27,50 @@ using RecipesBase
                               else
                                     data = abco.population[:, par1]
                               end # if Vector
-                        elseif j < i
-                              seriestype := :scatter
-                              markerstrokecolor --> false
-                              xlabel --> "Parameter $(par2)"
-                              ylabel --> "Parameter $(par1)"
-                              if isa(abco.population, Vector)
-                                    x = Vector()
-                                    y = Vector()
-                                    for r in runs
+                        end  # @series
+                  elseif j < i
+                        seriestype := :scatter
+                        markerstrokecolor --> false
+                        if isa(abco.population, Vector)
+                              for r in runs
+                                    @series begin
+                                          xlabel --> "Parameter $(par2)"
+                                          ylabel --> "Parameter $(par1)"
+                                          if population_colors !== nothing
+                                                idx = r % length(population_colors)
+                                                if idx == 0
+                                                      idx = length(population_colors)
+                                                end
+                                                color := population_colors[idx]
+                                          end
                                           pop = abco.population[r]
-                                          append!(x, [pop[:, par2]])
-                                          append!(y, [pop[:, par1]])
-                                    end # for r
-                                    data = (x, y)
-                              else
-                                    data = (abco.population[:, par2], abco.population[:, par1])
-                              end # if Vector
+                                          data = (pop[:, par2], pop[:, par1])
+                                    end # @series
+                              end # for r
                         else
-                              data = [0]
+                              @series begin
+                                    data = (abco.population[:, par2], abco.population[:, par1])
+                              end # @series
+                        end # if Vector
+                  else
+                        @series begin
+                              ylabel := ""
+                              xlabel := ""
                               grid := false
                               xaxis := false
                               yaxis := false
-                        end # if/elseif
-                        data
-                  end # @series
+                              data = []
+                        end # @series
+                  end # if/elseif
             end # for j, par2
       end # for i, par1
 end # @recipe
+
+# Plot recipe for mdoel selection output
+@recipe function modelselection_plotrecipe(::Type{ModelSelectionOutput}, mso::ModelSelectionOutput)
+    seriestype := :line
+    xlabel --> "Population"
+    ylabel --> "Number of accepted particles"
+    labels --> [string("Model ", m) for m in 1:mso.M]
+    data = [[mso.n_accepted[i][j] for i in 1:size(mso.n_accepted,1)] for j in 1:mso.M]
+end
