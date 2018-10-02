@@ -25,12 +25,9 @@ export
 	EmulatedABCRejection, EmulatedABCSMC,
 	get_training_data,
 	read_rejection_output, read_smc_output,
-<<<<<<< HEAD
-
 	LNAInput, LNA,
-	compute_LNA, sample_LNA_trajectories, get_LNA_trajectories;
-=======
->>>>>>> 0be7852fd3e54cf7655771282fb3109eef7e4dd3
+	compute_LNA, sample_LNA_trajectories, get_LNA_trajectories,
+
 
 	model_selection,
 	SimulatedModelSelectionInput,
