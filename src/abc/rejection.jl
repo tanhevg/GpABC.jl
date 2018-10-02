@@ -126,6 +126,7 @@ function ABCrejection(input::SimulatedABCRejectionInput,
     if normalise_weights
         weights = weights ./ sum(weights)
     end
+    # output
     output = SimulatedABCRejectionOutput(input.n_params,
                                 n_accepted,
                                 n_tries,
@@ -141,35 +142,32 @@ end
 
 """
     ABCrejection
-
 Run a emulation-based rejection-ABC computation. Parameter posteriors are obtained using a regression model
 (the emulator), that has learnt a mapping from parameter vectors to the distance between the
 model output and observed data in summary statistic space. If this distance is sufficiently small the parameter vector is
 included in the posterior.
-
 # Arguments
 - `input::EmulatedABCRejectionInput`: An ['EmulatedABCRejectionInput'](@ref) object that defines the settings for the emulated rejection-ABC run.
 - `reference_data::AbstractArray{Float64,2}`: The observed data to which the simulated model output will be compared. Size: (n_model_trajectories, n_time_points)
 - `write_progress::Bool`: Optional argument controlling whether progress is logged.
 - `progress_every::Int`: Progress will be logged every `progress_every` simulations (optional, ignored if `write_progress` is `False`).
-
 # Returns
 An ['EmulatedABCRejectionOutput'](@ref) object.
 """
 function ABCrejection(input::EmulatedABCRejectionInput,
-	reference_data::AbstractArray{Float64,2};
+    reference_data::AbstractArray{Float64,2};
     write_progress = true,
     progress_every = 1000,
     emulator::Union{GPModel,Void}=nothing, # In model selection an emulator is provided - not finished
     normalise_weights::Bool = true,
     for_model_selection::Bool = false)
 
-	checkABCInput(input)
+    checkABCInput(input)
 
     if write_progress && !for_model_selection
         info(string(DateTime(now())), " ϵ = $(input.threshold).", prefix="GpABC rejection emulation ")
     end
-	# initialise
+    # initialise
     n_accepted = 0
     n_tries = 0
     batch_no = 1

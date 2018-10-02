@@ -187,24 +187,39 @@ end
 function model_selection(input::SimulatedModelSelectionInput,
 	reference_data::AbstractArray{Float64,2})
 
-	println("Simulated model selection\nPopulation 1")
+	println("Simulated model selection\nPopulation 1 - ABC Rejection ϵ = $(input.threshold_schedule[1])")
 	tracker = initialise_modelselection(input, reference_data)
 
+	if all_models_dead(tracker)
+		warn("No particles were accepted in population 1 with threshold $(input.threshold_schedule[1])- terminating model selection algorithm")
+		return build_modelselection_output(tracker, false)
+	end
+
+	if all_but_one_models_dead(tracker)
+		warn("All but one model is dead after population 1 - terminating model selection algorithm")
+		return build_modelselection_output(tracker, true)
+	end
+
 	for i in 2:length(input.threshold_schedule)
-		println("Population $i")
+		println("Population $i - ABC SMC ϵ = $(input.threshold_schedule[i])")
 		iterate_modelselection!(tracker, input.threshold_schedule[i], reference_data)
 
 		# Avoid infinite loop if no particles are accepted
-		if sum([tracker.model_trackers[m].n_accepted[end] for m = 1:tracker.M]) == 0
-			warn("No particles were accepted in population $i - terminating model selection algorithm")
-			break
+		if all_models_dead(tracker)
+			warn("No particles were accepted in population $i with threshold $(input.threshold_schedule[i])- terminating model selection algorithm")
+			return build_modelselection_output(tracker, false)
+		end
+
+		if all_but_one_models_dead(tracker)
+			warn("All but one model is dead after population $i - terminating model selection algorithm")
+			return build_modelselection_output(tracker, true)
 		end
 	end
 
-	return build_modelselection_output(tracker)
+	return build_modelselection_output(tracker, true)
 end
 
-function build_modelselection_output(tracker::SimulatedModelSelectionTracker)
+function build_modelselection_output(tracker::SimulatedModelSelectionTracker, successful_completion::Bool)
 	return ModelSelectionOutput(
 		tracker.M,
 		[[tracker.model_trackers[m].n_accepted[i] for m = 1:tracker.M] for i in 1:length(tracker.threshold_schedule)],
@@ -217,11 +232,12 @@ function build_modelselection_output(tracker::SimulatedModelSelectionTracker)
 			tracker.model_trackers[m].population,
 			tracker.model_trackers[m].distances,
 			tracker.model_trackers[m].weights)
-				for m in 1:tracker.M]
+				for m in 1:tracker.M],
+		successful_completion
 		)
 end
 
-function build_modelselection_output(tracker::EmulatedModelSelectionTracker)
+function build_modelselection_output(tracker::EmulatedModelSelectionTracker, successful_completion::Bool)
 	return ModelSelectionOutput(
 		tracker.M,
 		[[tracker.model_trackers[m].n_accepted[i] for m = 1:tracker.M] for i in 1:length(tracker.threshold_schedule)],
@@ -235,7 +251,8 @@ function build_modelselection_output(tracker::EmulatedModelSelectionTracker)
 			tracker.model_trackers[m].distances,
 			tracker.model_trackers[m].weights,
 			tracker.model_trackers[m].emulators)
-				for m in 1:tracker.M]
+				for m in 1:tracker.M],
+		successful_completion
 		)
 end
 
@@ -357,18 +374,33 @@ function model_selection(input::EmulatedModelSelectionInput,
 	println("Emulated model selection\nPopulation 1 - ABC Rejection ϵ = $(input.threshold_schedule[1])")
 	tracker = initialise_modelselection(input, reference_data)
 
+	if all_models_dead(tracker)
+		warn("No particles were accepted in population 1 with threshold $(input.threshold_schedule[1])- terminating model selection algorithm")
+		return build_modelselection_output(tracker, false)
+	end
+
+	if all_but_one_models_dead(tracker)
+		warn("All but one model is dead after population 1 - terminating model selection algorithm")
+		return build_modelselection_output(tracker, true)
+	end
+
 	for i in 2:length(input.threshold_schedule)
 		println("Population $i - ABCSMC ϵ = $(input.threshold_schedule[i])")
 		iterate_modelselection!(tracker, input.threshold_schedule[i], reference_data)
 
 		# Avoid infinite loop if no particles are accepted for all models
-		if sum([tracker.model_trackers[m].n_accepted[end] for m = 1:tracker.M]) == 0
-			warn("No particles were accepted in population $i - terminating model selection algorithm")
-			break
+		if all_models_dead(tracker)
+			warn("No particles were accepted in population $i with threshold $(input.threshold_schedule[i]) - terminating model selection algorithm")
+			return build_modelselection_output(tracker, false)
+		end
+
+		if all_but_one_models_dead(tracker)
+			warn("All but one model is dead after population $i - terminating model selection algorithm")
+			return build_modelselection_output(tracker, true)
 		end
 	end
 
-	return build_modelselection_output(tracker)
+	return build_modelselection_output(tracker, true)
 end
 
 function iterate_modelselection!(tracker::EmulatedModelSelectionTracker, threshold::Float64,
@@ -467,4 +499,14 @@ function iterate_modelselection!(tracker::EmulatedModelSelectionTracker, thresho
 		end
 	end
 
+end
+
+# not exported
+function all_models_dead(tracker::ModelSelectionTracker)
+	return sum([tracker.model_trackers[m].n_accepted[end] for m = 1:tracker.M]) == 0
+end
+
+# not exported
+function all_but_one_models_dead(tracker::ModelSelectionTracker)
+	return sum([tracker.model_trackers[m].n_accepted[end] == 0 for m = 1:tracker.M]) == tracker.M-1
 end

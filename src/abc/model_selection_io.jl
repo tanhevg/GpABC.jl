@@ -108,10 +108,12 @@ Contains results of a model selection computation, including which models are be
 - `n_accepted::AbstractArray{AbstractArray{Int64,1},1}`: The number of parameters accepted by each model at each population. `n_accepted[i][j]` contains the number of acceptances for model `j` at population `i`.
 - `threshold_schedule::AbstractArray{Float64,1}`: A set of maximum distances from the summarised model output to summarised observed data for a parameter vector to be included in the posterior.
 - `smc_outputs::AbstractArray{ABCSMCOutput,1}`: A ['SimulatedABCSMCOutput']@(ref) or ['EmulatedABCSMCOutput']@(ref) for each model. Use to find details of the ABC results at each population.
+- `completed_all_populations::Bool`: Indicates whether the algorithm completed all the populations successfully. A successful population is one where at least one model accepts at least one particle.
 """
 struct ModelSelectionOutput
 	M::Int64
 	n_accepted::AbstractArray{AbstractArray{Int64,1},1}
 	threshold_schedule::AbstractArray{Float64,1}
 	smc_outputs::AbstractArray{ABCSMCOutput,1}
+	completed_all_populations::Bool
 end

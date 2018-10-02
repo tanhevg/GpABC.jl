@@ -50,7 +50,6 @@ function abc_train_emulator(
     gpem
 end
 
-
 function train_emulator(training_x::AbstractArray{T, 2}, y::AbstractArray{T, 2}, training_settings::AbstractEmulatorTrainingSettings) where {T<:Real}
     throw("train_emulator(...$(emulation_type)) not implemented")
 end
