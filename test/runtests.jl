@@ -8,4 +8,5 @@ include("gp_regression/gp_regression_tests.jl")
 include("abc/rejection-abc-test.jl")
 include("abc/smc-abc-test.jl")
 include("abc/model-selection-test.jl")
+include("lna-test.jl")
 end
