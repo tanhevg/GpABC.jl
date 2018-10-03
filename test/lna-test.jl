@@ -7,7 +7,7 @@ using Base.Test, GpABC, DifferentialEquations, Distributions, Distances
     volume = 1.0
     n_samples = 10
     n_design_points = 200
-    priors = [Uniform(0., 5.), Uniform(0., 5.), Uniform(0., 5.)]
+    priors = [Uniform(0., 5.), Uniform(0., 5.), Uniform(10., 20.)]
     distance_metric = euclidean
     saveat = 0.1
 
