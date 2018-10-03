@@ -64,7 +64,7 @@ GeneReg = function(params::AbstractArray{Float64,1},
 end
 
 reference_data = GeneReg(true_params, Tspan, x0, solver, saveat)
-reference_data += randn(size(reference_data)) * 0.1
+# reference_data += randn(size(reference_data)) * 0.1
 # simulator_function(var_params) = GeneReg(vcat(var_params, true_params[n_var_params+1:end]), Tspan, x0, solver, saveat)
 function simulator_function(var_params)
     params = copy(true_params)
