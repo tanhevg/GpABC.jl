@@ -118,7 +118,6 @@ function get_training_data{D<:ContinuousUnivariateDistribution}(input::LNAInput,
     for i in 1:n_design_points
         new_input = LNAInput(X[i,:], input.S, input.reaction_rate_function, input.volume)
         model_output = get_LNA_trajectories(new_input, n_samples, x0, Tspan, saveat, solver; kwargs...)
-        tmp = summary_statistic(model_output)
         y[i] = distance_metric(summary_statistic(model_output), reference_summary_statistic)
     end
 
