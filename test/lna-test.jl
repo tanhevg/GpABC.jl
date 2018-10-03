@@ -39,12 +39,6 @@ using Base.Test, GpABC, DifferentialEquations, Distributions, Distances
     @test size(lna_trajectories,1) == size(input.S,1)
     @test size(lna_trajectories,2) == length(lna.time_points)
 
-    X, y = get_training_data(input, n_samples, n_design_points, priors, "keep_all",
-        distance_metric, lna_trajectories, x0, Tspan, saveat)
-
-    @test size(X,1) == n_design_points
-    @test size(X,2) == length(priors)
-
     #ABC-SMC simulation with LNA
     threshold_schedule = [4.0, 3.0, 2.0]
     n_samples = 100
