@@ -178,6 +178,53 @@ function initialiseABCSMC(input::EmulatedABCSMCInput,
     return tracker
 end
 
+function initialise_abcsmc_iteration(tracker::SimulatedABCSMCTracker,
+    reference_data::AbstractArray{Float64,2}, n_toaccept::Integer)
+
+    kernels = generate_kernels(tracker.population[end], tracker.priors)
+    reference_data_sum_stat = tracker.summary_statistic(reference_data)
+    population = zeros(n_toaccept, tracker.n_params)
+    distances = zeros(n_toaccept)
+    weight_values = zeros(n_toaccept)
+
+    return kernels, reference_data_sum_stat, population, distances, weight_values
+end
+
+# TODO: better function name?
+function check_particle(tracker::SimulatedABCSMCTracker, threshold::AbstractFloat,
+    kernels::Matrix{CUD}) where {CUD <: ContinuousUnivariateDistribution}
+
+    parameters, weight_value = generate_parameters(1, tracker.priors, tracker.weights[end], kernels)
+    parameters = parameters[1, :]
+    weight_value = weight_value[1]
+    simulated_data = tracker.simulator_function(parameters)
+    simulated_data_sum_stat = tracker.summary_statistic(simulated_data)
+    # This prevents the whole code from failing if there is a problem with solving the
+    # differential equation(s)
+    if size(simulated_data_sum_stat) != size(reference_data_sum_stat)
+        warn("Summarised simulated and reference data do not have the same size ( $(size(simulated_data_sum_stat)) and $(size(reference_data_sum_stat)) ).
+            This may be due to the behaviour of DifferentialEquations::solve - please check for dt-related warnings. Continuing to the next iteration.")
+        continue
+    end
+    distance = tracker.distance_function(reference_data_sum_stat, simulated_data_sum_stat)
+
+    return parameters, distance, weight_value
+end
+
+function update_smctracker!(tracker::SimulatedABCSMCTracker, n_accepted::Integer,
+    n_tries::Integer, threshold::AbstractFloat, population::AbstractArray{Float64,2},
+    distances::AbstractArray{Float64,1}, weight_values::AbstractArray{Flaot64,1})
+
+    push!(tracker.n_accepted, n_accepted)
+    push!(tracker.n_tries, n_tries)
+    push!(tracker.threshold_schedule, threshold)
+    push!(tracker.population, population)
+    push!(tracker.distances, distances)
+    # Do not want to normalise weights now if doing model selection - will do at
+    # end of population at model selection level
+    push!(tracker.weights, normalise(weight_values))
+end
+
 #
 # Iterate a simulated ABC-SMC
 #
@@ -190,42 +237,30 @@ function iterateABCSMC!(tracker::SimulatedABCSMCTracker,
         normalise_weights::Bool = true,
         for_model_selection::Bool = false
         )
+
     if write_progress && !for_model_selection
         info(string(DateTime(now())), " ϵ = $threshold.", prefix="GpABC SMC Simulation ")
     end
     if threshold > tracker.threshold_schedule[end]
         warn("current threshold less strict than previous one.")
     end
-    kernels = generate_kernels(tracker.population[end], tracker.priors)
-    reference_data_sum_stat = tracker.summary_statistic(reference_data)
+
     n_tries = 0
     n_accepted = 0
-    population = zeros(n_toaccept, tracker.n_params)
-    distances = zeros(n_toaccept)
-    weights = zeros(n_toaccept)
+    kernels, reference_data_sum_stat,population, distances, weight_values = initialise_abcsmc_iteration(tracker, reference_data, n_toaccept)
 
     # simulate
     while n_accepted < n_toaccept && n_tries < tracker.max_iter
-        parameters, weight = generate_parameters(1, tracker.priors, tracker.weights[end], kernels)
-        parameters = parameters[1, :]
-        weight = weight[1]
-        simulated_data = tracker.simulator_function(parameters)
-        simulated_data_sum_stat = tracker.summary_statistic(simulated_data)
-        # This prevents the whole code from failing if there is a problem with solving the
-        # differential equation(s)
-        if size(simulated_data_sum_stat) != size(reference_data_sum_stat)
-            warn("Summarised simulated and reference data do not have the same size ( $(size(simulated_data_sum_stat)) and $(size(reference_data_sum_stat)) ).
-                This may be due to the behaviour of DifferentialEquations::solve - please check for dt-related warnings. Continuing to the next iteration.")
-            continue
-        end
-        distance = tracker.distance_function(reference_data_sum_stat, simulated_data_sum_stat)
+
+        # run simulation for a single particle
+        parameters, distance, weight_value = check_particle(tracker, threshold, kernels)
         n_tries += 1
 
         if distance <= threshold
             n_accepted += 1
             population[n_accepted,:] = parameters
             distances[n_accepted] = distance
-            weights[n_accepted] = weight
+            weight_values[n_accepted] = weight_value
         end
 
         if write_progress && (n_tries % progress_every == 0)
@@ -242,7 +277,7 @@ function iterateABCSMC!(tracker::SimulatedABCSMCTracker,
 
     if n_accepted < n_toaccept
         population = population[1:n_accepted, :]
-        weights = weights[1:n_accepted]
+        weight_values = weight_values[1:n_accepted]
         distances = distances[1:n_accepted]
         if !for_model_selection
             warn("Simulation reached maximum $(tracker.max_iter) iterations before finding $(n_toaccept) particles - will return $n_accepted")
@@ -252,17 +287,8 @@ function iterateABCSMC!(tracker::SimulatedABCSMCTracker,
             info(string(DateTime(now())), " Finished. Accepted $(n_accepted)/$(n_toaccept).", prefix="GpABC SMC Simulation ")
         end
     end
-    push!(tracker.n_accepted, n_accepted)
-    push!(tracker.n_tries, n_tries)
-    push!(tracker.threshold_schedule, threshold)
-    push!(tracker.population, population)
-    push!(tracker.distances, distances)
-    # Do not want to normalise weights now if doing model selection - will do at
-    # end of population at model selection level
-    if normalise_weights
-        weights = normalise(weights)
-    end
-    push!(tracker.weights, StatsBase.Weights(weights))
+
+    update_smctracker!(tracker, n_accepted, n_toaccept, n_tries, threshold, population, distances, weight_values)
 
     return true
 end

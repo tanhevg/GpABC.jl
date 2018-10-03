@@ -188,15 +188,11 @@ function ABCrejection(input::EmulatedABCRejectionInput,
     end
     # emulate
     while n_accepted < input.n_particles && batch_no <= input.max_iter
-        #println("Batch number $batch_no")
 
         parameter_batch, weight_batch = generate_parameters(input.priors, input.batch_size)
 
         (distances, vars) = gp_regression(parameter_batch, emulator)
         n_tries += input.batch_size
-
-        #println("distances size = $(size(distances))")
-        #println(distances)
 
         #
         # Check which parameter indices were accepted
@@ -204,8 +200,6 @@ function ABCrejection(input::EmulatedABCRejectionInput,
         accepted_batch_idxs = find((distances .<= input.threshold) .& (sqrt.(vars) .<= input.threshold))
         # accepted_batch_idxs = find(distances .<= input.threshold)
         n_accepted_batch = length(accepted_batch_idxs)
-
-        #println("n_accepted_batch = $n_accepted_batch")
 
         #
         # If some parameters were accepted, store their values, (predicted) distances and weights
