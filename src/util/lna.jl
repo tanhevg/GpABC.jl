@@ -70,6 +70,9 @@ function compute_LNA(input::LNAInput,
 
     no_of_species, no_of_reactions = size(input.S)
 
+
+    ### the below ODE solves the ODE of the mean and the ODE of the covariance together. 
+
     function Mean_ODE(dx, x, pars, t)
         D = ForwardDiff.jacobian(y -> input.reaction_rate_function(y, pars), diag(x))
         D = D[:,1:no_of_species]
