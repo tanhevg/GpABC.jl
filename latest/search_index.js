@@ -125,7 +125,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Reference",
     "title": "GpABC.GPModel",
     "category": "type",
-    "text": "GPModel\n\nThe main type that is used by most functions within the package.\n\nAll data matrices are row-major.\n\nFields\n\nkernel::AbstractGPKernel: the kernel\ngp_training_x::AbstractArray{Float64, 2}: training x. Size: n times d.\ngp_training_y::AbstractArray{Float64, 2}: training y. Size: n times 1.\ngp_test_x::AbstractArray{Float64, 2}: test x.  Size: m times d.\ngp_hyperparameters::AbstractArray{Float64, 1}: kernel hyperparameters, followed by standard deviation of intrinsic noise sigma_n, which is always the last element in the array.\ncache::HPOptimisationCache: cache of matrices that can be re-used between calls to gp_loglikelihood and gp_loglikelihood_grad\n\n\n\n"
+    "text": "GPModel(training_x::Union{AbstractArray{Float64, 2}, AbstractArray{Float64, 1}},\n        training_y::Union{AbstractArray{Float64, 2}, AbstractArray{Float64, 1}},\n        kernel::AbstractGPKernel\n        [,test_x::Union{AbstractArray{Float64, 2}, AbstractArray{Float64, 1}}=zeros(0,0)])\n\nConstructor of GPModel that allows the kernel to be specified. Arguments that are passed as 1-d vectors will be reshaped into 2-d.\n\n\n\n"
 },
 
 {
@@ -133,7 +133,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Reference",
     "title": "GpABC.GPModel",
     "category": "type",
-    "text": "GPModel(training_x::Union{AbstractArray{Float64, 2}, AbstractArray{Float64, 1}},\n        training_y::Union{AbstractArray{Float64, 2}, AbstractArray{Float64, 1}},\n        kernel::AbstractGPKernel\n        [,test_x::Union{AbstractArray{Float64, 2}, AbstractArray{Float64, 1}}=zeros(0,0)])\n\nConstructor of GPModel that allows the kernel to be specified. Arguments that are passed as 1-d vectors will be reshaped into 2-d.\n\n\n\n"
+    "text": "GPModel\n\nThe main type that is used by most functions within the package.\n\nAll data matrices are row-major.\n\nFields\n\nkernel::AbstractGPKernel: the kernel\ngp_training_x::AbstractArray{Float64, 2}: training x. Size: n times d.\ngp_training_y::AbstractArray{Float64, 2}: training y. Size: n times 1.\ngp_test_x::AbstractArray{Float64, 2}: test x.  Size: m times d.\ngp_hyperparameters::AbstractArray{Float64, 1}: kernel hyperparameters, followed by standard deviation of intrinsic noise sigma_n, which is always the last element in the array.\ncache::HPOptimisationCache: cache of matrices that can be re-used between calls to gp_loglikelihood and gp_loglikelihood_grad\n\n\n\n"
 },
 
 {
@@ -150,6 +150,22 @@ var documenterSearchIndex = {"docs": [
     "title": "GpABC.GPModel",
     "category": "method",
     "text": "GPModel(;training_x::Union{AbstractArray{Float64, 2}, AbstractArray{Float64, 1}}=zeros(0,0),\n    training_y::Union{AbstractArray{Float64, 2}, AbstractArray{Float64, 1}}=zeros(0,0),\n    test_x::Union{AbstractArray{Float64, 2}, AbstractArray{Float64, 1}}=zeros(0,0),\n    kernel::AbstractGPKernel=SquaredExponentialIsoKernel(),\n    gp_hyperparameters::AbstractArray{Float64, 1}=Array{Float64}(0))\n\nConstructor of GPModel with explicit arguments. Arguments that are passed as 1-d vectors will be reshaped into 2-d.\n\n\n\n"
+},
+
+{
+    "location": "reference/#GpABC.LNA",
+    "page": "Reference",
+    "title": "GpABC.LNA",
+    "category": "type",
+    "text": "LNA\n\nThis is a structure which will hold the LNA: the mean of the trajectories and the covariance between the species.\n\nArguments\n\ntraj_means: A (number of species) x (number of time points) array which holds the mean trajectory for each species on each row of the array.\ntraj_covars: An array which holds the covariance matrix of the species at each time point.\ntime_points: The timepoints the system was solved for.\n\n\n\n"
+},
+
+{
+    "location": "reference/#GpABC.LNAInput",
+    "page": "Reference",
+    "title": "GpABC.LNAInput",
+    "category": "type",
+    "text": "LNAInput\n\nThis is a structure which holds the inputs needed for computing the Linear Noise Approximation (LNA). This structure will hold the stochastic system as provided by the user; uniquely defined through kinetic parameters, the rates of the system and the stoichiometry matrix.\n\nArguments\n\nparams::AbstractArray{Float64,1}: The rate parameters of the stochastic model.\nS::AbstractArray{Float64,2}: the stochiometry matrix of the system. Size: number of reactions x number of species.\nreaction_rate_function::Function,: This is a function f(x, parameters) which should return an array of the reaction rates of the system, i.e. S*f would describe the ODE representation of the system.\nvolume::Float64: The volume of the reactants of the system.\n\n\n\n"
 },
 
 {
@@ -297,6 +313,14 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "reference/#GpABC.compute_LNA",
+    "page": "Reference",
+    "title": "GpABC.compute_LNA",
+    "category": "function",
+    "text": "compute_LNA(input::LNAInput,\n    x0::Tuple{AbstractArray{Float64,1},AbstractArray{Float64,2}},\n    Tspan::Tuple{Float64,Float64},\n    saveat::Float64,\n    solver::OrdinaryDiffEq.OrdinaryDiffEqAlgorithm=RK4();\n    kwargs...)\n\nThe function computes the linear noise approximation to system through construction of two ODEs: one describing the trajectories of the mean of the LNA and the other describing the change the covariance between the variables. These outputs are held in a LNA structure.\n\nArguments\n\nx0::Tuple{AbstractArray{Float64,2},AbstractArray{Float64,2}}: The initial conditions of the system. In the form of (the initial conditions of the species, the initial covariance matrix of the system).\nTspan::Tuple{Float64,Float64}: The start and end times of the simulation.\nsaveat::Float64: The number of time points the use wishes to solve the system for.\nsolver::DEAlgorithm: The ODE solver the user wishes to use, for example DifferentialEquations.RK4().\n\n#Returns\n\nLNA\n\n\n\n"
+},
+
+{
     "location": "reference/#GpABC.covariance-Tuple{GpABC.AbstractGPKernel,AbstractArray{Float64,1},AbstractArray{Float64,2},AbstractArray{Float64,2}}",
     "page": "Reference",
     "title": "GpABC.covariance",
@@ -326,6 +350,14 @@ var documenterSearchIndex = {"docs": [
     "title": "GpABC.covariance_training",
     "category": "method",
     "text": "covariance_training(ker::AbstractGPKernel, log_theta::AbstractArray{Float64, 1},\n    training_x::AbstractArray{Float64, 2})\n\nThis is a speedup version of covariance, which is only called during traing sequence. Intermediate matrices computed in this function for particular hyperparameters can be cached and reused subsequently, either in this function or in covariance_grad\n\nDefault method just delegates to covariance with x === z. Kernel implementations can optionally override it for betrer performance.\n\nSee covariance for description of arguments and return values.\n\n\n\n"
+},
+
+{
+    "location": "reference/#GpABC.get_LNA_trajectories",
+    "page": "Reference",
+    "title": "GpABC.get_LNA_trajectories",
+    "category": "function",
+    "text": "get_LNA_trajectories(input::LNAInput, n_samples::Int64,\n    x0::Tuple{AbstractArray{Float64,1},AbstractArray{Float64,2}},\n    Tspan::Tuple{Float64,Float64},\n    saveat::Float64,\n    solver::OrdinaryDiffEq.OrdinaryDiffEqAlgorithm=RK4();\n    kwargs...)\n\nA function which computes the LNA and then samples from the it to output sampled trajectories. The user can also sample more than one trajectory; which are then averaged.\n\nArguments\n\ninput::LNAInput: LNAInput stucture.\nn_samples::Int64: The number of sampled tracjectories to be sampled and then averaged.\nx0::Tuple{AbstractArray{Float64,2},AbstractArray{Float64,2}}: The initial conditions of the system. In the form of (the initial conditions of the species, the initial covariance matrix of the system).\nTspan::Tuple{Float64,Float64}: The start and end times of the simulation.\nsaveat::Float64: The number of time points the use wishes to solve the system for.\nsolver::DEAlgorithm: The ODE solver the user wishes to use, for example DifferentialEquations.RK4() .\n\n#Returns\n\nA (number of species) x (number of time points) array which holds the averaged trajectory for each species on each row of the array.\n\n\n\n"
 },
 
 {
@@ -422,6 +454,14 @@ var documenterSearchIndex = {"docs": [
     "title": "GpABC.model_selection",
     "category": "method",
     "text": "model_selection\n\nPerform model selection using emulation-based ABC.\n\nArguments\n\nn_design_points::Int64: The number of parameter vectors used to train the Gaussian process emulator.\nreference_data::AbstractArray{Float64,2}: The observed data to which the simulated model output will be compared. Size: (n_model_trajectories, n_time_points)\nn_particles::Int64: The number of parameter vectors (particles) that will be included in the final posterior.\nthreshold_schedule::AbstractArray{Float64}: A set of maximum distances from the summarised model output to summarised observed data for a parameter vector to be included in the posterior. Each distance will be used in a single run of the ABC-SMC algorithm.\nparameter_priors::AbstractArray{AbstractArray{ContinuousUnivariateDistribution},1}: Priors for the parameters of each model. The length of the outer array is the number of models.\nsummary_statistic::Union{String,AbstractArray{String,1},Function}: Either: 1. A String or 1D Array of strings that Or 2. A function that outputs a 1D Array of Floats that summarises model output. REFER TO DOCS\nsimulator_functions::AbstractArray{Function,1}: An array of functions that take a parameter vector as an argument and outputs model results (one per model).\n\'model_prior::DiscreteUnivariateDistribution\': The prior from which models are sampled. Default is a discrete, uniform distribution.\ndistance_function::Function: Any function that computes the distance between 2 1D Arrays. Optional argument (default is to use the Euclidean distance).\nmax_iter::Integer: The maximum number of simulations that will be run. The default is 1000*n_particles. Each iteration samples a single model and performs ABC using a single particle.\nmax_batch_size::Integer: The maximum batch size for the emulator when making predictions.\n\nReturns\n\nA \'ModelSelectionOutput\' object that contains which models are supported by the observed data.\n\n\n\n"
+},
+
+{
+    "location": "reference/#GpABC.sample_LNA_trajectories-Tuple{GpABC.LNA,Int64}",
+    "page": "Reference",
+    "title": "GpABC.sample_LNA_trajectories",
+    "category": "method",
+    "text": "sample_LNA_trajectories(lna::LNA, n_samples::Int64)\n\nA function which samples from the LNA to output sampled trajectories. The LNA gives the mean of the tracjectories and the covariance between them; hence a single trajectory can be sampled from a Multivariate Normal distribution. The user can also sample more than one trajectory; which are then averaged.\n\nArguments\n\nlna::LNA: LNA stucture.\nn_samples::Int64: The number of sampled tracjectories to be sampled and then averaged.\n\n#Returns\n\nA (number of species) x (number of time points) array which holds the averaged trajectory for each species on each row of the array.\n\n\n\n"
 },
 
 {
