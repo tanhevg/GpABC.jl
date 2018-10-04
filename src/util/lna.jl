@@ -71,7 +71,10 @@ function compute_LNA(input::LNAInput,
     no_of_species, no_of_reactions = size(input.S)
 
 
-    ### the below ODE solves the ODE of the mean and the ODE of the covariance together. 
+    ### the below ODE solves the ODE of the mean and the ODE of the covariance together.
+    ##this function is the mean variance decomposition of the LNA. The derviation of which can be
+    ##found in "Approximation  and  inference  methods  forstochastic  biochemical  kinetics—a  tutorial  review" (2017) by
+    ##David  Schnoerr et al.
 
     function Mean_ODE(dx, x, pars, t)
         D = ForwardDiff.jacobian(y -> input.reaction_rate_function(y, pars), diag(x))
