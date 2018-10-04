@@ -75,7 +75,7 @@ function initialise_modelselection(input::SimulatedModelSelectionInput, referenc
 		rejection_trackers[m].weight_values = rejection_trackers[m].weight_values ./ sum(rejection_trackers[m].weight_values)
 	end
 
-	cmTrackers = [SimulatedCandidateModelTracker(
+	smc_trackers = [SimulatedCandidateModelTracker(
 		length(input.parameter_priors[m]),
 		[rejection_trackers[m].n_accepted],
 		[rejection_trackers[m].n_tries],
@@ -118,6 +118,7 @@ function iterate_modelselection!(tracker::SimulatedModelSelectionTracker,
 	n_iterations = 1
 
 	while total_n_accepted < tracker.n_particles && n_iterations <= tracker.max_iter
+		# Sample model from prior
 		m = rand(tracker.model_prior)
 
 		if tracker.model_trackers[m].n_accepted[end-1] == 0
@@ -125,6 +126,9 @@ function iterate_modelselection!(tracker::SimulatedModelSelectionTracker,
 		else
 			tracker.model_trackers[m].n_tries[end] += 1
 		end
+
+		# Do ABC SMC for a single particle
+
 
 		abcsmc_tracker = SimulatedABCSMCTracker(
 				tracker.model_trackers[m].n_params,

@@ -82,7 +82,7 @@ mutable struct SimulatedModelSelectionTracker <: ModelSelectionTracker
 	n_particles::Int64
 	threshold_schedule::AbstractArray{Float64,1}
 	model_prior::DiscreteUnivariateDistribution
-	model_trackers::AbstractArray{SimulatedCandidateModelTracker,1}
+	model_trackers::AbstractArray{SimulatedABCSMCTracker,1}
 	summary_statistic::Union{String,AbstractArray{String,1},Function}
 	distance_function::Function
 	max_iter::Integer

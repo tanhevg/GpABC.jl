@@ -62,12 +62,10 @@ A ['SimulatedABCRejectionOutput'](@ref) object.
 function ABCrejection(input::SimulatedABCRejectionInput,
 	reference_data::AbstractArray{Float64,2};
     write_progress::Bool = true,
-    progress_every::Int = 1000,
-    normalise_weights::Bool = true,
-    for_model_selection::Bool = false)
+    progress_every::Int = 1000)
 
 	checkABCInput(input)
-    if write_progress && !for_model_selection
+    if write_progress
         info(string(DateTime(now())), " ϵ = $(input.threshold)."; prefix="GpABC rejection simulation ")
     end
 
@@ -76,56 +74,42 @@ function ABCrejection(input::SimulatedABCRejectionInput,
     n_accepted = 0
     accepted_parameters = zeros(input.n_particles, input.n_params)
     accepted_distances = zeros(input.n_particles)
-    weights = ones(input.n_particles)
+    weight_values = ones(input.n_particles)
 
     # Summary statistic initialisation
-    summary_statistic = build_summary_statistic(input.summary_statistic)
-    reference_data_sum_stat = summary_statistic(reference_data)
+    built_summary_statistic = build_summary_statistic(input.summary_statistic)
+    summarised_reference_data = built_summary_statistic(reference_data)
 
     # simulate
     while n_accepted < input.n_particles && n_tries < input.max_iter
-        parameters, weight = generate_parameters(input.priors)
-        simulated_data = input.simulator_function(parameters)
-        simulated_data_sum_stat = summary_statistic(simulated_data)
-        # This prevents the whole code from failing if there is a problem with solving the
-        # differential equation(s)
-        if size(simulated_data_sum_stat) != size(reference_data_sum_stat)
-            warn("Summarised simulated and reference data do not have the same size ( $(size(simulated_data_sum_stat)) and $(size(reference_data_sum_stat)) ).
-                This may be due to the behaviour of DifferentialEquations::solve - please check for related warnings. Continuing to the next iteration.")
-            continue
-        end
-        distance = input.distance_function(reference_data_sum_stat, simulated_data_sum_stat)
-        #println("computed distance")
+
+        parameters, distance, weight_value = check_particle(input,
+                                                            built_summary_statistic,
+                                                            summarised_reference_data)
         n_tries += 1
 
         if distance <= input.threshold
             n_accepted += 1
             accepted_parameters[n_accepted,:] = parameters
             accepted_distances[n_accepted] = distance
-            weights[n_accepted] = weight
+            weight_values[n_accepted] = weight_value
         end
 
-        if write_progress && (n_tries % progress_every == 0) && !for_model_selection
+        if write_progress && (n_tries % progress_every == 0)
             info(string(DateTime(now())), " Accepted $(n_accepted)/$(n_tries) particles.", prefix="GpABC rejection simulation ")
         end
     end
 
-    if write_progress && (n_tries % progress_every != 0) && !for_model_selection
-        info(string(DateTime(now())), " Accepted $(n_accepted)/$(n_tries) particles.", prefix="GpABC rejection simulation ")
-    end
-
     if n_accepted < input.n_particles
-        if !for_model_selection
-            warn("Simulation reached maximum iterations $(input.max_iter) before finding $(input.n_particles) particles - will return $n_accepted")
-        end
+        warn("Simulation reached maximum iterations $(input.max_iter) before finding $(input.n_particles) particles - will return $n_accepted")
         accepted_parameters = accepted_parameters[1:n_accepted, :]
         accepted_distances = accepted_distances[1:n_accepted]
-        weights = weights[1:n_accepted]
+        weight_values = weight_values[1:n_accepted]
     end
 
-    if normalise_weights
-        weights = weights ./ sum(weights)
-    end
+    # normalise weights
+    weight_values = weight_values ./ sum(weight_values)
+
     # output
     output = SimulatedABCRejectionOutput(input.n_params,
                                 n_accepted,
@@ -133,7 +117,7 @@ function ABCrejection(input::SimulatedABCRejectionInput,
                                 input.threshold,
                                 accepted_parameters,
                                 accepted_distances,
-                                StatsBase.Weights(weights),
+                                StatsBase.Weights(weight_values)
                                 )
 
     return output
@@ -252,5 +236,22 @@ function ABCrejection(input::EmulatedABCRejectionInput,
                                 )
 
     return output
+end
 
+# not exported
+function check_particle(input::SimulatedABCRejectionInput,
+    summary_statistic::Function,
+    summarised_reference_data::AbstractArray{Float64,1})
+
+    parameters, weight_value = generate_parameters(input.priors)
+    simulated_data = input.simulator_function(parameters)
+    summarised_simulated_data = summary_statistic(simulated_data)
+    # This prevents the whole code from failing if there is a problem with solving the
+    # differential equation(s)
+    if size(summarised_simulated_data) != size(summarised_reference_data)
+        warn("Summarised simulated and reference data do not have the same size ( $(size(summarised_simulated_data)) and $(size(summarised_reference_data)) ).
+            This may be due to the behaviour of DifferentialEquations::solve - please check for related warnings. Continuing to the next iteration.")
+    end
+    distance = input.distance_function(summarised_reference_data, summarised_simulated_data)
+    return parameters, distance, weight_value
 end

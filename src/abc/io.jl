@@ -148,6 +148,7 @@ mutable struct SimulatedABCSMCTracker <: ABCSMCTracker
     weights::AbstractArray{StatsBase.Weights,1}
     priors::AbstractArray{ContinuousUnivariateDistribution,1}
     summary_statistic::Function
+    summarised_reference_data::AbstractArray{Float64,1}
     distance_function::Function
     simulator_function::Function
     max_iter::Integer
@@ -226,17 +227,6 @@ A container for the output of a rejection-ABC computation.
 """
 abstract type ABCSMCOutput <: ABCOutput end
 
-struct EmulatedABCSMCOutput <: ABCSMCOutput
-    n_params::Int64
-    n_accepted::AbstractArray{Int64,1}
-    n_tries::AbstractArray{Int64,1}
-    threshold_schedule::AbstractArray{Float64,1}
-    population::AbstractArray{AbstractArray{Float64,2},1}
-    distances::AbstractArray{AbstractArray{Float64,1},1}
-    weights::AbstractArray{StatsBase.Weights,1}
-    emulators::AbstractArray{Any,1}
-end
-
 struct SimulatedABCSMCOutput <: ABCSMCOutput
     n_params::Int64
     n_accepted::AbstractArray{Int64,1}
@@ -246,6 +236,19 @@ struct SimulatedABCSMCOutput <: ABCSMCOutput
     distances::AbstractArray{AbstractArray{Float64,1},1}
     weights::AbstractArray{StatsBase.Weights,1}
 end
+
+struct EmulatedABCSMCOutput <: ABCSMCOutput
+    n_params::Int64
+    n_accepted::AbstractArray{Int64,1}
+    n_tries::AbstractArray{Int64,1}
+    threshold_schedule::AbstractArray{Float64,1}
+    population::AbstractArray{AbstractArray{Float64,2},1}
+    distances::AbstractArray{AbstractArray{Float64,1},1}
+    weights::AbstractArray{StatsBase.Weights,1}
+    summarised_reference_data::AbstractArray{Float64,1}
+    emulators::AbstractArray{Any,1}
+end
+
 
 #
 # Read/write functions
