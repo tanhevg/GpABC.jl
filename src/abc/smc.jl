@@ -322,7 +322,8 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
 
         distances, vars = gp_regression(parameters, emulator)
         n_tries += length(distances)
-        accepted_indices = find((distances .<= threshold) .& (sqrt.(vars) .<= threshold)) # todo more variance controls
+        accepted_indices = find((distances .<= threshold) .& (sqrt.(vars) .<= 0.05 * threshold))
+        # accepted_indices = find((distances .<= threshold) .& (sqrt.(vars) .<= threshold)) # todo more variance controls
         # accepted_indices = find(distances .<= threshold)
         n_include = length(accepted_indices)
         if n_accepted + n_include > n_toaccept

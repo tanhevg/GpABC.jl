@@ -10,6 +10,7 @@ n_particles = 1000
 threshold_schedule = [3.0, 2.0, 1.0, 0.5, 0.2]
 # threshold_schedule = [3.0, 2.0, 1.0]
 distance_metric = euclidean
+summary_stats = GpABC.keep_all_summary_statistic
 progress_every = 1000
 
 #
@@ -75,12 +76,17 @@ function simulator_function(var_params)
     # return ret + noise
 end
 
+function simulate_distance(var_params)
+    distance_metric(summary_stats(reference_data),
+        summary_stats(simulator_function(var_params)))
+end
+
 println("SIMULATION")
 sim_out = SimulatedABCSMC(reference_data, n_particles, [3.0, 2.0, 1.0, 0.5],
-    priors[param_indices], "keep_all", simulator_function)
+    priors[param_indices], summary_stats, simulator_function)
 
 println("EMULATION")
 emu_out = EmulatedABCSMC(n_design_points, reference_data, n_particles, [3.0, 2.0, 1.0, 0.5, 0.2],
-    priors[param_indices], "keep_all", simulator_function,
-    repetitive_training=RepetitiveTraining(rt_iterations=3, rt_extra_training_points=5),
+    priors[param_indices], summary_stats, simulator_function,
+    # repetitive_training=RepetitiveTraining(rt_iterations=3, rt_extra_training_points=5),
     )

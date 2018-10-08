@@ -192,7 +192,7 @@ function ABCrejection(input::EmulatedABCRejectionInput,
 
         parameter_batch, weight_batch = generate_parameters(input.priors, input.batch_size)
 
-        (distances, vars) = gp_regression(parameter_batch, emulator)
+        distances, vars = gp_regression(parameter_batch, emulator)
         n_tries += input.batch_size
 
         #println("distances size = $(size(distances))")
@@ -201,7 +201,8 @@ function ABCrejection(input::EmulatedABCRejectionInput,
         #
         # Check which parameter indices were accepted
         #
-        accepted_batch_idxs = find((distances .<= input.threshold) .& (sqrt.(vars) .<= input.threshold))
+        accepted_batch_idxs = find((distances .<= input.threshold) .& (sqrt.(vars) .<= 0.05 * input.threshold))
+        # accepted_batch_idxs = find((distances .<= input.threshold) .& (sqrt.(vars) .<= input.threshold))
         # accepted_batch_idxs = find(distances .<= input.threshold)
         n_accepted_batch = length(accepted_batch_idxs)
 
