@@ -1,5 +1,8 @@
 using KernelDensity
 using PyPlot
+using PyCall
+@pyimport matplotlib.patches as patches
+
 
 function scale_outer_intervals(intervals, scale=1.0)
     int_min = min([int[1] for int in intervals]...)
@@ -23,6 +26,12 @@ function plot_emulation_vs_simulation(emu_out, sim_out, plot_emu_iterations)
             simulation_color = "#08519c"
             emulation_color = "#ff6600"
             sim_count = 50
+            h_sim_joint = nothing
+            h_emu_joint = patches.Patch(color=contour_colors[8])
+            h_emu_pop = nothing
+            h_sim_marg = nothing
+            h_emu_marg = nothing
+            h_true = nothing
             for i in 1:grid_size
                 for j in 1:grid_size
                     if j < i
@@ -52,13 +61,25 @@ function plot_emulation_vs_simulation(emu_out, sim_out, plot_emu_iterations)
                         contour_z = pdf(kde_joint, contour_x, contour_y)
                         contourf(contour_x, contour_y, contour_z, 8, colors=contour_colors, zorder=1)
 
-                        scatter(x_data_sim, y_data_sim, marker="x", color=simulation_color, zorder=2, alpha=0.7)
+                        h_sim_joint = scatter(x_data_sim, y_data_sim, marker="x", color=simulation_color, zorder=2, alpha=0.7)
+                        true_param_x = true_params[param_indices[j]]
+                        true_param_y = true_params[param_indices[i]]
+                        plot([true_param_x, true_param_x], [0, true_param_y], color=:black, linestyle=:dashed, linewidth=0.5)
+                        plot([0, true_param_x], [true_param_y, true_param_y], color=:black, linestyle=:dashed, linewidth=0.5)
                     elseif (j > i) && plot_emu_iterations
                         subplot2grid((grid_size, grid_size), (i - 1, j - 1))
                         for iter_idx in 1:length(emu_out.population)
-                            scatter(emu_out.population[iter_idx][:,j], emu_out.population[iter_idx][:,i],
+                            h_emu_pop = scatter(emu_out.population[iter_idx][:,j], emu_out.population[iter_idx][:,i],
                                 color=population_colors[iter_idx], zorder=iter_idx, marker=".")
                         end
+                        xlims = scale_outer_intervals([extrema(pop[:, j]) for pop in emu_out.population])
+                        xlim(xlims)
+                        ylims = scale_outer_intervals([extrema(pop[:, i]) for pop in emu_out.population])
+                        ylim(ylims)
+                        true_param_x = true_params[param_indices[j]]
+                        true_param_y = true_params[param_indices[i]]
+                        plot([true_param_x, true_param_x], [ylims[1], true_param_y], color=:black, linestyle=:dashed, linewidth=0.5, zorder=length(emu_out.population)+1)
+                        plot([xlims[1], true_param_x], [true_param_y, true_param_y], color=:black, linestyle=:dashed, linewidth=0.5, zorder=length(emu_out.population)+1)
                     elseif i == j
                         subplot2grid((grid_size, grid_size), (i - 1, j - 1))
                         emu_data = emu_out.population[end][:,i]
@@ -72,12 +93,18 @@ function plot_emulation_vs_simulation(emu_out, sim_out, plot_emu_iterations)
                         x_plot = linspace(x_bounds..., 100)
                         y_emu_plot = pdf(kde_emu,x_plot)
                         y_sim_plot = pdf(kde_sim,x_plot)
-                        emu_handle = plot(x_plot, y_emu_plot, color=emulation_color)
-                        sim_handle = plot(x_plot, y_sim_plot, color=simulation_color)
+                        h_emu_marg = plot(x_plot, y_emu_plot, color=emulation_color)
+                        h_sim_marg = plot(x_plot, y_sim_plot, color=simulation_color)
                         yticks([])
+                        true_param = true_params[param_indices[i]]
+                        max_vline = max(vcat(y_emu_plot, y_sim_plot)...)
+                        h_true = plot([true_param, true_param], [0, max_vline], color=:black, linestyle=:dashed, linewidth=0.5)
                     end
                 end
             end
+            figlegend([h_sim_joint; h_sim_marg; h_emu_joint; h_emu_marg; h_emu_pop; h_true],
+                ["Simulated joint", "Simulated marginal", "Emulated joint", "Emulated marginal", "Emulated populations", "True paramterer value"],
+                ncol=3, loc="lower center")
 end
 
 sim_out1 = GpABC.SimulatedABCSMCOutput(sim_out.n_params, sim_out.n_accepted[1:end-1],
@@ -95,7 +122,7 @@ ioff()
 plot_emulation_vs_simulation(emu_out, sim_out, true)
 subplots_adjust(
 left    =  0.08,
-bottom  =  0.06,
+bottom  =  0.2,
 right   =  0.96,
 top     =  0.97,
 wspace  =  0.35,
