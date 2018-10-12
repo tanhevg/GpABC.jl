@@ -59,7 +59,8 @@ included in the posterior.
 # Returns
 A ['SimulatedABCRejectionOutput'](@ref) object.
 """
-function ABCrejection(input::SimulatedABCRejectionInput,
+function ABCrejection(
+    input::SimulatedABCRejectionInput,
 	reference_data::AbstractArray{Float64,2};
     write_progress::Bool = true,
     progress_every::Int = 1000)
@@ -76,6 +77,10 @@ function ABCrejection(input::SimulatedABCRejectionInput,
     accepted_distances = zeros(input.n_particles)
     weight_values = ones(input.n_particles)
 
+    parameters = zeros(input.n_params)
+    distance = 0.0
+    weight_value = 0.0
+
     # Summary statistic initialisation
     built_summary_statistic = build_summary_statistic(input.summary_statistic)
     summarised_reference_data = built_summary_statistic(reference_data)
@@ -83,9 +88,23 @@ function ABCrejection(input::SimulatedABCRejectionInput,
     # simulate
     while n_accepted < input.n_particles && n_tries < input.max_iter
 
-        parameters, distance, weight_value = check_particle(input,
-                                                            built_summary_statistic,
-                                                            summarised_reference_data)
+        try
+            parameters, distance, weight_value = check_particle(input,
+                                                                built_summary_statistic,
+                                                                summarised_reference_data)
+        catch e
+            if isa(e, DimensionMismatch)
+                # This prevents the whole code from failing if there is a problem
+                # solving the differential equation(s). The exception is thrown by the 
+                # distance function
+                warn("The summarised simulated data does not have the same size as the summarised reference data. If this is not happening at every iteration it may be due to the behaviour of DifferentialEquations::solve - please check for related warnings. Continuing to the next iteration.")
+                n_tries += 1
+                continue
+            else
+                throw(e)
+            end
+        end
+
         n_tries += 1
 
         if distance <= input.threshold
@@ -107,8 +126,6 @@ function ABCrejection(input::SimulatedABCRejectionInput,
         weight_values = weight_values[1:n_accepted]
     end
 
-    # normalise weights
-    weight_values = weight_values ./ sum(weight_values)
 
     # output
     output = SimulatedABCRejectionOutput(input.n_params,
@@ -117,7 +134,7 @@ function ABCrejection(input::SimulatedABCRejectionInput,
                                 input.threshold,
                                 accepted_parameters,
                                 accepted_distances,
-                                StatsBase.Weights(weight_values)
+                                StatsBase.Weights(weight_values ./ sum(weight_values)) # normalise weights
                                 )
 
     return output
@@ -138,17 +155,15 @@ included in the posterior.
 # Returns
 An ['EmulatedABCRejectionOutput'](@ref) object.
 """
-function ABCrejection(input::EmulatedABCRejectionInput,
+function ABCrejection(
+    input::EmulatedABCRejectionInput,
     reference_data::AbstractArray{Float64,2};
     write_progress = true,
-    progress_every = 1000,
-    emulator::Union{GPModel,Void}=nothing, # In model selection an emulator is provided - not finished
-    normalise_weights::Bool = true,
-    for_model_selection::Bool = false)
+    progress_every = 1000)
 
     checkABCInput(input)
 
-    if write_progress && !for_model_selection
+    if write_progress
         info(string(DateTime(now())), " ϵ = $(input.threshold).", prefix="GpABC rejection emulation ")
     end
     # initialise
@@ -157,8 +172,7 @@ function ABCrejection(input::EmulatedABCRejectionInput,
     batch_no = 1
     accepted_parameters = zeros(input.n_particles, input.n_params)
     accepted_distances = zeros(input.n_particles)
-    weights = ones(input.n_particles)
-    #println("initialised rejection ABC")
+    weight_values = ones(input.n_particles)
 
     # todo: consolidate sample_from_priors with generate_parameters
     # prior_sampling_function(n_design_points) = generate_parameters(input.priors, n_design_points)[1]
@@ -166,16 +180,13 @@ function ABCrejection(input::EmulatedABCRejectionInput,
     # emulator = input.train_emulator_function(prior_sampling_function)
 
     # todo: consolidate sample_from_priors with generate_parameters
-    if emulator == nothing
-        prior_sampling_function(n_design_points) = generate_parameters(input.priors, n_design_points)[1]
-        emulator = input.train_emulator_function(prior_sampling_function)
-    end
+    prior_sampling_function(n_design_points) = generate_parameters(input.priors, n_design_points)[1]
+    emulator = input.train_emulator_function(prior_sampling_function)
+
     # emulate
     while n_accepted < input.n_particles && batch_no <= input.max_iter
 
-        parameter_batch, weight_batch = generate_parameters(input.priors, input.batch_size)
-
-        (distances, vars) = gp_regression(parameter_batch, emulator)
+        parameter_batch, weight_values_batch, distances, vars = check_particle_batch(input, emulator)
         n_tries += input.batch_size
 
         #
@@ -197,12 +208,12 @@ function ABCrejection(input::EmulatedABCRejectionInput,
 
             accepted_parameters[n_accepted+1:n_accepted + n_accepted_batch,:] = parameter_batch[accepted_batch_idxs,:]
             accepted_distances[n_accepted+1:n_accepted + n_accepted_batch] = distances[accepted_batch_idxs]
-            weights[n_accepted+1:n_accepted + n_accepted_batch] = weight_batch[accepted_batch_idxs]
+            weight_values[n_accepted+1:n_accepted + n_accepted_batch] = weight_values_batch[accepted_batch_idxs]
             n_accepted += n_accepted_batch
 
         end
 
-        if write_progress && !for_model_selection
+        if write_progress
             info(string(DateTime(now())),
                 " accepted $(n_accepted)/$(n_tries) particles ($(batch_no) batches of size $(input.batch_size)).",
                 prefix="GpABC rejection emulation ")
@@ -212,16 +223,10 @@ function ABCrejection(input::EmulatedABCRejectionInput,
     end
 
     if n_accepted < input.n_particles
-        if !for_model_selection
-            warn("Emulation reached maximum $(input.max_iter) iterations before finding $(input.n_particles) particles - will return $n_accepted")
-        end
+        warn("Emulation reached maximum $(input.max_iter) iterations before finding $(input.n_particles) particles - will return $n_accepted")
         accepted_parameters = accepted_parameters[1:n_accepted, :]
         accepted_distances = accepted_distances[1:n_accepted]
-        weights = weights[1:n_accepted]
-    end
-
-    if normalise_weights
-        weights = weights ./ sum(weights)
+        weight_values = weight_values[1:n_accepted]
     end
 
     # output
@@ -231,7 +236,7 @@ function ABCrejection(input::EmulatedABCRejectionInput,
                                 input.threshold,
                                 accepted_parameters,
                                 accepted_distances,
-                                StatsBase.Weights(weights),
+                                StatsBase.Weights(weight_values ./ sum(weight_values)),
                                 emulator
                                 )
 
@@ -239,19 +244,45 @@ function ABCrejection(input::EmulatedABCRejectionInput,
 end
 
 # not exported
-function check_particle(input::SimulatedABCRejectionInput,
-    summary_statistic::Function,
+function check_particle(
+    input::SimulatedABCRejectionInput,
+    built_summary_statistic::Function,
     summarised_reference_data::AbstractArray{Float64,1})
 
     parameters, weight_value = generate_parameters(input.priors)
     simulated_data = input.simulator_function(parameters)
-    summarised_simulated_data = summary_statistic(simulated_data)
-    # This prevents the whole code from failing if there is a problem with solving the
-    # differential equation(s)
-    if size(summarised_simulated_data) != size(summarised_reference_data)
-        warn("Summarised simulated and reference data do not have the same size ( $(size(summarised_simulated_data)) and $(size(summarised_reference_data)) ).
-            This may be due to the behaviour of DifferentialEquations::solve - please check for related warnings. Continuing to the next iteration.")
-    end
+    summarised_simulated_data = built_summary_statistic(simulated_data)
     distance = input.distance_function(summarised_reference_data, summarised_simulated_data)
+    
     return parameters, distance, weight_value
+end
+
+# not exported
+function check_particle(
+    priors::AbstractArray{CUD,1},
+    simulator_function::Function,
+    built_summary_statistic::Function,
+    distance_function::Function,
+    summarised_reference_data::AbstractArray{Float64,1}) where {
+    CUD <: ContinuousUnivariateDistribution
+    }
+
+    parameters, weight_value = generate_parameters(priors)
+    simulated_data = simulator_function(parameters)
+    summarised_simulated_data = built_summary_statistic(simulated_data)
+    distance = distance_function(summarised_reference_data, summarised_simulated_data)
+    
+    return parameters, distance, weight_value
+end
+
+# not exported
+function check_particle_batch(
+    input::EmulatedABCRejectionInput,
+    emulator::GPModel,
+    )
+    
+    parameter_batch, weight_values_batch = generate_parameters(input.priors, input.batch_size)
+    distances, vars = gp_regression(parameter_batch, emulator)
+
+    return parameter_batch, weight_values_batch, distances, vars
 end

@@ -166,7 +166,7 @@ mutable struct EmulatedABCSMCTracker <: ABCSMCTracker
     train_emulator_function::Function
     batch_size::Int64
     max_iter::Int64
-    emulators::AbstractArray{Any,1}
+    emulators::AbstractArray{GPModel,1}
 end
 
 #
@@ -246,7 +246,7 @@ struct EmulatedABCSMCOutput <: ABCSMCOutput
     distances::AbstractArray{AbstractArray{Float64,1},1}
     weights::AbstractArray{StatsBase.Weights,1}
     summarised_reference_data::AbstractArray{Float64,1}
-    emulators::AbstractArray{Any,1}
+    emulators::AbstractArray{GPModel,1}
 end
 
 

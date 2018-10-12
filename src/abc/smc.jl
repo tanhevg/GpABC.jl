@@ -201,11 +201,29 @@ function iterateABCSMC!(tracker::SimulatedABCSMCTracker,
     n_accepted = 0
     kernels, population, distances, weight_values = initialise_abcsmc_iteration(tracker, n_toaccept)
 
+    parameters = zeros(input.n_params)
+    distance = 0.0
+    weight_value = 0.0
+
     # simulate
     while n_accepted < n_toaccept && n_tries < tracker.max_iter
 
         # run simulation for a single particle
-        parameters, distance, weight_value = check_particle(tracker, kernels)
+        try
+            parameters, distance, weight_value = check_particle(tracker, kernels)
+        catch e
+            if isa(e, DimensionMismatch)
+                # This prevents the whole code from failing if there is a problem
+                # solving the differential equation(s). The exception is thrown by the 
+                # distance function
+                warn("The summarised simulated data does not have the same size as the summarised reference data. If this is not happening at every iteration it may be due to the behaviour of DifferentialEquations::solve - please check for related warnings. Continuing to the next iteration.")
+                n_tries += 1
+                continue
+            else
+                throw(e)
+            end
+        end
+
         n_tries += 1
 
         # Handle result
@@ -315,8 +333,8 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
     return true
 end
 
-function buildAbcSmcOutput(input::EmulatedABCSMCInput, tracker::EmulatedABCSMCTracker)
-    EmulatedABCSMCOutput(input.n_params,
+function buildAbcSmcOutput(tracker::EmulatedABCSMCTracker)
+    EmulatedABCSMCOutput(length(tracker.priors),
                         tracker.n_accepted,
                         tracker.n_tries,
                         tracker.threshold_schedule,
@@ -326,8 +344,8 @@ function buildAbcSmcOutput(input::EmulatedABCSMCInput, tracker::EmulatedABCSMCTr
                         tracker.emulators)
 end
 
-function buildAbcSmcOutput(input::SimulatedABCSMCInput, tracker::SimulatedABCSMCTracker)
-    SimulatedABCSMCOutput(input.n_params,
+function buildAbcSmcOutput(tracker::SimulatedABCSMCTracker)
+    SimulatedABCSMCOutput(length(tracker.priors),
                         tracker.n_accepted,
                         tracker.n_tries,
                         tracker.threshold_schedule,
@@ -383,7 +401,7 @@ function ABCSMC(
         warn("No particles selected at initial rejection ABC step of SMC ABC")
     end
 
-    return buildAbcSmcOutput(input, tracker)
+    return buildAbcSmcOutput(tracker)
 end
 
 # not exported
@@ -399,27 +417,28 @@ end
 
 # not exported
 # TODO: better function name?
-function check_particle(tracker::SimulatedABCSMCTracker,
-    kernels::Matrix{CUD}) where {CUD <: ContinuousUnivariateDistribution}
+function check_particle(
+    tracker::SimulatedABCSMCTracker,
+    kernels::Matrix{CUD}) where {
+    CUD <: ContinuousUnivariateDistribution
+    }
 
     parameters, weight_value = generate_parameters(1, tracker.priors, tracker.weights[end], kernels)
     parameters = parameters[1, :]
     weight_value = weight_value[1]
     simulated_data = tracker.simulator_function(parameters)
     summarised_simulated_data = tracker.summary_statistic(simulated_data)
-    # This prevents the whole code from failing if there is a problem with solving the
-    # differential equation(s)
-    if size(summarised_simulated_data) != size(tracker.summarised_reference_data)
-        warn("Summarised simulated and reference data do not have the same size ( $(size(summarised_simulated_data)) and $(size(tracker.summarised_reference_data)) ).
-            This may be due to the behaviour of DifferentialEquations::solve - please check for dt-related warnings. Continuing to the next iteration.")
-    end
     distance = tracker.distance_function(tracker.summarised_reference_data, summarised_simulated_data)
 
     return parameters, distance, weight_value
 end
 
-function check_particle_batch(tracker::EmulatedABCSMCTracker,
-    kernels::Matrix{CUD}, emulator) where {CUD <: ContinuousUnivariateDistribution}
+function check_particle_batch(
+    tracker::EmulatedABCSMCTracker,
+    kernels::Matrix{CUD},
+    emulator) where {
+    CUD <: ContinuousUnivariateDistribution
+    }
 
     parameters, weight_values = generate_parameters(tracker.batch_size,
                                              tracker.priors,

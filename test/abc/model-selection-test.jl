@@ -117,6 +117,8 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
 		weight_sums = vcat([[sum(ms_res.smc_outputs[m].weights[i]) for i = 1:length(ms_res.threshold_schedule)] for m in 1:ms_res.M]...)
 		nonzero_weights = vcat([[size(ms_res.smc_outputs[m].weights[i],1) > 0 for i = 1:length(ms_res.threshold_schedule)] for m in 1:ms_res.M]...)
 		@test all(weight_sums[nonzero_weights] .== 1.0)
+
+		# TODO:add test so that if n_accepted is zero then every subsequent item is zero
 	end
 
 

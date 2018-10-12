@@ -27,74 +27,87 @@ function initialise_modelselection(input::SimulatedModelSelectionInput, referenc
 	# Initialise arrays that will track rejection ABC run for each model - these
 	# will be used to create SimulatedCandidateModelTrackers after the rejection ABC run
 	#
-	rejection_trackers = [ModelSelectionRejectionTracker(length(input.parameter_priors[m]))
+	cm_trackers = [CandidateModelTracker(length(input.parameter_priors[m]))
 								for m in 1:input.M]
+
+    # Summary statistic initialisation
+    built_summary_statistic = build_summary_statistic(input.summary_statistic)
+    summarised_reference_data = built_summary_statistic(reference_data)
+
+    # Initialise variables to hold ABC results
+    parameters = zeros(1)
+    distance = 0.0
+    weight_value = 0.0
 
 	#
 	# Compute first population using rejection-ABC
 	#
 	while total_n_accepted < input.n_particles && n_iterations <= input.max_iter
-		m = rand(input.model_prior)
-		rejection_trackers[m].n_tries += 1
 
-		out = ABCrejection(
-				SimulatedABCRejectionInput(length(input.parameter_priors[m]),
-											1,
-											input.threshold_schedule[1],
-											input.parameter_priors[m],
-											input.summary_statistic,
-											input.distance_function,
-											input.simulator_functions[m],
-											1),
-				reference_data,
-				normalise_weights=false,
-				for_model_selection=true)
+		m = rand(input.model_prior)
+
+		try
+            parameters, distance, weight_value = check_particle(input.parameter_priors[m],
+            													input.simulator_functions[m],
+                                                                built_summary_statistic,
+                                                                input.distance_function,
+                                                                summarised_reference_data)
+        catch e
+            if isa(e, DimensionMismatch)
+                # This prevents the whole code from failing if there is a problem
+                # solving the differential equation(s). The exception is thrown by the 
+                # distance function
+                warn("The summarised simulated data does not have the same size as the summarised reference data. If this is not happening at every iteration it may be due to the behaviour of DifferentialEquations::solve - please check for related warnings. Continuing to the next iteration.")
+                n_iterations += 1
+                continue
+            else
+                throw(e)
+            end
+        end
+
+        cm_trackers[m].n_tries += 1
 
 		# If particle accepted
-		if size(out.population,1) == 1
+		if distance < input.threshold_schedule[1]
 			total_n_accepted += 1
-			rejection_trackers[m].n_accepted += 1
-			rejection_trackers[m].population = vcat(rejection_trackers[m].population, out.population)
-			push!(rejection_trackers[m].distances, out.distances[1])
-			push!(rejection_trackers[m].weight_values, out.weights.values[1])
-		elseif size(out.population, 1) > 1
-			error("$(size(out.population,1)) particles were accepted!")
+			update_candidatemodeltracker!(cm_trackers[m], parameters, distance, weight_value)
 		end
 
 		n_iterations += 1
 	end
 
-	println("Completed $(n_iterations-1) iterations, accepting $total_n_accepted particles in total")
-
 	if n_iterations == input.max_iter+1
 		warn("Simulated model selection reached maximum number of iterations ($(input.max_iter)) on the first population - consider trying more iterations.")
 	end
 
-	# Normalise weights for each model
-	for m=1:input.M
-		rejection_trackers[m].weight_values = rejection_trackers[m].weight_values ./ sum(rejection_trackers[m].weight_values)
-	end
+	info(string(DateTime(now())),
+		" Completed $(n_iterations-1) iterations, accepting $total_n_accepted particles in total.\n",
+		"Number of accepted parameters by model: ",
+		join([string("Model ", m, ": ",  cm_trackers[m].n_accepted) for m in 1:input.M], "\t"),
+		prefix="GpABC model selection simulation ",
+	)
 
-	smc_trackers = [SimulatedCandidateModelTracker(
+	smc_trackers = [SimulatedABCSMCTracker(
 		length(input.parameter_priors[m]),
-		[rejection_trackers[m].n_accepted],
-		[rejection_trackers[m].n_tries],
-		[rejection_trackers[m].population],
-		[rejection_trackers[m].distances],
-		[StatsBase.Weights(rejection_trackers[m].weight_values, 1.0)],
+		[cm_trackers[m].n_accepted],
+		[cm_trackers[m].n_tries],
+		[input.threshold_schedule[1]],
+		[cm_trackers[m].population],
+		[cm_trackers[m].distances],
+		[StatsBase.Weights(cm_trackers[m].weight_values ./ sum(cm_trackers[m].weight_values), 1.0)], 	# Normalise weights for each model
 		input.parameter_priors[m],
-		input.simulator_functions[m]
-		)
-			for m in 1:input.M]
-
-		println("Number of accepted parameters: ", join([string("Model ", m, ": ",  cmTrackers[m].n_accepted[end]) for m in 1:input.M], "\t"))
+		built_summary_statistic,
+		summarised_reference_data,
+		input.distance_function,
+		input.simulator_functions[m],
+		1) for m in 1:input.M]
 
 	return SimulatedModelSelectionTracker(input.M,
 		input.n_particles,
 		[input.threshold_schedule[1]],
 		input.model_prior,
-		cmTrackers,
-		build_summary_statistic(input.summary_statistic),
+		smc_trackers,
+		built_summary_statistic,
 		input.distance_function,
 		input.max_iter)
 end
@@ -104,80 +117,66 @@ function iterate_modelselection!(tracker::SimulatedModelSelectionTracker,
 	threshold::AbstractFloat,
 	reference_data::AbstractArray{Float64,2})
 
+	# Generate kernels - not sure what will happen here if model is dead
+	kernels = [generate_kernels(smc_tracker.population[end], smc_tracker.priors) for smc_tracker in tracker.smc_trackers]
+
+	# Initialise
 	push!(tracker.threshold_schedule, threshold)
-
-	for mtracker in tracker.model_trackers
-		push!(mtracker.n_accepted, 0)
-		push!(mtracker.n_tries, 0)
-		push!(mtracker.population, zeros(0, mtracker.n_params))
-		push!(mtracker.distances, zeros(0))
-		push!(mtracker.weights, StatsBase.Weights(zeros(0)))
-	end
-
+	cm_trackers = [CandidateModelTracker(tracker.smc_trackers[m].n_params) for m in 1:tracker.M]
 	total_n_accepted = 0
 	n_iterations = 1
+	parameters = zeros(1)
+	distance = 0.0
+	weight_value = 0.0
 
 	while total_n_accepted < tracker.n_particles && n_iterations <= tracker.max_iter
 		# Sample model from prior
 		m = rand(tracker.model_prior)
 
-		if tracker.model_trackers[m].n_accepted[end-1] == 0
+		if tracker.smc_trackers[m].n_accepted[end] == 0
 			continue
-		else
-			tracker.model_trackers[m].n_tries[end] += 1
 		end
 
 		# Do ABC SMC for a single particle
+		try
+            parameters, distance, weight_value = check_particle(tracker.smc_trackers[m],
+            													kernels[m])
+        catch e
+            if isa(e, DimensionMismatch)
+                # This prevents the whole code from failing if there is a problem
+                # solving the differential equation(s). The exception is thrown by the 
+                # distance function
+                warn("The summarised simulated data does not have the same size as the summarised reference data. If this is not happening at every iteration it may be due to the behaviour of DifferentialEquations::solve - please check for related warnings. Continuing to the next iteration.")
+                n_iterations += 1
+                continue
+            else
+                throw(e)
+            end
+        end
 
+        cm_trackers[m].n_tries += 1
 
-		abcsmc_tracker = SimulatedABCSMCTracker(
-				tracker.model_trackers[m].n_params,
-				deepcopy(tracker.model_trackers[m].n_accepted[1:end-1]),
-				[0],
-				deepcopy(tracker.threshold_schedule[1:end-1]),
-				deepcopy(tracker.model_trackers[m].population[1:end-1]),
-				deepcopy(tracker.model_trackers[m].distances[1:end-1]),
-				deepcopy(tracker.model_trackers[m].weights[1:end-1]),
-				tracker.model_trackers[m].priors,
-				tracker.summary_statistic,
-				tracker.distance_function,
-				tracker.model_trackers[m].simulator_function,
-				1)
-
-		particle_accepted = iterateABCSMC!(
-			abcsmc_tracker,
-			threshold,
-			1,
-			reference_data,
-			normalise_weights = false,
-			for_model_selection=true)
-
-		if particle_accepted
+		if distance < threshold
 			total_n_accepted += 1
-			tracker.model_trackers[m].n_accepted[end] += 1
-			tracker.model_trackers[m].population[end] = vcat(tracker.model_trackers[m].population[end], abcsmc_tracker.population[end][1,:]')
-			push!(tracker.model_trackers[m].distances[end], abcsmc_tracker.distances[end][1])
-			push!(tracker.model_trackers[m].weights[end].values, abcsmc_tracker.weights[end].values[1])
+			update_candidatemodeltracker!(cm_trackers[m], parameters, distance, weight_value)
 		end
 
 		n_iterations += 1
 
 	end
 
-	println("Completed $(n_iterations-1) iterations, accepting $total_n_accepted particles")
-	println("Number of accepted parameters: ", join([string("Model ", m, ": ",  tracker.model_trackers[m].n_accepted[end]) for m in 1:tracker.M], "\t"))
-
 	if n_iterations == tracker.max_iter+1
 		warn("Simulated model selection reached maximum number of iterations ($(tracker.max_iter)) on the an SMC run - consider trying more iterations.")
 	end
 
-	# Normalise weights for subsequent ABC-SMC run
-	for mtracker in tracker.model_trackers
-		if size(mtracker.weights[end],1) > 0
-			mtracker.weights[end] = normalise(mtracker.weights[end], tosum=1.0)
-		end
-	end
+	info(string(DateTime(now())),
+		" Completed $(n_iterations-1) iterations, accepting $total_n_accepted particles in total.\n",
+		"Number of accepted parameters by model: ",
+		join([string("Model ", m, ": ",  cm_trackers[m].n_accepted) for m in 1:tracker.M], "\t"),
+		prefix="GpABC model selection simulation "
+	)
 
+	update_modelselection_tracker!(tracker, cm_trackers)
 end
 
 """
@@ -223,39 +222,12 @@ function model_selection(input::SimulatedModelSelectionInput,
 	return build_modelselection_output(tracker, true)
 end
 
-function build_modelselection_output(tracker::SimulatedModelSelectionTracker, successful_completion::Bool)
+function build_modelselection_output(tracker::ModelSelectionTracker, successful_completion::Bool)
 	return ModelSelectionOutput(
 		tracker.M,
-		[[tracker.model_trackers[m].n_accepted[i] for m = 1:tracker.M] for i in 1:length(tracker.threshold_schedule)],
+		[[tracker.smc_trackers[m].n_accepted[i] for m = 1:tracker.M] for i in 1:length(tracker.threshold_schedule)],
 		tracker.threshold_schedule,
-		[SimulatedABCSMCOutput(
-			tracker.model_trackers[m].n_params,
-			tracker.model_trackers[m].n_accepted,
-			tracker.model_trackers[m].n_tries,
-			tracker.threshold_schedule,
-			tracker.model_trackers[m].population,
-			tracker.model_trackers[m].distances,
-			tracker.model_trackers[m].weights)
-				for m in 1:tracker.M],
-		successful_completion
-		)
-end
-
-function build_modelselection_output(tracker::EmulatedModelSelectionTracker, successful_completion::Bool)
-	return ModelSelectionOutput(
-		tracker.M,
-		[[tracker.model_trackers[m].n_accepted[i] for m = 1:tracker.M] for i in 1:length(tracker.threshold_schedule)],
-		tracker.threshold_schedule,
-		[EmulatedABCSMCOutput(
-			tracker.model_trackers[m].n_params,
-			tracker.model_trackers[m].n_accepted,
-			tracker.model_trackers[m].n_tries,
-			tracker.threshold_schedule,
-			tracker.model_trackers[m].population,
-			tracker.model_trackers[m].distances,
-			tracker.model_trackers[m].weights,
-			tracker.model_trackers[m].emulators)
-				for m in 1:tracker.M],
+		[buildAbcSmcOutput(tracker.smc_trackers[m]) for m in 1:tracker.M],
 		successful_completion
 		)
 end
@@ -285,7 +257,7 @@ function initialise_modelselection(input::EmulatedModelSelectionInput, reference
 	# Initialise arrays that will track rejection ABC run for each model - these
 	# will be used to create CandidateModelTrackers after the rejection ABC run
 	#
-	rejection_trackers = [ModelSelectionRejectionTracker(length(input.parameter_priors[m]))
+	rejection_trackers = [CandidateModelTracker(length(input.parameter_priors[m]))
 								for m in 1:input.M]
 
 	#
@@ -507,10 +479,36 @@ end
 
 # not exported
 function all_models_dead(tracker::ModelSelectionTracker)
-	return sum([tracker.model_trackers[m].n_accepted[end] for m = 1:tracker.M]) == 0
+	return sum([tracker.smc_trackers[m].n_accepted[end] for m = 1:tracker.M]) == 0
 end
 
 # not exported
 function all_but_one_models_dead(tracker::ModelSelectionTracker)
-	return sum([tracker.model_trackers[m].n_accepted[end] == 0 for m = 1:tracker.M]) == tracker.M-1
+	return sum([tracker.smc_trackers[m].n_accepted[end] == 0 for m = 1:tracker.M]) == tracker.M-1
+end
+
+# not exported
+function update_candidatemodeltracker!(
+	cm_tracker::CandidateModelTracker,
+	parameters::AbstractArray{Float64,1},
+	distance::AbstractFloat,
+	weight_value::AbstractFloat)
+
+	cm_tracker.n_accepted += 1
+	cm_tracker.population = vcat(cm_tracker.population, parameters')
+	push!(cm_tracker.distances, distance)
+	push!(cm_tracker.weight_values, weight_value)
+end
+
+# not exported
+function update_modelselection_tracker!(tracker::SimulatedModelSelectionTracker,
+	cm_trackers::AbstractArray{CandidateModelTracker,1})
+
+	for m in 1:tracker.M
+		push!(tracker.smc_trackers[m].n_accepted, cm_trackers[m].n_accepted)
+		push!(tracker.smc_trackers[m].n_tries, cm_trackers[m].n_tries)
+		push!(tracker.smc_trackers[m].population, cm_trackers[m].population)
+		push!(tracker.smc_trackers[m].distances, cm_trackers[m].distances)
+		push!(tracker.smc_trackers[m].weights, normalise(cm_trackers[m].weight_values))
+	end
 end

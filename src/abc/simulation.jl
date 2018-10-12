@@ -35,7 +35,7 @@ function SimulatedABCRejection(reference_data::AbstractArray{Float64,2},
     input = SimulatedABCRejectionInput(n_params, n_particles, threshold,
                                         priors, summary_statistic,
                                         distance_function, simulator_function,
-                                        max_iter, true, false)
+                                        max_iter)
 
     return ABCrejection(input, reference_data; kwargs...)
 
