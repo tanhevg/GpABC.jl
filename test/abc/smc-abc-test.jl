@@ -119,11 +119,10 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
         n_particles,
         threshold_schedule,
         priors,
-        batch_size,
         max_iter,
         gp_train_function)
 
-    emu_abcsmc_res = ABCSMC(emu_abcsmc_input, reference_data, write_progress=false)
+    emu_abcsmc_res = ABCSMC(emu_abcsmc_input, reference_data, batch_size, write_progress=false)
     @test size(emu_abcsmc_res.population, 1) > 0
 
     # Now repeat using user-level functions

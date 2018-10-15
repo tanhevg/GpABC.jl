@@ -69,7 +69,6 @@ An object that defines the settings for a emulation-based rejection-ABC computat
 - `n_particles::Int64`: The number of parameter vectors (particles) that will be included in the final posterior.
 - `threshold::Float64`: The maximum distance from the summarised model output to summarised observed data for a parameter vector to be included in the posterior.
 - `priors::AbstractArray{ContinuousUnivariateDistribution,1}`: A 1D Array of distributions with length `n_params` from which candidate parameter vectors will be sampled.
-- `batch_size::Int64`: The number of predictions to be made in each batch.
 - `max_iter::Int64`: The maximum number of iterations/batches before termination.
 """
 struct EmulatedABCRejectionInput <: ABCRejectionInput
@@ -77,7 +76,6 @@ struct EmulatedABCRejectionInput <: ABCRejectionInput
 	n_particles::Int64
 	threshold::Float64
 	priors::AbstractArray{ContinuousUnivariateDistribution,1}
-	batch_size::Int64
     max_iter::Int64
     train_emulator_function::Function
 end
@@ -120,7 +118,6 @@ An object that defines the settings for a emulation-based rejection-ABC computat
 - `n_particles::Int64`: The number of parameter vectors (particles) that will be included in the final posterior.
 - `threshold_schedule::AbstractArray{Float64}`: A set of maximum distances from the summarised model output to summarised observed data for a parameter vector to be included in the posterior. Each distance will be used in a single run of the ABC-SMC algorithm.
 - `priors::AbstractArray{ContinuousUnivariateDistribution,1}`: A 1D Array of distributions with length `n_params` from which candidate parameter vectors will be sampled.
-- `batch_size::Int64`: The number of predictions to be made in each batch.
 - `max_iter::Int64`: The maximum number of iterations/batches before termination.
 """
 struct EmulatedABCSMCInput <: ABCSMCInput
@@ -128,7 +125,6 @@ struct EmulatedABCSMCInput <: ABCSMCInput
     n_particles::Int64
     threshold_schedule::AbstractArray{Float64,1}
     priors::AbstractArray{ContinuousUnivariateDistribution,1}
-    batch_size::Int64
     max_iter::Int64
     train_emulator_function::Function
 end
@@ -164,7 +160,6 @@ mutable struct EmulatedABCSMCTracker <: ABCSMCTracker
     weights::AbstractArray{StatsBase.Weights,1}
     priors::AbstractArray{ContinuousUnivariateDistribution,1}
     train_emulator_function::Function
-    batch_size::Int64
     max_iter::Int64
     emulators::AbstractArray{GPModel,1}
 end
@@ -198,7 +193,7 @@ struct EmulatedABCRejectionOutput <: ABCRejectionOutput
     population::AbstractArray{Float64,2}
     distances::AbstractArray{Float64,1}
     weights::StatsBase.Weights
-    emulator
+    emulator::GPModel
 end
 
 struct SimulatedABCRejectionOutput <: ABCRejectionOutput
@@ -245,7 +240,6 @@ struct EmulatedABCSMCOutput <: ABCSMCOutput
     population::AbstractArray{AbstractArray{Float64,2},1}
     distances::AbstractArray{AbstractArray{Float64,1},1}
     weights::AbstractArray{StatsBase.Weights,1}
-    summarised_reference_data::AbstractArray{Float64,1}
     emulators::AbstractArray{GPModel,1}
 end
 

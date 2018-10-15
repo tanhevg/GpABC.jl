@@ -50,31 +50,6 @@ function CandidateModelTracker(n_params::Int64)
 	return CandidateModelTracker(0, 0, zeros(0, n_params), zeros(0), zeros(0))
 end
 
-# abstract type CandidateModelTracker end
-
-# mutable struct SimulatedCandidateModelTracker <: CandidateModelTracker
-# 	n_params::Integer
-# 	n_accepted::AbstractArray{Int64,1}
-# 	n_tries::AbstractArray{Int64,1}
-# 	population::AbstractArray{AbstractArray{Float64,2},1}
-# 	distances::AbstractArray{AbstractArray{Float64,1},1}
-# 	weights::AbstractArray{StatsBase.Weights,1}
-# 	priors::AbstractArray{ContinuousUnivariateDistribution,1}
-# 	simulator_function::Function
-# end
-
-mutable struct EmulatedCandidateModelTracker
-	n_params::Integer
-	n_accepted::AbstractArray{Int64,1}
-	n_tries::AbstractArray{Int64,1}
-	population::AbstractArray{AbstractArray{Float64,2},1}
-	distances::AbstractArray{AbstractArray{Float64,1},1}
-	weights::AbstractArray{StatsBase.Weights,1}
-	priors::AbstractArray{ContinuousUnivariateDistribution,1}
-	emulator_trainer::Function
-	emulators::AbstractArray{GPModel,1}
-end
-
 abstract type ModelSelectionTracker end
 
 mutable struct SimulatedModelSelectionTracker <: ModelSelectionTracker
@@ -93,7 +68,7 @@ mutable struct EmulatedModelSelectionTracker <: ModelSelectionTracker
 	n_particles::Int64
 	threshold_schedule::AbstractArray{Float64,1}
 	model_prior::DiscreteUnivariateDistribution
-	smc_trackers::AbstractArray{EmulatedCandidateModelTracker,1}
+	smc_trackers::AbstractArray{EmulatedABCSMCTracker,1}
 	max_batch_size::Int64
 	max_iter::Integer
 end

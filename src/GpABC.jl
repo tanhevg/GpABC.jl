@@ -26,7 +26,7 @@ export
 	get_training_data,
 	read_rejection_output, read_smc_output,
 
-	model_selection,
+	SimulatedModelSelection, EmulatedModelSelection,
 	SimulatedModelSelectionInput,
 	EmulatedModelSelectionInput,
 	ModelSelectionOutput,

@@ -27,20 +27,16 @@ function generate_parameters(
         ) where {
         D<:ContinuousUnivariateDistribution
         }
+
     n_dims = length(priors)
     parameters = zeros(batch_size, n_dims)
     priors = reshape(priors, 1, n_dims)
     parameters .= rand.(priors)
     weights = prod(pdf.(priors, parameters), 2)
+    weights = reshape(weights, batch_size) # So that this returns a 1D array, like the simulation version
 
     return parameters, weights
 end
-
-#
-# Note - have removed simulation_args... should pass an anonymous function that returns
-# simulation results with the parameters as the only argument to SimulatedABCRejectionInput
-# as simulator_function
-#
 
 """
     ABCrejection
@@ -89,8 +85,10 @@ function ABCrejection(
     while n_accepted < input.n_particles && n_tries < input.max_iter
 
         try
-            parameters, distance, weight_value = check_particle(input,
+            parameters, distance, weight_value = check_particle(input.priors,
+                                                                input.simulator_function,
                                                                 built_summary_statistic,
+                                                                input.distance_function,
                                                                 summarised_reference_data)
         catch e
             if isa(e, DimensionMismatch)
@@ -157,7 +155,8 @@ An ['EmulatedABCRejectionOutput'](@ref) object.
 """
 function ABCrejection(
     input::EmulatedABCRejectionInput,
-    reference_data::AbstractArray{Float64,2};
+    reference_data::AbstractArray{Float64,2},
+    batch_size::Integer;
     write_progress = true,
     progress_every = 1000)
 
@@ -186,14 +185,15 @@ function ABCrejection(
     # emulate
     while n_accepted < input.n_particles && batch_no <= input.max_iter
 
-        parameter_batch, weight_values_batch, distances, vars = check_particle_batch(input, emulator)
-        n_tries += input.batch_size
+        parameter_batch, weight_values_batch, distances, vars = check_particle_batch(input.priors,
+                                                                                     batch_size,
+                                                                                     emulator)
+        n_tries += batch_size
 
         #
         # Check which parameter indices were accepted
         #
-        accepted_batch_idxs = find((distances .<= input.threshold) .& (sqrt.(vars) .<= input.threshold))
-        # accepted_batch_idxs = find(distances .<= input.threshold)
+        accepted_batch_idxs = find_accepted_particle_idxs(distances, vars, input.threshold)
         n_accepted_batch = length(accepted_batch_idxs)
 
         #
@@ -215,7 +215,7 @@ function ABCrejection(
 
         if write_progress
             info(string(DateTime(now())),
-                " accepted $(n_accepted)/$(n_tries) particles ($(batch_no) batches of size $(input.batch_size)).",
+                " accepted $(n_accepted)/$(n_tries) particles ($(batch_no) batches of size $(batch_size)).",
                 prefix="GpABC rejection emulation ")
         end
 
@@ -245,20 +245,6 @@ end
 
 # not exported
 function check_particle(
-    input::SimulatedABCRejectionInput,
-    built_summary_statistic::Function,
-    summarised_reference_data::AbstractArray{Float64,1})
-
-    parameters, weight_value = generate_parameters(input.priors)
-    simulated_data = input.simulator_function(parameters)
-    summarised_simulated_data = built_summary_statistic(simulated_data)
-    distance = input.distance_function(summarised_reference_data, summarised_simulated_data)
-    
-    return parameters, distance, weight_value
-end
-
-# not exported
-function check_particle(
     priors::AbstractArray{CUD,1},
     simulator_function::Function,
     built_summary_statistic::Function,
@@ -277,12 +263,23 @@ end
 
 # not exported
 function check_particle_batch(
-    input::EmulatedABCRejectionInput,
-    emulator::GPModel,
-    )
-    
-    parameter_batch, weight_values_batch = generate_parameters(input.priors, input.batch_size)
-    distances, vars = gp_regression(parameter_batch, emulator)
+    priors::AbstractArray{CUD,1},
+    batch_size::Integer,
+    emulator::GPModel) where {
+    CUD <: ContinuousUnivariateDistribution
+    }
 
-    return parameter_batch, weight_values_batch, distances, vars
+    parameter_batch, weight_values_batch = generate_parameters(priors, batch_size)
+    distance_batch, var_batch = gp_regression(parameter_batch, emulator)
+
+    return parameter_batch, weight_values_batch, distance_batch, var_batch
+end
+
+# not exported
+function find_accepted_particle_idxs(
+    distances::AbstractArray{Float64,1},
+    vars::AbstractArray{Float64,1},
+    threshold::AbstractFloat)
+
+    return find((distances .<= threshold) .& (sqrt.(vars) .<= threshold))
 end
