@@ -31,9 +31,10 @@ export
 	EmulatedModelSelectionInput,
 	ModelSelectionOutput,
 
-	RepetitiveTraining,
+	# RepetitiveTraining,
 
-    AbstractEmulatorTrainingSettings, DefaultEmulatorTraining, train_emulator;
+    AbstractEmulatorTraining, DefaultEmulatorTraining, train_emulator,
+    EmulatorTrainingInput, AbstractRetrainingSettings, DefaultRetrainingSettings, abc_retrain_emulator;
 
 using Optim, Distributions, Distances, DifferentialEquations
 

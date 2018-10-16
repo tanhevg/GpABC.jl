@@ -53,11 +53,36 @@ end
 RepetitiveTraining(; rt_iterations::Int64=0, rt_extra_training_points::Int64=1, rt_sample_size::Int64=1000) =
     RepetitiveTraining(rt_iterations, rt_extra_training_points, rt_sample_size)
 
-abstract type AbstractEmulatorTrainingSettings end
-type DefaultEmulatorTraining{K<:AbstractGPKernel} <: AbstractEmulatorTrainingSettings
+struct DistanceSimulationInput
+    reference_summary_statistic
+    simulator_function::Function
+    summary_statistic::Function
+    distance_metric::Function
+end
+
+abstract type AbstractRetrainingSettings end
+type DefaultRetrainingSettings <: AbstractRetrainingSettings
+    design_points::Int64
+    max_simulations::Int64
+end
+
+abstract type AbstractEmulatorTraining end
+type DefaultEmulatorTraining{K<:AbstractGPKernel} <: AbstractEmulatorTraining
     kernel::K
 end
 DefaultEmulatorTraining() = DefaultEmulatorTraining(SquaredExponentialArdKernel())
+
+struct EmulatorTrainingInput{ET<:AbstractEmulatorTraining}
+    distance_simulation_input::DistanceSimulationInput
+    design_points::Int64
+    emulator_training::ET
+end
+EmulatorTrainingInput(dsi::DistanceSimulationInput) = EmulatorTrainingInput(dsi, DefaultEmulatorTraining())
+EmulatorTrainingInput(n_design_points, reference_summary_statistic, simulator_function, summary_statistic, distance_metric, et=DefaultEmulatorTraining()) =
+    EmulatorTrainingInput(DistanceSimulationInput(
+        reference_summary_statistic, simulator_function,
+        build_summary_statistic(summary_statistic), distance_metric),
+        n_design_points, et)
 
 """
     EmulatedABCRejectionInput
@@ -79,7 +104,7 @@ struct EmulatedABCRejectionInput <: ABCRejectionInput
 	priors::AbstractArray{ContinuousUnivariateDistribution,1}
 	batch_size::Int64
     max_iter::Int64
-    train_emulator_function::Function
+    emulator_training_input::EmulatorTrainingInput
 end
 
 abstract type ABCSMCInput <: ABCInput end

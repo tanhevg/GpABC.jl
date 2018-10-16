@@ -183,8 +183,12 @@ function ABCrejection(input::EmulatedABCRejectionInput,
 
     # todo: consolidate sample_from_priors with generate_parameters
     if emulator == nothing
-        prior_sampling_function(n_design_points) = generate_parameters(input.priors, n_design_points)[1]
-        emulator = input.train_emulator_function(prior_sampling_function)
+        X = generate_parameters(input.priors, input.emulator_training_input.design_points)[1]
+        y = simulate_distance(X, input.emulator_training_input.distance_simulation_input)
+        emulator = train_emulator(X, reshape(y, (length(y), 1)),
+            input.emulator_training_input.emulator_training)
+        # prior_sampling_function(n_design_points) = generate_parameters(input.priors, n_design_points)[1]
+        # emulator = input.train_emulator_function(prior_sampling_function)
     end
     # emulate
     while n_accepted < input.n_particles && batch_no <= input.max_iter
@@ -201,9 +205,9 @@ function ABCrejection(input::EmulatedABCRejectionInput,
         #
         # Check which parameter indices were accepted
         #
-        accepted_batch_idxs = find((distances .<= input.threshold) .& (sqrt.(vars) .<= 0.05 * input.threshold))
+        # accepted_batch_idxs = find((distances .<= input.threshold) .& (sqrt.(vars) .<= 0.05 * input.threshold))
         # accepted_batch_idxs = find((distances .<= input.threshold) .& (sqrt.(vars) .<= input.threshold))
-        # accepted_batch_idxs = find(distances .<= input.threshold)
+        accepted_batch_idxs = find(distances .<= input.threshold)
         n_accepted_batch = length(accepted_batch_idxs)
 
         #println("n_accepted_batch = $n_accepted_batch")

@@ -71,18 +71,18 @@ function generate_parameters(
     return perturbed_parameters, weight
 end
 
-# function generate_parameters_no_weights(
-#         n_batch_size::Int64,
-#         old_parameters::AbstractArray{F,2},
-#         old_weights::StatsBase.Weights,
-#         kernels::AbstractArray{D2,2}
-#         ) where {
-#         D2<:ContinuousUnivariateDistribution,
-#         F<:AbstractFloat,
-#         }
-#     particles = StatsBase.sample(indices(old_parameters, 1), old_weights, n_batch_size)
-#     return rand.(kernels[particles,:])
-# end
+function generate_parameters_no_weights(
+        n_batch_size::Int64,
+        old_parameters::AbstractArray{F,2},
+        old_weights::StatsBase.Weights,
+        kernels::AbstractArray{D2,2}
+        ) where {
+        D2<:ContinuousUnivariateDistribution,
+        F<:AbstractFloat,
+        }
+    particles = StatsBase.sample(indices(old_parameters, 1), old_weights, n_batch_size)
+    return rand.(kernels[particles,:])
+end
 
 function normalise(
         weights::StatsBase.AbstractWeights;
@@ -294,16 +294,16 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
     end
 
     kernels = generate_kernels(old_population, tracker.priors)
-    # prior_sampling_function(n_design_points) = generate_parameters_no_weights(n_design_points,
-    #     old_population,
-    #     old_weights,
-    #     kernels)
-
     if emulator == nothing
-        prior_sampling_function = function(n_design_points)
-            ret_idx = StatsBase.sample(indices(old_population, 1), old_weights, n_design_points)
-            return old_population[ret_idx, :]
-        end
+        prior_sampling_function(n_design_points) = generate_parameters_no_weights(n_design_points,
+            old_population,
+            old_weights,
+            kernels)
+
+        # prior_sampling_function = function(n_design_points)
+        #     ret_idx = StatsBase.sample(indices(old_population, 1), old_weights, n_design_points)
+        #     return old_population[ret_idx, :]
+        # end
         emulator = tracker.train_emulator_function(prior_sampling_function)
     end
 
@@ -324,9 +324,9 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
 
         distances, vars = gp_regression(parameters, emulator)
         n_tries += length(distances)
-        accepted_indices = find((distances .<= threshold) .& (sqrt.(vars) .<= 0.05 * threshold))
+        # accepted_indices = find((distances .<= threshold) .& (sqrt.(vars) .<= 0.05 * threshold))
         # accepted_indices = find((distances .<= threshold) .& (sqrt.(vars) .<= threshold)) # todo more variance controls
-        # accepted_indices = find(distances .<= threshold)
+        accepted_indices = find(distances .<= threshold)
         n_include = length(accepted_indices)
         if n_accepted + n_include > n_toaccept
             n_include = n_toaccept - n_accepted
