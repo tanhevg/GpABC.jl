@@ -30,6 +30,7 @@ priors = [Uniform(0., 5.), Uniform(0., 5.), Uniform(10., 20.),
             Uniform(0., 2.), Uniform(0., 2.), Uniform(0., 2.)]
 # param_indices = [2, 3, 9, 10]
 param_indices = [1, 2, 3]
+# param_indices = [1, 2, 3, 10]
 n_var_params = length(param_indices)
 
 
@@ -82,11 +83,11 @@ function simulate_distance(var_params)
 end
 
 println("SIMULATION")
-sim_out = SimulatedABCSMC(reference_data, n_particles, [3.0, 2.0, 1.0, 0.5],
+sim_out = SimulatedABCSMC(reference_data, n_particles, threshold_schedule,
     priors[param_indices], summary_stats, simulator_function)
 
 println("EMULATION")
-emu_out = EmulatedABCSMC(n_design_points, reference_data, n_particles, [3.0, 2.0, 1.0, 0.5, 0.2],
+emu_out = EmulatedABCSMC(n_design_points, reference_data, n_particles, threshold_schedule,
     priors[param_indices], summary_stats, simulator_function,
     # repetitive_training=RepetitiveTraining(rt_iterations=3, rt_extra_training_points=5),
     )

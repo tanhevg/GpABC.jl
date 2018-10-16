@@ -2,6 +2,8 @@ using KernelDensity
 using PyPlot
 using PyCall
 @pyimport matplotlib.patches as patches
+@pyimport matplotlib.legend_handler as lh
+@pyimport matplotlib.lines as lines
 
 
 function scale_outer_intervals(intervals, scale=1.0)
@@ -25,10 +27,9 @@ function plot_emulation_vs_simulation(emu_out, sim_out, plot_emu_iterations)
             contour_colors = ["white", "#FFE9EC", "#FFBBC5", "#FF8B9C", "#FF5D75", "#FF2F4E", "#D0001F", "#A20018", "#990017", "#800013"]
             simulation_color = "#08519c"
             emulation_color = "#ff6600"
-            sim_count = 50
+            sim_count = 30
             h_sim_joint = nothing
-            h_emu_joint = patches.Patch(color=contour_colors[8])
-            h_emu_pop = nothing
+            h_emu_pops = nothing
             h_sim_marg = nothing
             h_emu_marg = nothing
             h_true = nothing
@@ -61,16 +62,18 @@ function plot_emulation_vs_simulation(emu_out, sim_out, plot_emu_iterations)
                         contour_z = pdf(kde_joint, contour_x, contour_y)
                         contourf(contour_x, contour_y, contour_z, 8, colors=contour_colors, zorder=1)
 
-                        h_sim_joint = scatter(x_data_sim, y_data_sim, marker="x", color=simulation_color, zorder=2, alpha=0.7)
+                        h_sim_joint = scatter(x_data_sim, y_data_sim, marker="x", color=simulation_color, zorder=2)
                         true_param_x = true_params[param_indices[j]]
                         true_param_y = true_params[param_indices[i]]
                         plot([true_param_x, true_param_x], [0, true_param_y], color=:black, linestyle=:dashed, linewidth=0.5)
                         plot([0, true_param_x], [true_param_y, true_param_y], color=:black, linestyle=:dashed, linewidth=0.5)
                     elseif (j > i) && plot_emu_iterations
                         subplot2grid((grid_size, grid_size), (i - 1, j - 1))
+                        h_emu_pops = []
                         for iter_idx in 1:length(emu_out.population)
                             h_emu_pop = scatter(emu_out.population[iter_idx][:,j], emu_out.population[iter_idx][:,i],
                                 color=population_colors[iter_idx], zorder=iter_idx, marker=".")
+                            push!(h_emu_pops, h_emu_pop)
                         end
                         xlims = scale_outer_intervals([extrema(pop[:, j]) for pop in emu_out.population])
                         xlim(xlims)
@@ -97,14 +100,24 @@ function plot_emulation_vs_simulation(emu_out, sim_out, plot_emu_iterations)
                         h_sim_marg = plot(x_plot, y_sim_plot, color=simulation_color)
                         yticks([])
                         true_param = true_params[param_indices[i]]
-                        max_vline = max(vcat(y_emu_plot, y_sim_plot)...)
-                        h_true = plot([true_param, true_param], [0, max_vline], color=:black, linestyle=:dashed, linewidth=0.5)
+                        max_pdf = max(pdf(kde_emu, true_param), pdf(kde_sim, true_param))
+                        h_true = plot([true_param, true_param], [0, max_pdf], color=:black, linestyle=:dashed, linewidth=0.5)
                     end
                 end
             end
-            figlegend([h_sim_joint; h_sim_marg; h_emu_joint; h_emu_marg; h_emu_pop; h_true],
-                ["Simulated joint", "Simulated marginal", "Emulated joint", "Emulated marginal", "Emulated populations", "True paramterer value"],
-                ncol=3, loc="lower center")
+            # https://matplotlib.org/gallery/text_labels_and_annotations/legend_demo.html
+            h_emu_pops = Tuple(h_emu_pops[end-3:end])
+            h_emu = (h_emu_marg[1],
+                lines.Line2D([], [], linestyle="None", marker="s", color=contour_colors[7],
+                markerfacecoloralt=contour_colors[5], fillstyle="right", markeredgewidth=0.0))
+            h_sim = (h_sim_marg[1], h_sim_joint)
+            figlegend([h_sim; h_emu_pops; h_emu; h_true],
+                ["Simulation result", "Emulated populations", "Emulation result", "True value"],
+                ncol=2, loc="lower center",
+                handler_map=Dict(h_sim=>lh.HandlerTuple(ndivide=nothing),
+                        h_emu_pops=>lh.HandlerTuple(ndivide=nothing),
+                        h_emu=>lh.HandlerTuple(ndivide=nothing))
+            )
 end
 
 sim_out1 = GpABC.SimulatedABCSMCOutput(sim_out.n_params, sim_out.n_accepted[1:end-1],

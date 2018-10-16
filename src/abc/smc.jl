@@ -20,6 +20,8 @@ function generate_kernels(
 
     lowers = minimum.(priors)
     uppers = maximum.(priors)
+    println("Uppers: $(uppers)")
+    println("Lowers: $(lowers)")
 
     CUD = ContinuousUnivariateDistribution
     kernels = Matrix{CUD}(n_particles, n_params)
