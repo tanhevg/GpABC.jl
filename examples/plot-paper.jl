@@ -132,7 +132,7 @@ emu_out1 = GpABC.EmulatedABCSMCOutput(emu_out.n_params, emu_out.n_accepted[1:end
 ion()
 fig = figure()
 ioff()
-plot_emulation_vs_simulation(emu_out, sim_out, true)
+plot_emulation_vs_simulation(emu_out, sim_out1, true)
 subplots_adjust(
 left    =  0.08,
 bottom  =  0.2,

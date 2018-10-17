@@ -95,7 +95,6 @@ function ABCrejection(input::SimulatedABCRejectionInput,
             continue
         end
         distance = input.distance_function(reference_data_sum_stat, simulated_data_sum_stat)
-        #println("computed distance")
         n_tries += 1
 
         if distance <= input.threshold
@@ -174,40 +173,26 @@ function ABCrejection(input::EmulatedABCRejectionInput,
     accepted_parameters = zeros(input.n_particles, input.n_params)
     accepted_distances = zeros(input.n_particles)
     weights = ones(input.n_particles)
-    #println("initialised rejection ABC")
 
-    # todo: consolidate sample_from_priors with generate_parameters
-    # prior_sampling_function(n_design_points) = generate_parameters(input.priors, n_design_points)[1]
-    #
-    # emulator = input.train_emulator_function(prior_sampling_function)
-
-    # todo: consolidate sample_from_priors with generate_parameters
     if emulator == nothing
         X = generate_parameters(input.priors, input.emulator_training_input.design_points)[1]
         y = simulate_distance(X, input.emulator_training_input.distance_simulation_input)
         emulator = train_emulator(X, reshape(y, (length(y), 1)),
             input.emulator_training_input.emulator_training)
-        # prior_sampling_function(n_design_points) = generate_parameters(input.priors, n_design_points)[1]
-        # emulator = input.train_emulator_function(prior_sampling_function)
     end
     # emulate
     while n_accepted < input.n_particles && batch_no <= input.max_iter
-        #println("Batch number $batch_no")
-
         parameter_batch, weight_batch = generate_parameters(input.priors, input.batch_size)
 
         distances, vars = gp_regression(parameter_batch, emulator)
         n_tries += input.batch_size
 
-        #println("distances size = $(size(distances))")
-        #println(distances)
-
         #
         # Check which parameter indices were accepted
         #
         # accepted_batch_idxs = find((distances .<= input.threshold) .& (sqrt.(vars) .<= 0.05 * input.threshold))
-        # accepted_batch_idxs = find((distances .<= input.threshold) .& (sqrt.(vars) .<= input.threshold))
-        accepted_batch_idxs = find(distances .<= input.threshold)
+        accepted_batch_idxs = find((distances .<= input.threshold) .& (sqrt.(vars) .<= input.threshold))
+        # accepted_batch_idxs = find(distances .<= input.threshold)
         n_accepted_batch = length(accepted_batch_idxs)
 
         #println("n_accepted_batch = $n_accepted_batch")

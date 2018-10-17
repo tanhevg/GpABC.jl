@@ -61,13 +61,14 @@ struct DistanceSimulationInput
 end
 
 abstract type AbstractRetrainingSettings end
-type DefaultRetrainingSettings <: AbstractRetrainingSettings
+struct DefaultRetrainingSettings <: AbstractRetrainingSettings
     design_points::Int64
     max_simulations::Int64
 end
+struct NoopRetrainingSettings <: AbstractRetrainingSettings end
 
 abstract type AbstractEmulatorTraining end
-type DefaultEmulatorTraining{K<:AbstractGPKernel} <: AbstractEmulatorTraining
+struct DefaultEmulatorTraining{K<:AbstractGPKernel} <: AbstractEmulatorTraining
     kernel::K
 end
 DefaultEmulatorTraining() = DefaultEmulatorTraining(SquaredExponentialArdKernel())
@@ -179,7 +180,7 @@ mutable struct SimulatedABCSMCTracker <: ABCSMCTracker
     max_iter::Integer
 end
 
-mutable struct EmulatedABCSMCTracker <: ABCSMCTracker
+mutable struct EmulatedABCSMCTracker <: ABCSMCTracker # TODO parameterise types as in EmulatedABCSMCInput
     n_params::Int64
     n_accepted::AbstractArray{Int64,1}
     n_tries::AbstractArray{Int64,1}

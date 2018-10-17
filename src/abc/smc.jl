@@ -301,12 +301,6 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
 
         emulator = abc_retrain_emulator(tracker.emulators[end], particle_sampling_function, threshold,
             tracker.emulator_training_input, tracker.emulator_retraining_settings)
-
-        # prior_sampling_function = function(n_design_points)
-        #     ret_idx = StatsBase.sample(indices(old_population, 1), old_weights, n_design_points)
-        #     return old_population[ret_idx, :]
-        # end
-        # emulator = tracker.train_emulator_function(prior_sampling_function)
     end
 
     # initialise
@@ -327,8 +321,8 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
         distances, vars = gp_regression(parameters, emulator)
         n_tries += length(distances)
         # accepted_indices = find((distances .<= threshold) .& (sqrt.(vars) .<= 0.05 * threshold))
-        # accepted_indices = find((distances .<= threshold) .& (sqrt.(vars) .<= threshold)) # todo more variance controls
-        accepted_indices = find(distances .<= threshold)
+        accepted_indices = find((distances .<= threshold) .& (sqrt.(vars) .<= threshold)) # todo more variance controls
+        # accepted_indices = find(distances .<= threshold)
         n_include = length(accepted_indices)
         if n_accepted + n_include > n_toaccept
             n_include = n_toaccept - n_accepted

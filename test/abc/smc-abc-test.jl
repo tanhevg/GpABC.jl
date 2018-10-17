@@ -69,8 +69,8 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
         simulator_function,
         max_iter)
 
-    # sim_abcsmc_res = ABCSMC(sim_abcsmc_input, reference_data)
-    # @test size(sim_abcsmc_res.population, 1) > 0
+    sim_abcsmc_res = ABCSMC(sim_abcsmc_input, reference_data)
+    @test size(sim_abcsmc_res.population, 1) > 0
 
     #
     # Test using built-in summary statistics
@@ -103,17 +103,8 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
         simulator_function,
         max_iter)
 
-    # sim_abcsmc_res = ABCSMC(sim_abcsmc_input, reference_data)
-    # @test size(sim_abcsmc_res.population, 1) > 0
-
-    # gp_train_function = function(prior_sampling_function::Function)
-    #     GpABC.abc_train_emulator(prior_sampling_function,
-    #             n_design_points,
-    #             GpABC.keep_all_summary_statistic(reference_data),
-    #             simulator_function,
-    #             GpABC.build_summary_statistic("keep_all"),
-    #             distance_metric)
-    # end
+    sim_abcsmc_res = ABCSMC(sim_abcsmc_input, reference_data)
+    @test size(sim_abcsmc_res.population, 1) > 0
 
     emu_abcsmc_input = EmulatedABCSMCInput(n_var_params,
         n_particles,
@@ -143,12 +134,12 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
     @test size(emu_out.population, 1) > 0
 
     emu_out = EmulatedABCSMC(n_design_points, reference_data, n_particles, threshold_schedule,
-        priors, "keep_all", simulator_function; write_progress=false,
+        priors, "keep_all", simulator_function;
         emulator_training=DefaultEmulatorTraining(SquaredExponentialIsoKernel()))
     @test size(emu_out.population, 1) > 0
 
     emu_out = EmulatedABCSMC(n_design_points, reference_data, n_particles, threshold_schedule,
-        priors, "keep_all", simulator_function,
+        priors, "keep_all", simulator_function;
         emulator_training=DefaultEmulatorTraining(SquaredExponentialIsoKernel()),
         emulator_retraining_settings=DefaultRetrainingSettings(5, 100),
         write_progress=false)
