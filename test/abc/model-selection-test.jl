@@ -2,7 +2,7 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
 
 @testset "Model selection test" begin
 
-	threshold_schedule = [20.0, 15.0, 10.0] 
+	threshold_schedule = [20.0, 15.0, 10.0]
 	summary_statistic = "keep_all"
 	max_iter = 1e4
 	n_particles = 200
@@ -100,7 +100,7 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
 			for i in 1:length(ms_res.threshold_schedule)]
 					for m in 1:ms_res.M]...))
 
-		# Total number of accepted particles at each population can't be more than n_particles 
+		# Total number of accepted particles at each population can't be more than n_particles
 		@test all([sum(arr) <= n_particles for arr in ms_res.n_accepted])
 
 		# There should be as many populations, distances as weights as populations
@@ -139,8 +139,6 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
 	#
 	n_design_points = 200
 	distance_metric = euclidean
-	rt = RepetitiveTraining()
-	gpkernel = SquaredExponentialArdKernel()
 
 	#
 	# A set of functions that return a trained emulator with a prior sampling function as an argument

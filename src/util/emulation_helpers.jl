@@ -77,15 +77,17 @@ function abc_retrain_emulator(
     ) where {T<:Real}
     n_accepted = 0
     n_simulations = 0
-    extra_x = zeros(retraining_settings.design_points, size(gpm.training_x, 2))
+    extra_x = zeros(retraining_settings.design_points, size(gpm.gp_training_x, 2))
     extra_y = zeros(retraining_settings.design_points, 1)
     while n_accepted < retraining_settings.design_points && n_simulations < retraining_settings.max_simulations
         particle = particle_sampling_function(1)
         distance = simulate_distance(particle, training_input.distance_simulation_input)
-        if distance < epsilon
+        # println("particle: $(particle)")
+        # println("distance: $(distance)")
+        if distance[1] < epsilon
             n_accepted += 1
-            extra_x[n_accepted, :] = particle
-            extra_y[n_accepted] = distance
+            extra_x[n_accepted, :] = particle[1]
+            extra_y[n_accepted] = distance[1]
         end
         n_simulations += 1
     end

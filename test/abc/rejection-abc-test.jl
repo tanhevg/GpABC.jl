@@ -107,15 +107,6 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
     sim_result = ABCrejection(sim_rej_input, reference_data)
     @test size(sim_result.population, 1) > 0
 
-    gp_train_function = function(prior_sampling_function::Function)
-        GpABC.abc_train_emulator(prior_sampling_function,
-                n_design_points,
-                GpABC.keep_all_summary_statistic(reference_data),
-                simulator_function,
-                GpABC.build_summary_statistic("keep_all"),
-                distance_metric)
-    end
-
     emu_rej_input = EmulatedABCRejectionInput(n_var_params,
           n_particles,
           1.0,

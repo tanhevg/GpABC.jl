@@ -20,8 +20,6 @@ function generate_kernels(
 
     lowers = minimum.(priors)
     uppers = maximum.(priors)
-    println("Uppers: $(uppers)")
-    println("Lowers: $(lowers)")
 
     CUD = ContinuousUnivariateDistribution
     kernels = Matrix{CUD}(n_particles, n_params)
@@ -157,7 +155,7 @@ function initialiseABCSMC(input::EmulatedABCSMCInput,
                                         input.priors,
                                         input.batch_size,
                                         input.max_iter,
-                                        input.train_emulator_function)
+                                        input.emulator_training_input)
 
     rejection_output = ABCrejection(rejection_input,
                                     reference_data;
@@ -171,7 +169,8 @@ function initialiseABCSMC(input::EmulatedABCSMCInput,
                              [rejection_output.distances],
                              [rejection_output.weights],
                              input.priors,
-                             input.train_emulator_function,
+                             input.emulator_training_input,
+                             input.emulator_retraining_settings,
                              input.batch_size,
                              input.max_iter,
                              [rejection_output.emulator] # emulators
@@ -295,16 +294,19 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
 
     kernels = generate_kernels(old_population, tracker.priors)
     if emulator == nothing
-        prior_sampling_function(n_design_points) = generate_parameters_no_weights(n_design_points,
+        particle_sampling_function(n_design_points) = generate_parameters_no_weights(n_design_points,
             old_population,
             old_weights,
             kernels)
+
+        emulator = abc_retrain_emulator(tracker.emulators[end], particle_sampling_function, threshold,
+            tracker.emulator_training_input, tracker.emulator_retraining_settings)
 
         # prior_sampling_function = function(n_design_points)
         #     ret_idx = StatsBase.sample(indices(old_population, 1), old_weights, n_design_points)
         #     return old_population[ret_idx, :]
         # end
-        emulator = tracker.train_emulator_function(prior_sampling_function)
+        # emulator = tracker.train_emulator_function(prior_sampling_function)
     end
 
     # initialise

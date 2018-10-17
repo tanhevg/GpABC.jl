@@ -148,14 +148,15 @@ An object that defines the settings for a emulation-based rejection-ABC computat
 - `batch_size::Int64`: The number of predictions to be made in each batch.
 - `max_iter::Int64`: The maximum number of iterations/batches before termination.
 """
-struct EmulatedABCSMCInput <: ABCSMCInput
+struct EmulatedABCSMCInput{CUD<:ContinuousUnivariateDistribution, ART<:AbstractRetrainingSettings} <: ABCSMCInput
     n_params::Int64
     n_particles::Int64
     threshold_schedule::AbstractArray{Float64,1}
-    priors::AbstractArray{ContinuousUnivariateDistribution,1}
+    priors::AbstractArray{CUD,1}
     batch_size::Int64
     max_iter::Int64
-    train_emulator_function::Function
+    emulator_training_input::EmulatorTrainingInput
+    emulator_retraining_settings::ART
 end
 
 #
@@ -187,10 +188,11 @@ mutable struct EmulatedABCSMCTracker <: ABCSMCTracker
     distances::AbstractArray{AbstractArray{Float64,1},1}
     weights::AbstractArray{StatsBase.Weights,1}
     priors::AbstractArray{ContinuousUnivariateDistribution,1}
-    train_emulator_function::Function
+    emulator_training_input::EmulatorTrainingInput
+    emulator_retraining_settings::AbstractRetrainingSettings
     batch_size::Int64
     max_iter::Int64
-    emulators::AbstractArray{Any,1}
+    emulators::AbstractArray{Any,1} # TODO replace Any with custom type that holds the emulator
 end
 
 #
