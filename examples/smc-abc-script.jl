@@ -28,10 +28,10 @@ priors = [Uniform(0., 5.), Uniform(0., 5.), Uniform(10., 20.),
             Uniform(0., 2.), Uniform(0., 2.), Uniform(0., 2.),
             Uniform(75., 125.),
             Uniform(0., 2.), Uniform(0., 2.), Uniform(0., 2.)]
-param_indices = [4,5,6]
+# param_indices = [4,5,6]
 # param_indices = [2, 3, 9, 10]
 # param_indices = [1, 2, 3]
-# param_indices = [1, 2, 3, 10]
+param_indices = [1, 2, 3, 7]
 n_var_params = length(param_indices)
 
 
