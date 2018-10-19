@@ -120,18 +120,7 @@ function plot_emulation_vs_simulation(emu_out, sim_out, last_pop=-1)
                         h_emu=>lh.HandlerTuple(ndivide=nothing))
             )
 end
-#
-# sim_truncate = 3
-# sim_trunc = GpABC.SimulatedABCSMCOutput(sim_out.n_params, sim_out.n_accepted[1:sim_truncate],
-#                         sim_out.n_tries[1:sim_truncate], sim_out.threshold_schedule[1:sim_truncate],
-#                         sim_out.population[1:sim_truncate], sim_out.distances[1:sim_truncate],
-#                         sim_out.weights[1:sim_truncate])
-#
-# emu_truncate = 3
-# emu_trunc = GpABC.EmulatedABCSMCOutput(emu_out.n_params, emu_out.n_accepted[1:emu_truncate],
-#                         emu_out.n_tries[1:emu_truncate], emu_out.threshold_schedule[1:emu_truncate],
-#                         emu_out.population[1:emu_truncate], emu_out.distances[1:emu_truncate],
-#                         emu_out.weights[1:emu_truncate], emu_out.emulators[1:emu_truncate])
+
 ion()
 fig = figure()
 ioff()
@@ -145,7 +134,7 @@ wspace  =  0.35,
 hspace  =  0.26)
 show(fig)
 
-# savefig("/bmm/home/et517/gaussian_processes/GaussianProcesses/gp_results/retraining_2_3_9_10/figure_retraining_discard_1.0_var1.pdf")
+# savefig("/bmm/home/et517/gaussian_processes/GaussianProcesses/gp_results/retraining_1_2_3_4_5_6/figure_retraining_1_2_3_4_5_6_discard_1.0_var.pdf")
 
 function plot_ode_ref_emu_sim(emu_out, sim_out, idxs)
                         kernel_bandwidth_scale = 0.09
