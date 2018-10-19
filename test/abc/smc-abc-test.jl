@@ -85,8 +85,8 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
         simulator_function,
         max_iter)
 
-    # sim_abcsmc_res = ABCSMC(sim_abcsmc_input, reference_data)
-    # @test size(sim_abcsmc_res.population, 1) > 0
+    sim_abcsmc_res = ABCSMC(sim_abcsmc_input, reference_data)
+    @test size(sim_abcsmc_res.population, 1) > 0
 
     #
     # Test using custom summary statistic
@@ -119,7 +119,7 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
               "keep_all",
               distance_metric
         ),
-        DefaultRetrainingSettings(10, 1000))
+        IncrementalRetraining(10, 1000))
 
     emu_abcsmc_res = ABCSMC(emu_abcsmc_input, reference_data, write_progress=false)
     @test size(emu_abcsmc_res.population, 1) > 0
@@ -141,7 +141,7 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
     emu_out = EmulatedABCSMC(n_design_points, reference_data, n_particles, threshold_schedule,
         priors, "keep_all", simulator_function;
         emulator_training=DefaultEmulatorTraining(SquaredExponentialIsoKernel()),
-        emulator_retraining_settings=DefaultRetrainingSettings(5, 100),
+        emulator_retraining=IncrementalRetraining(10, 100),
         write_progress=false)
     @test size(emu_out.population, 1) > 0
 

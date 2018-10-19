@@ -22,22 +22,11 @@ function abc_train_emulator(
 end
 
 function abc_retrain_emulator(
-    gpem::GPModel,
-    prior_sampling_function::Function,
-    epsilon::T,
-    training_input::EmulatorTrainingInput,
-    retraining_settings::AbstractRetrainingSettings;
-
-    ) where {T<:Real}
-    throw("abc_retrain_emulator(...$(typeof(retraining_settings))) not implemented")
-end
-
-function abc_retrain_emulator(
     gpm::GPModel,
     particle_sampling_function::Function,
     epsilon::T,
     training_input::EmulatorTrainingInput,
-    retraining_settings::DefaultRetrainingSettings
+    retraining_settings::IncrementalRetraining
     ) where {T<:Real}
     n_accepted = 0
     n_simulations = 0
@@ -69,7 +58,21 @@ function abc_retrain_emulator(
     particle_sampling_function::Function,
     epsilon::T,
     training_input::EmulatorTrainingInput,
-    retraining_settings::NoopRetrainingSettings
+    retraining_settings::DiscardPriorRetraining
+    ) where {T<:Real}
+    n_design_points = size(gpm.gp_training_x, 1)
+    training_x = particle_sampling_function(n_design_points)
+    training_y = simulate_distance(training_x, training_input.distance_simulation_input)
+    train_emulator(training_x, reshape(training_y, n_design_points, 1), training_input.emulator_training)
+end
+
+
+function abc_retrain_emulator(
+    gpm::GPModel,
+    particle_sampling_function::Function,
+    epsilon::T,
+    training_input::EmulatorTrainingInput,
+    retraining_settings::Void
     ) where {T<:Real}
     gpm
 end

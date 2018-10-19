@@ -79,8 +79,10 @@ function EmulatedABCSMC(
     emulator_training::AbstractEmulatorTraining = DefaultEmulatorTraining(),
     distance_metric::Function=Distances.euclidean,
     batch_size::Int64=10*n_particles, max_iter::Int64=20,
-    emulator_retraining_settings::AbstractRetrainingSettings = DefaultRetrainingSettings(10, 1000),
+    emulator_retraining::ER = nothing,
+    # emulator_retraining::ER = IncrementalRetraining(10, 1000),
     kwargs...) where {
+    ER,
     D<:ContinuousUnivariateDistribution
     }
 
@@ -93,7 +95,7 @@ function EmulatedABCSMC(
         emulator_training)
 
     input = EmulatedABCSMCInput(length(priors), n_particles, threshold_schedule,
-        priors, batch_size, max_iter, emulator_training_input, emulator_retraining_settings)
+        priors, batch_size, max_iter, emulator_training_input, emulator_retraining)
 
     return ABCSMC(input, reference_data; kwargs...)
 end

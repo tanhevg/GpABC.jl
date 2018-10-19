@@ -2,17 +2,17 @@ using Distributions, DifferentialEquations, GpABC, Distances, PyPlot
 
 # GaussianProcesses/Bioinformatics paper/l2_norm_two_params/...
 
-idx1 = 2
-idx2 = 3
-n_design_point = 100
+idx1 = 1
+idx2 = 9
+n_design_point = 200
 n_plot = 100
 contour_colors = ["white", "#FFE9EC", "#FFBBC5", "#FF8B9C", "#FF5D75", "#FF2F4E", "#D0001F", "#A20018", "#990017", "#800013"]
 
-true_params =  [2.0, 1.0, 15.0, 1.0, 1.0, 1.0, 100.0, 1.0, 1.0, 1.0]
-priors = [Uniform(0., 5.), Uniform(0., 5.), Uniform(10., 20.),
-            Uniform(0., 2.), Uniform(0., 2.), Uniform(0., 2.),
+true_params =  [2.0, 2.0, 15.0, 1.0, 1.0, 1.0, 100.0, 1.0, 1.0, 1.0]
+priors = [Uniform(0.2, 5.), Uniform(0.2, 5.), Uniform(10., 20.),
+            Uniform(0.2, 2.), Uniform(0.2, 2.), Uniform(0.2, 2.),
             Uniform(75., 125.),
-            Uniform(0., 2.), Uniform(0., 2.), Uniform(0., 2.)]
+            Uniform(0.2, 2.), Uniform(0.2, 2.), Uniform(0.2, 2.)]
 param_indices = [idx1, idx2]
 Tspan = (0.0, 10.0)
 x0 = [3.0, 2.0, 1.0]
@@ -75,11 +75,13 @@ em_result = emulate_particles_product(contour_x, contour_y, gpm)
 subplot(121)
 subplots_adjust(wspace  =  0.5)
 contourf(contour_x, contour_y, sim_result, 8, colors=contour_colors)
+# scatter3D(repmat(contour_x, 1, n_plot), repmat(contour_y', n_plot, 1), sim_result)
 title("L2 norm - Simulation")
 xlabel("Parameter $(idx1)")
 ylabel("Parameter $(idx2)")
 subplot(122)
 contourf(contour_x, contour_y, em_result, 8, colors=contour_colors)
+# scatter3D(repmat(contour_x, 1, n_plot), repmat(contour_y', n_plot, 1), em_result)
 scatter(training_x[:, 1], training_x[:,2], marker="x", label="training points")
 legend()
 xlim(params(priors[idx1])...)

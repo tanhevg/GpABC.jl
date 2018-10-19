@@ -34,7 +34,7 @@ export
 	# RepetitiveTraining,
 
     AbstractEmulatorTraining, DefaultEmulatorTraining, train_emulator,
-    EmulatorTrainingInput, AbstractRetrainingSettings, DefaultRetrainingSettings, NoopRetrainingSettings, abc_retrain_emulator;
+    EmulatorTrainingInput, AbstractRetrainingSettings, IncrementalRetraining, DiscardPriorRetraining, NoopRetrainingSettings, abc_retrain_emulator;
 
 using Optim, Distributions, Distances, DifferentialEquations
 

@@ -23,15 +23,16 @@ max_iter = 1000
 #
 # True parameters
 #
-true_params =  [2.0, 1.0, 15.0, 1.0, 1.0, 1.0, 100.0, 1.0, 1.0, 1.0]
-priors = [Uniform(0., 5.), Uniform(0., 5.), Uniform(10., 20.),
-            Uniform(0., 2.), Uniform(0., 2.), Uniform(0., 2.),
+true_params =  [2.0, 2.0, 15.0, 1.0, 1.0, 1.0, 100.0, 1.0, 1.0, 1.0]
+priors = [Uniform(0.2, 5.), Uniform(0.2, 5.), Uniform(10., 20.),
+            Uniform(0.2, 2.), Uniform(0.2, 2.), Uniform(0.2, 2.),
             Uniform(75., 125.),
-            Uniform(0., 2.), Uniform(0., 2.), Uniform(0., 2.)]
-# param_indices = [4,5,6]
+            Uniform(0.2, 2.), Uniform(0.2, 2.), Uniform(0.2, 2.)]
+param_indices = [2,5,8]
 # param_indices = [2, 3, 9, 10]
 # param_indices = [1, 2, 3]
-param_indices = [1, 2, 3, 7]
+# param_indices = [1, 2, 3, 7]
+# param_indices = [1, 2, 3, 8]
 n_var_params = length(param_indices)
 
 
@@ -39,7 +40,7 @@ n_var_params = length(param_indices)
 # ODE solver settings
 #
 Tspan = (0.0, 10.0)
-x0 = [3.0, 2.0, 1.0]
+x0 = [0.0, 0.0, 0.0]
 solver = RK4()
 saveat = 0.1
 
@@ -64,19 +65,39 @@ end
 
 reference_data = GeneReg(true_params, Tspan, x0, solver, saveat)
 # reference_data += randn(size(reference_data)) * 0.1
-# simulator_function(var_params) = GeneReg(vcat(var_params, true_params[n_var_params+1:end]), Tspan, x0, solver, saveat)
-function simulator_function(var_params)
+
+function simulator_function(var_param_idx::Int, var_param::Real)
+    params = copy(true_params)
+    params[var_param_idx] = var_param
+    GeneReg(params, Tspan, x0, solver, saveat)
+end
+
+function simulator_function(var_param_indices::AbstractArray{Int, 1}, var_params::AbstractArray{T, 1}) where {T<:Real}
+    params = copy(true_params)
+    params[var_param_indices] .= var_params
+    GeneReg(params, Tspan, x0, solver, saveat)
+end
+
+function simulator_function(var_params::AbstractArray{T, 1}) where {T<:Real}
+    simulator_function(param_indices, var_params)
     params = copy(true_params)
     params[param_indices] .= var_params
     GeneReg(params, Tspan, x0, solver, saveat)
-    # ret = GeneReg(params, Tspan, x0, solver, saveat)
-    # noise = randn(size(ret)) * 0.05
-    # return ret + noise
 end
 
 function simulate_distance(var_params)
     distance_metric(summary_stats(reference_data),
         summary_stats(simulator_function(var_params)))
+end
+
+function simulate_distance(var_param_idx::Int, var_param::Real)
+    distance_metric(summary_stats(reference_data),
+        summary_stats(simulator_function(var_param_idx, var_param)))
+end
+
+function simulate_distance(var_param_indices::AbstractArray{Int, 1}, var_params::AbstractArray{T, 1}) where {T<:Real}
+    distance_metric(summary_stats(reference_data),
+        summary_stats(simulator_function(var_param_indices, var_params)))
 end
 
 println("SIMULATION")
@@ -86,6 +107,7 @@ sim_out = SimulatedABCSMC(reference_data, n_particles, threshold_schedule,
 println("EMULATION")
 emu_out = EmulatedABCSMC(n_design_points, reference_data, n_particles, threshold_schedule,
     priors[param_indices], summary_stats, simulator_function,
-    # emulator_retraining_settings = NoopRetrainingSettings()
+    # emulator_retraining = IncrementalRetraining(10, 100)
+    emulator_retraining = DiscardPriorRetraining()
     # repetitive_training=RepetitiveTraining(rt_iterations=3, rt_extra_training_points=5),
     )

@@ -60,12 +60,14 @@ struct DistanceSimulationInput
     distance_metric::Function
 end
 
-abstract type AbstractRetrainingSettings end
-struct DefaultRetrainingSettings <: AbstractRetrainingSettings
+struct IncrementalRetraining
     design_points::Int64
     max_simulations::Int64
 end
-struct NoopRetrainingSettings <: AbstractRetrainingSettings end
+
+struct DiscardPriorRetraining
+end
+
 
 abstract type AbstractEmulatorTraining end
 struct DefaultEmulatorTraining{K<:AbstractGPKernel} <: AbstractEmulatorTraining
@@ -149,7 +151,7 @@ An object that defines the settings for a emulation-based rejection-ABC computat
 - `batch_size::Int64`: The number of predictions to be made in each batch.
 - `max_iter::Int64`: The maximum number of iterations/batches before termination.
 """
-struct EmulatedABCSMCInput{CUD<:ContinuousUnivariateDistribution, ART<:AbstractRetrainingSettings} <: ABCSMCInput
+struct EmulatedABCSMCInput{CUD<:ContinuousUnivariateDistribution, ER} <: ABCSMCInput
     n_params::Int64
     n_particles::Int64
     threshold_schedule::AbstractArray{Float64,1}
@@ -157,7 +159,7 @@ struct EmulatedABCSMCInput{CUD<:ContinuousUnivariateDistribution, ART<:AbstractR
     batch_size::Int64
     max_iter::Int64
     emulator_training_input::EmulatorTrainingInput
-    emulator_retraining_settings::ART
+    emulator_retraining::ER
 end
 
 #
@@ -180,7 +182,7 @@ mutable struct SimulatedABCSMCTracker <: ABCSMCTracker
     max_iter::Integer
 end
 
-mutable struct EmulatedABCSMCTracker <: ABCSMCTracker # TODO parameterise types as in EmulatedABCSMCInput
+mutable struct EmulatedABCSMCTracker{CUD<:ContinuousUnivariateDistribution, ET, ER} <: ABCSMCTracker # TODO parameterise types as in EmulatedABCSMCInput
     n_params::Int64
     n_accepted::AbstractArray{Int64,1}
     n_tries::AbstractArray{Int64,1}
@@ -188,12 +190,12 @@ mutable struct EmulatedABCSMCTracker <: ABCSMCTracker # TODO parameterise types 
     population::AbstractArray{AbstractArray{Float64,2},1}
     distances::AbstractArray{AbstractArray{Float64,1},1}
     weights::AbstractArray{StatsBase.Weights,1}
-    priors::AbstractArray{ContinuousUnivariateDistribution,1}
+    priors::AbstractArray{CUD,1}
     emulator_training_input::EmulatorTrainingInput
-    emulator_retraining_settings::AbstractRetrainingSettings
+    emulator_retraining::ER
     batch_size::Int64
     max_iter::Int64
-    emulators::AbstractArray{Any,1} # TODO replace Any with custom type that holds the emulator
+    emulators::AbstractArray{ET,1} # TODO replace Any with custom type that holds the emulator
 end
 
 #
@@ -217,7 +219,7 @@ A container for the output of a rejection-ABC computation.
 """
 abstract type ABCRejectionOutput <: ABCOutput end
 
-struct EmulatedABCRejectionOutput <: ABCRejectionOutput
+struct EmulatedABCRejectionOutput{ET} <: ABCRejectionOutput
     n_params::Int64
     n_accepted::Int64
     n_tries::Int64
@@ -225,7 +227,7 @@ struct EmulatedABCRejectionOutput <: ABCRejectionOutput
     population::AbstractArray{Float64,2}
     distances::AbstractArray{Float64,1}
     weights::StatsBase.Weights
-    emulator
+    emulator::ET
 end
 
 struct SimulatedABCRejectionOutput <: ABCRejectionOutput

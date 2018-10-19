@@ -13,7 +13,7 @@ function generate_kernels(
     n_params = size(population, 2)
 
     if n_particles > 1
-        stds = std(population, 1)[:]
+        stds = reshape(std(population, 1), n_params)
     else
         stds = 1e-3 * ones(n_params) # If there is only one particle we cannot compute the sd - use a small value instead?
     end
@@ -21,8 +21,7 @@ function generate_kernels(
     lowers = minimum.(priors)
     uppers = maximum.(priors)
 
-    CUD = ContinuousUnivariateDistribution
-    kernels = Matrix{CUD}(n_particles, n_params)
+    kernels = Matrix{ContinuousUnivariateDistribution}(n_particles, n_params)
     for j in 1:n_params
         means = population[:, j]
         kernels[:, j] = TruncatedNormal.(means, stds[j]*sqrt(2.0), lowers[j], uppers[j])
@@ -144,9 +143,9 @@ end
 #
 # Initialise an emulated ABC-SMC run
 #
-function initialiseABCSMC(input::EmulatedABCSMCInput,
+function initialiseABCSMC(input::EmulatedABCSMCInput{CUD, ER},
         reference_data::AbstractArray{Float64,2};
-        write_progress = true)
+        write_progress = true) where {CUD<:ContinuousUnivariateDistribution, ER}
 
     # the first run is an ABC rejection simulation
     rejection_input = EmulatedABCRejectionInput(input.n_params,
@@ -161,7 +160,7 @@ function initialiseABCSMC(input::EmulatedABCSMCInput,
                                     reference_data;
                                     write_progress = write_progress)
 
-    tracker = EmulatedABCSMCTracker(input.n_params,
+    tracker = EmulatedABCSMCTracker{CUD, typeof(rejection_output.emulator), ER}(input.n_params,
                              [rejection_output.n_accepted],
                              [rejection_output.n_tries],
                              [rejection_output.threshold],
@@ -170,7 +169,7 @@ function initialiseABCSMC(input::EmulatedABCSMCInput,
                              [rejection_output.weights],
                              input.priors,
                              input.emulator_training_input,
-                             input.emulator_retraining_settings,
+                             input.emulator_retraining,
                              input.batch_size,
                              input.max_iter,
                              [rejection_output.emulator] # emulators
@@ -300,7 +299,7 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
             kernels)
 
         emulator = abc_retrain_emulator(tracker.emulators[end], particle_sampling_function, threshold,
-            tracker.emulator_training_input, tracker.emulator_retraining_settings)
+            tracker.emulator_training_input, tracker.emulator_retraining)
     end
 
     # initialise
