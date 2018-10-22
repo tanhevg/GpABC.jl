@@ -34,7 +34,9 @@ export
 	# RepetitiveTraining,
 
     AbstractEmulatorTraining, DefaultEmulatorTraining, train_emulator,
-    EmulatorTrainingInput, AbstractRetrainingSettings, IncrementalRetraining, DiscardPriorRetraining, NoopRetrainingSettings, abc_retrain_emulator;
+    EmulatorTrainingInput,
+    AbstractEmulatorRetraining, NoopRetraining, IncrementalRetraining, PreviousPopulationRetraining, PreviousPopulationThresholdRetraining, abc_retrain_emulator,
+    AbstractEmulatedParticleSelection, MeanEmulatedParticleSelection, MeanVarEmulatedParticleSelection, abc_select_emulated_particles;
 
 using Optim, Distributions, Distances, DifferentialEquations
 

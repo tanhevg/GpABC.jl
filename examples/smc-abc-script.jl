@@ -6,7 +6,7 @@ using GpABC, DifferentialEquations, Distances, Distributions
 # ABC settings
 #
 
-n_particles = 3000
+n_particles = 1000
 threshold_schedule = [3.0, 2.0, 1.0, 0.5, 0.2]
 # threshold_schedule = [3.0, 2.0, 1.0]
 distance_metric = euclidean
@@ -16,7 +16,7 @@ progress_every = 1000
 #
 # Emulation settings
 #
-n_design_points = 300
+n_design_points = 100
 
 #
 # True parameters
@@ -26,7 +26,7 @@ priors = [Uniform(0.2, 5.), Uniform(0.2, 5.), Uniform(10., 20.),
             Uniform(0.2, 2.), Uniform(0.2, 2.), Uniform(0.2, 2.),
             Uniform(75., 125.),
             Uniform(0.2, 2.), Uniform(0.2, 2.), Uniform(0.2, 2.)]
-param_indices = [1,2,3,4, 5, 6]
+param_indices = [1,2,3]
 n_var_params = length(param_indices)
 
 
@@ -94,61 +94,16 @@ function simulate_distance(var_param_indices::AbstractArray{Int, 1}, var_params:
         summary_stats(simulator_function(var_param_indices, var_params)))
 end
 
-println("SIMULATION")
-sim_out = SimulatedABCSMC(reference_data, n_particles, threshold_schedule,
-    priors[param_indices], summary_stats, simulator_function)
-
 println("EMULATION")
 emu_out = EmulatedABCSMC(n_design_points, reference_data, n_particles, threshold_schedule,
-    priors[param_indices], summary_stats, simulator_function,
+    priors[param_indices], summary_stats, simulator_function;
     # emulator_retraining = IncrementalRetraining(10, 100)
-    emulator_retraining = DiscardPriorRetraining()
+    # emulator_retraining = PreviousPopulationRetraining()
+    batch_size=1000,
+    emulator_retraining = PreviousPopulationThresholdRetraining(n_design_points, min(100, n_design_points/2), 10)
     # repetitive_training=RepetitiveTraining(rt_iterations=3, rt_extra_training_points=5),
     )
 
-# TODO finish
-#=
-import GpABC.abc_retrain_emulator
-
-struct PreviousPopulationThresholdRetraining
-    n_design_points::Int
-    n_below_threshold::Int
-    max_iter::Int
-end
-
-function abc_retrain_emulator(
-    gpm::GPModel,
-    particle_sampling_function::Function,
-    epsilon::T,
-    training_input::EmulatorTrainingInput,
-    retraining_settings::PreviousPopulationThresholdRetraining
-    ) where {T<:Real}
-    n_below_threshold = 0
-    n_above_threshold = 1
-    idx = 1
-    n_iter = 0
-    training_x = zeros(retraining_settings.n_design_points, size(gpm.gp_training_x, 2))
-    training_y = zeros(retraining_settings.n_design_points, 1)
-    while(n_below_threshold < retraining_settings.n_below_threshold
-        && idx <= retraining_settings.n_design_points
-        && n_iter < retraining_settings.max_iter)
-        sample_x = particle_sampling_function(n_design_points)
-        sample_y = simulate_distance(training_x, training_input.distance_simulation_input)
-        idx_below_threshold = find(sample_y .<= epsilon)
-        if length(idx_below_threshold) > retraining_settings.n - n_below_threshold
-            idx_below_threshold = idx_below_threshold[1:size(training_x, 1) - n_below_threshold]
-        end
-        training_x[idx:idx+legth(idx_below_threshold)-1] .= sample_x[idx_below_threshold, :]
-        training_y[idx:idx+legth(idx_below_threshold)-1] .= sample_y[idx_below_threshold]
-        idx += length(idx_below_threshold)
-        n_below_threshold += length(idx_below_threshold)
-
-        n_iter += 1
-
-    end
-    n_design_points = size(gpm.gp_training_x, 1)
-    training_x = particle_sampling_function(n_design_points)
-    training_y = simulate_distance(training_x, training_input.distance_simulation_input)
-    train_emulator(training_x, reshape(training_y, n_design_points, 1), training_input.emulator_training)
-end
-=#
+println("SIMULATION")
+sim_out = SimulatedABCSMC(reference_data, n_particles, threshold_schedule,
+    priors[param_indices], summary_stats, simulator_function)

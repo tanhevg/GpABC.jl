@@ -124,7 +124,7 @@ end
 ion()
 fig = figure()
 ioff()
-plot_emulation_vs_simulation(emu_out, sim_out, 4)
+plot_emulation_vs_simulation(emu_out, sim_out)
 subplots_adjust(
 left    =  0.08,
 bottom  =  0.2,
@@ -134,7 +134,7 @@ wspace  =  0.35,
 hspace  =  0.26)
 show(fig)
 
-# savefig("/bmm/home/et517/gaussian_processes/GaussianProcesses/gp_results/retraining_1_2_3_4_5_6/figure_retraining_1_2_3_4_5_6_discard_1.0_var.pdf")
+# savefig("/bmm/home/et517/gaussian_processes/GaussianProcesses/gp_results/retraining_1_2_3_7/figure_retraining_prev_pop_thresh_1.0_var_100.pdf")
 
 function plot_ode_ref_emu_sim(emu_out, sim_out, idxs)
                         kernel_bandwidth_scale = 0.09

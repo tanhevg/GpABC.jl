@@ -116,10 +116,11 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
           EmulatorTrainingInput(
             n_design_points,
             GpABC.keep_all_summary_statistic(reference_data),
-                simulator_function,
-                "keep_all",
-                distance_metric
-          ))
+            simulator_function,
+            "keep_all",
+            distance_metric
+          ),
+          MeanEmulatedParticleSelection())
 
     emu_result = ABCrejection(emu_rej_input, reference_data)
     @test size(emu_result.population, 1) > 0
@@ -136,6 +137,7 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
     emu_out = EmulatedABCRejection(n_design_points, reference_data, n_particles, 1.0,
         priors, "keep_all", simulator_function,
         emulator_training = DefaultEmulatorTraining(SquaredExponentialIsoKernel()),
+        emulated_particle_selection=MeanVarEmulatedParticleSelection(),
         write_progress=false)
     @test size(emu_out.population, 1) > 0
 end

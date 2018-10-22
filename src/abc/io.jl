@@ -60,13 +60,22 @@ struct DistanceSimulationInput
     distance_metric::Function
 end
 
-struct IncrementalRetraining
+abstract type AbstractEmulatorRetraining end
+
+struct IncrementalRetraining <: AbstractEmulatorRetraining
     design_points::Int64
     max_simulations::Int64
 end
 
-struct DiscardPriorRetraining
+type PreviousPopulationRetraining <: AbstractEmulatorRetraining end
+
+struct PreviousPopulationThresholdRetraining <: AbstractEmulatorRetraining
+    n_design_points::Int
+    n_below_threshold::Int
+    max_iter::Int
 end
+
+type NoopRetraining <: AbstractEmulatorRetraining end
 
 
 abstract type AbstractEmulatorTraining end
@@ -87,6 +96,15 @@ EmulatorTrainingInput(n_design_points, reference_summary_statistic, simulator_fu
         build_summary_statistic(summary_statistic), distance_metric),
         n_design_points, et)
 
+abstract type AbstractEmulatedParticleSelection end
+
+type MeanEmulatedParticleSelection <: AbstractEmulatedParticleSelection end
+
+struct MeanVarEmulatedParticleSelection <: AbstractEmulatedParticleSelection
+    variance_threshold_factor::Float64
+end
+MeanVarEmulatedParticleSelection() = MeanVarEmulatedParticleSelection(1.0)
+
 """
     EmulatedABCRejectionInput
 
@@ -100,14 +118,15 @@ An object that defines the settings for a emulation-based rejection-ABC computat
 - `batch_size::Int64`: The number of predictions to be made in each batch.
 - `max_iter::Int64`: The maximum number of iterations/batches before termination.
 """
-struct EmulatedABCRejectionInput <: ABCRejectionInput
+struct EmulatedABCRejectionInput{CUD<:ContinuousUnivariateDistribution, EPS<:AbstractEmulatedParticleSelection} <: ABCRejectionInput
 	n_params::Int64
 	n_particles::Int64
 	threshold::Float64
-	priors::AbstractArray{ContinuousUnivariateDistribution,1}
+	priors::AbstractArray{CUD,1}
 	batch_size::Int64
     max_iter::Int64
     emulator_training_input::EmulatorTrainingInput
+    selection::EPS
 end
 
 abstract type ABCSMCInput <: ABCInput end
@@ -151,7 +170,8 @@ An object that defines the settings for a emulation-based rejection-ABC computat
 - `batch_size::Int64`: The number of predictions to be made in each batch.
 - `max_iter::Int64`: The maximum number of iterations/batches before termination.
 """
-struct EmulatedABCSMCInput{CUD<:ContinuousUnivariateDistribution, ER} <: ABCSMCInput
+struct EmulatedABCSMCInput{CUD<:ContinuousUnivariateDistribution,
+        ER<:AbstractEmulatorRetraining, EPS<:AbstractEmulatedParticleSelection} <: ABCSMCInput
     n_params::Int64
     n_particles::Int64
     threshold_schedule::AbstractArray{Float64,1}
@@ -160,6 +180,7 @@ struct EmulatedABCSMCInput{CUD<:ContinuousUnivariateDistribution, ER} <: ABCSMCI
     max_iter::Int64
     emulator_training_input::EmulatorTrainingInput
     emulator_retraining::ER
+    selection::EPS
 end
 
 #
@@ -182,7 +203,8 @@ mutable struct SimulatedABCSMCTracker <: ABCSMCTracker
     max_iter::Integer
 end
 
-mutable struct EmulatedABCSMCTracker{CUD<:ContinuousUnivariateDistribution, ET, ER} <: ABCSMCTracker # TODO parameterise types as in EmulatedABCSMCInput
+mutable struct EmulatedABCSMCTracker{CUD<:ContinuousUnivariateDistribution, ET,
+        ER<:AbstractEmulatorRetraining, EPS<:AbstractEmulatedParticleSelection} <: ABCSMCTracker
     n_params::Int64
     n_accepted::AbstractArray{Int64,1}
     n_tries::AbstractArray{Int64,1}
@@ -193,9 +215,10 @@ mutable struct EmulatedABCSMCTracker{CUD<:ContinuousUnivariateDistribution, ET, 
     priors::AbstractArray{CUD,1}
     emulator_training_input::EmulatorTrainingInput
     emulator_retraining::ER
+    selection::EPS
     batch_size::Int64
     max_iter::Int64
-    emulators::AbstractArray{ET,1} # TODO replace Any with custom type that holds the emulator
+    emulators::AbstractArray{ET,1}
 end
 
 #

@@ -119,7 +119,8 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
               "keep_all",
               distance_metric
         ),
-        IncrementalRetraining(10, 1000))
+        IncrementalRetraining(10, 1000),
+        MeanEmulatedParticleSelection())
 
     emu_abcsmc_res = ABCSMC(emu_abcsmc_input, reference_data, write_progress=false)
     @test size(emu_abcsmc_res.population, 1) > 0
@@ -142,6 +143,7 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
         priors, "keep_all", simulator_function;
         emulator_training=DefaultEmulatorTraining(SquaredExponentialIsoKernel()),
         emulator_retraining=IncrementalRetraining(10, 100),
+        emulated_particle_selection=MeanVarEmulatedParticleSelection(2.0),
         write_progress=false)
     @test size(emu_out.population, 1) > 0
 

@@ -184,14 +184,14 @@ function ABCrejection(input::EmulatedABCRejectionInput,
     while n_accepted < input.n_particles && batch_no <= input.max_iter
         parameter_batch, weight_batch = generate_parameters(input.priors, input.batch_size)
 
-        distances, vars = gp_regression(parameter_batch, emulator)
+        # distances, vars = gp_regression(parameter_batch, emulator)
         n_tries += input.batch_size
-
         #
         # Check which parameter indices were accepted
         #
+        distances, accepted_batch_idxs = abc_select_emulated_particles(emulator, parameter_batch, input.threshold, input.selection)
         # accepted_batch_idxs = find((distances .<= input.threshold) .& (sqrt.(vars) .<= 0.05 * input.threshold))
-        accepted_batch_idxs = find((distances .<= input.threshold) .& (sqrt.(vars) .<= input.threshold))
+        # accepted_batch_idxs = find((distances .<= input.threshold) .& (sqrt.(vars) .<= input.threshold))
         # accepted_batch_idxs = find(distances .<= input.threshold)
         n_accepted_batch = length(accepted_batch_idxs)
 
@@ -205,10 +205,11 @@ function ABCrejection(input::EmulatedABCRejectionInput,
             if n_accepted + n_accepted_batch > input.n_particles
                 accepted_batch_idxs = accepted_batch_idxs[1:input.n_particles - n_accepted]
                 n_accepted_batch = length(accepted_batch_idxs)
+                distances = distances[1:n_accepted_batch]
             end
 
             accepted_parameters[n_accepted+1:n_accepted + n_accepted_batch,:] = parameter_batch[accepted_batch_idxs,:]
-            accepted_distances[n_accepted+1:n_accepted + n_accepted_batch] = distances[accepted_batch_idxs]
+            accepted_distances[n_accepted+1:n_accepted + n_accepted_batch] = distances
             weights[n_accepted+1:n_accepted + n_accepted_batch] = weight_batch[accepted_batch_idxs]
             n_accepted += n_accepted_batch
 

@@ -58,7 +58,7 @@ function abc_retrain_emulator(
     particle_sampling_function::Function,
     epsilon::T,
     training_input::EmulatorTrainingInput,
-    retraining_settings::DiscardPriorRetraining
+    retraining_settings::PreviousPopulationRetraining
     ) where {T<:Real}
     n_design_points = size(gpm.gp_training_x, 1)
     training_x = particle_sampling_function(n_design_points)
@@ -72,17 +72,79 @@ function abc_retrain_emulator(
     particle_sampling_function::Function,
     epsilon::T,
     training_input::EmulatorTrainingInput,
-    retraining_settings::Void
+    retraining_settings::NoopRetraining
     ) where {T<:Real}
     gpm
 end
 
-function train_emulator(training_x::AbstractArray{T, 2}, y::AbstractArray{T, 2}, et::AbstractEmulatorTraining) where {T<:Real}
-    throw("train_emulator(...$(typeof(et))) not implemented")
+function abc_retrain_emulator(
+    gpm::GPModel,
+    particle_sampling_function::Function,
+    epsilon::T,
+    training_input::EmulatorTrainingInput,
+    retraining_settings::PreviousPopulationThresholdRetraining
+    ) where {T<:Real}
+    cap_below_threshold = retraining_settings.n_design_points
+    cap_above_threshold = retraining_settings.n_design_points
+    training_x_below_threshold = zeros(cap_below_threshold, size(gpm.gp_training_x, 2))
+    training_x_above_threshold = zeros(cap_above_threshold, size(gpm.gp_training_x, 2))
+    training_y_below_threshold = zeros(cap_below_threshold, 1)
+    training_y_above_threshold = zeros(cap_above_threshold, 1)
+    n_below_threshold = 0
+    n_above_threshold = 0
+    n_iter = 0
+    while(n_below_threshold < retraining_settings.n_below_threshold && n_iter < retraining_settings.max_iter)
+        sample_x = particle_sampling_function(retraining_settings.n_design_points)
+        sample_y = simulate_distance(sample_x, training_input.distance_simulation_input)
+        idx_below_threshold = find(sample_y .<= epsilon)
+        idx_above_threshold = filter(x->!(x in idx_below_threshold), indices(sample_y, 1))
+        info("Iteration $(n_iter + 1): $(length(idx_below_threshold)) design points with distance below $(epsilon)", prefix="GpABC Emulator retraining ")
+        if n_below_threshold + length(idx_below_threshold) > cap_below_threshold
+            idx_below_threshold = idx_below_threshold[1:cap_below_threshold - n_below_threshold]
+            idx_above_threshold = vcat(idx_below_threshold[cap_below_threshold - n_below_threshold + 1:end], idx_above_threshold, )
+        end
+        if n_above_threshold + length(idx_above_threshold) > cap_above_threshold
+            idx_above_threshold = idx_above_threshold[1:cap_above_threshold - n_above_threshold]
+        end
+        end_below_threshold = n_below_threshold + length(idx_below_threshold)
+        end_above_threshold = n_above_threshold + length(idx_above_threshold)
+        if end_below_threshold > n_below_threshold
+            training_x_below_threshold[n_below_threshold + 1:end_below_threshold,:] .= sample_x[idx_below_threshold, :]
+            training_y_below_threshold[n_below_threshold + 1:end_below_threshold] .= sample_y[idx_below_threshold]
+        end
+        if end_above_threshold > n_above_threshold
+            training_x_above_threshold[n_above_threshold + 1:end_above_threshold,:] .= sample_x[idx_above_threshold, :]
+            training_y_above_threshold[n_above_threshold + 1:end_above_threshold] .= sample_y[idx_above_threshold]
+        end
+        n_below_threshold = end_below_threshold
+        n_above_threshold = end_above_threshold
+        n_iter += 1
+    end
+    if n_above_threshold == 0
+        warn("No design points with distance below $(epsilon) were accepted")
+    end
+    n_above_threshold = min(n_above_threshold, retraining_settings.n_design_points - n_below_threshold)
+    training_x = vcat(training_x_below_threshold[1:n_below_threshold, :], training_x_above_threshold[1:n_above_threshold, :])
+    training_y = vcat(training_y_below_threshold[1:n_below_threshold, :], training_y_above_threshold[1:n_above_threshold, :])
+    train_emulator(training_x, training_y, training_input.emulator_training)
 end
 
 function train_emulator(training_x::AbstractArray{T, 2}, y::AbstractArray{T, 2}, emulator_training::DefaultEmulatorTraining) where {T<:Real}
     gpem = GPModel(training_x=training_x, training_y=y, kernel=emulator_training.kernel)
     gp_train(gpem)
     gpem
+end
+
+function abc_select_emulated_particles(gpm::GPModel, parameters::AbstractArray{T, 2},
+        threshold::T, selection::MeanEmulatedParticleSelection) where {T<:Real}
+    distances, vars = gp_regression(parameters, gpm)
+    accepted_indices = find(distances .<= threshold)
+    distances[accepted_indices], accepted_indices
+end
+
+function abc_select_emulated_particles(gpm::GPModel, parameters::AbstractArray{T, 2},
+        threshold::T, selection::MeanVarEmulatedParticleSelection) where {T<:Real}
+    distances, vars = gp_regression(parameters, gpm)
+    accepted_indices = find((distances .<= threshold) .& (sqrt.(vars) .<= selection.variance_threshold_factor * threshold))
+    distances[accepted_indices], accepted_indices
 end

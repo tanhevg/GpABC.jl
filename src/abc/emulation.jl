@@ -28,8 +28,10 @@ function EmulatedABCRejection(n_design_points::Int64,
     distance_metric::Function=Distances.euclidean,
     batch_size::Int64=10*n_particles, max_iter::Int64=1000,
     emulator_training::ET = DefaultEmulatorTraining(),
+    emulated_particle_selection::EPS = MeanEmulatedParticleSelection(),
     kwargs...) where {
     D<:ContinuousUnivariateDistribution,
+    EPS<:AbstractEmulatedParticleSelection,
     ET<:AbstractEmulatorTraining
     }
 
@@ -42,7 +44,7 @@ function EmulatedABCRejection(n_design_points::Int64,
         emulator_training)
 
     input = EmulatedABCRejectionInput(length(priors), n_particles, threshold,
-        priors, batch_size, max_iter, emulator_training_input)
+        priors, batch_size, max_iter, emulator_training_input, emulated_particle_selection)
 
     return ABCrejection(input, reference_data; kwargs...)
 end
@@ -76,13 +78,16 @@ function EmulatedABCSMC(
     priors::AbstractArray{D,1},
     summary_statistic::Union{String,AbstractArray{String,1},Function},
     simulator_function::Function;
-    emulator_training::AbstractEmulatorTraining = DefaultEmulatorTraining(),
+    emulator_training::ET = DefaultEmulatorTraining(),
     distance_metric::Function=Distances.euclidean,
     batch_size::Int64=10*n_particles, max_iter::Int64=20,
-    emulator_retraining::ER = nothing,
+    emulator_retraining::ER = NoopRetraining(),
+    emulated_particle_selection::EPS = MeanEmulatedParticleSelection(),
     # emulator_retraining::ER = IncrementalRetraining(10, 1000),
     kwargs...) where {
-    ER,
+    ET<:AbstractEmulatorTraining,
+    ER<:AbstractEmulatorRetraining,
+    EPS<:AbstractEmulatedParticleSelection,
     D<:ContinuousUnivariateDistribution
     }
 
@@ -95,7 +100,7 @@ function EmulatedABCSMC(
         emulator_training)
 
     input = EmulatedABCSMCInput(length(priors), n_particles, threshold_schedule,
-        priors, batch_size, max_iter, emulator_training_input, emulator_retraining)
+        priors, batch_size, max_iter, emulator_training_input, emulator_retraining, emulated_particle_selection)
 
     return ABCSMC(input, reference_data; kwargs...)
 end

@@ -143,9 +143,12 @@ end
 #
 # Initialise an emulated ABC-SMC run
 #
-function initialiseABCSMC(input::EmulatedABCSMCInput{CUD, ER},
+function initialiseABCSMC(input::EmulatedABCSMCInput{CUD, ER, EPS},
         reference_data::AbstractArray{Float64,2};
-        write_progress = true) where {CUD<:ContinuousUnivariateDistribution, ER}
+        write_progress = true) where
+        {CUD<:ContinuousUnivariateDistribution,
+        ER<:AbstractEmulatorRetraining,
+        EPS<:AbstractEmulatedParticleSelection}
 
     # the first run is an ABC rejection simulation
     rejection_input = EmulatedABCRejectionInput(input.n_params,
@@ -154,13 +157,13 @@ function initialiseABCSMC(input::EmulatedABCSMCInput{CUD, ER},
                                         input.priors,
                                         input.batch_size,
                                         input.max_iter,
-                                        input.emulator_training_input)
-
+                                        input.emulator_training_input,
+                                        input.selection)
     rejection_output = ABCrejection(rejection_input,
                                     reference_data;
                                     write_progress = write_progress)
 
-    tracker = EmulatedABCSMCTracker{CUD, typeof(rejection_output.emulator), ER}(input.n_params,
+    tracker = EmulatedABCSMCTracker{CUD, typeof(rejection_output.emulator), ER, EPS}(input.n_params,
                              [rejection_output.n_accepted],
                              [rejection_output.n_tries],
                              [rejection_output.threshold],
@@ -170,9 +173,10 @@ function initialiseABCSMC(input::EmulatedABCSMCInput{CUD, ER},
                              input.priors,
                              input.emulator_training_input,
                              input.emulator_retraining,
+                             input.selection,
                              input.batch_size,
                              input.max_iter,
-                             [rejection_output.emulator] # emulators
+                             [rejection_output.emulator]
                              )
 
     return tracker
@@ -316,18 +320,18 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
                                                  tracker.priors,
                                                  old_weights,
                                                  kernels)
-
-        distances, vars = gp_regression(parameters, emulator)
-        n_tries += length(distances)
+        n_tries += size(parameters, 1)
+        distances, accepted_indices = abc_select_emulated_particles(emulator, parameters, threshold, tracker.selection)
+        # distances, vars = gp_regression(parameters, emulator)
         # accepted_indices = find((distances .<= threshold) .& (sqrt.(vars) .<= 0.05 * threshold))
-        accepted_indices = find((distances .<= threshold) .& (sqrt.(vars) .<= threshold)) # todo more variance controls
+        # accepted_indices = find((distances .<= threshold) .& (sqrt.(vars) .<= threshold)) # todo more variance controls
         # accepted_indices = find(distances .<= threshold)
         n_include = length(accepted_indices)
         if n_accepted + n_include > n_toaccept
             n_include = n_toaccept - n_accepted
             accepted_indices = accepted_indices[1:n_include]
+            distances = distances[1:n_include]
         end
-        distances = distances[accepted_indices]
         weights = weights[accepted_indices]
         parameters = parameters[accepted_indices, :]
         store_slice = n_accepted + 1 : n_accepted + n_include
