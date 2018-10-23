@@ -109,7 +109,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Reference",
     "title": "GpABC.EmulatedABCRejectionInput",
     "category": "type",
-    "text": "EmulatedABCRejectionInput\n\nAn object that defines the settings for a emulation-based rejection-ABC computation.\n\nFields\n\nn_params::Int64: The number of parameters to be estimated.\nn_particles::Int64: The number of parameter vectors (particles) that will be included in the final posterior.\nthreshold::Float64: The maximum distance from the summarised model output to summarised observed data for a parameter vector to be included in the posterior.\npriors::AbstractArray{ContinuousUnivariateDistribution,1}: A 1D Array of distributions with length n_params from which candidate parameter vectors will be sampled.\nbatch_size::Int64: The number of predictions to be made in each batch.\nmax_iter::Int64: The maximum number of iterations/batches before termination.\n\n\n\n"
+    "text": "EmulatedABCRejectionInput\n\nAn object that defines the settings for a emulation-based rejection-ABC computation.\n\nFields\n\nn_params::Int64: The number of parameters to be estimated.\nn_particles::Int64: The number of parameter vectors (particles) that will be included in the final posterior.\nthreshold::Float64: The maximum distance from the summarised model output to summarised observed data for a parameter vector to be included in the posterior.\npriors::AbstractArray{ContinuousUnivariateDistribution,1}: A 1D Array of distributions with length n_params from which candidate parameter vectors will be sampled.\nmax_iter::Int64: The maximum number of iterations/batches before termination.\n\n\n\n"
 },
 
 {
@@ -117,7 +117,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Reference",
     "title": "GpABC.EmulatedABCSMCInput",
     "category": "type",
-    "text": "EmulatedABCRejectionInput\n\nAn object that defines the settings for a emulation-based rejection-ABC computation.\n\nFields\n\nn_params::Int64: The number of parameters to be estimated (the length of each parameter vector/particle).\nn_particles::Int64: The number of parameter vectors (particles) that will be included in the final posterior.\nthreshold_schedule::AbstractArray{Float64}: A set of maximum distances from the summarised model output to summarised observed data for a parameter vector to be included in the posterior. Each distance will be used in a single run of the ABC-SMC algorithm.\npriors::AbstractArray{ContinuousUnivariateDistribution,1}: A 1D Array of distributions with length n_params from which candidate parameter vectors will be sampled.\nbatch_size::Int64: The number of predictions to be made in each batch.\nmax_iter::Int64: The maximum number of iterations/batches before termination.\n\n\n\n"
+    "text": "EmulatedABCRejectionInput\n\nAn object that defines the settings for a emulation-based rejection-ABC computation.\n\nFields\n\nn_params::Int64: The number of parameters to be estimated (the length of each parameter vector/particle).\nn_particles::Int64: The number of parameter vectors (particles) that will be included in the final posterior.\nthreshold_schedule::AbstractArray{Float64}: A set of maximum distances from the summarised model output to summarised observed data for a parameter vector to be included in the posterior. Each distance will be used in a single run of the ABC-SMC algorithm.\npriors::AbstractArray{ContinuousUnivariateDistribution,1}: A 1D Array of distributions with length n_params from which candidate parameter vectors will be sampled.\nmax_iter::Int64: The maximum number of iterations/batches before termination.\n\n\n\n"
 },
 
 {
@@ -241,7 +241,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "reference/#GpABC.ABCSMC-Tuple{GpABC.ABCSMCInput,AbstractArray{Float64,2}}",
+    "location": "reference/#GpABC.ABCSMC-Tuple{GpABC.SimulatedABCSMCInput,AbstractArray{Float64,2}}",
     "page": "Reference",
     "title": "GpABC.ABCSMC",
     "category": "method",
@@ -249,7 +249,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "reference/#GpABC.ABCrejection-Tuple{GpABC.EmulatedABCRejectionInput,AbstractArray{Float64,2}}",
+    "location": "reference/#GpABC.ABCrejection-Tuple{GpABC.EmulatedABCRejectionInput,AbstractArray{Float64,2},Integer}",
     "page": "Reference",
     "title": "GpABC.ABCrejection",
     "category": "method",
@@ -278,6 +278,14 @@ var documenterSearchIndex = {"docs": [
     "title": "GpABC.EmulatedABCSMC",
     "category": "method",
     "text": "EmulatedABCSMC\n\nA convenience function that trains a Gaussian process emulator of type `GPmodel then uses it in emulation-based ABC-SMC. It creates the training data by simulating the model for the design points, trains the emulator, creates the EmulatedABCSMCInput object then calls ABCSMC.\n\nFields\n\nn_design_points::Int64: The number of parameter vectors used to train the Gaussian process emulator\nreference_data::AbstractArray{Float64,2}: The observed data to which the simulated model output will be compared. Size: (n_model_trajectories, n_time_points)\nn_particles::Int64: The number of parameter vectors (particles) that will be included in the final posterior.\nthreshold_schedule::AbstractArray{Float64}: A set of maximum distances from the summarised model output to summarised observed data for a parameter vector to be included in the posterior. Each distance will be used in a single run of the ABC-SMC algorithm.\npriors::AbstractArray{D,1}: A 1D Array of continuous univariate distributions with length n_params from which candidate parameter vectors will be sampled.\nsummary_statistic::Union{String,AbstractArray{String,1},Function}: Either: 1. A String or 1D Array of strings that Or 2. A function that outputs a 1D Array of Floats that summarise model output. REFER TO DOCS\nsimulator_function::Function: A function that takes a parameter vector as an argument and outputs model results.\ndistance_metric::Function: Any function that computes the distance between 2 1D Arrays (optional - default is to use the Euclidean distance).\ngpkernel::AbstractGPKernel: An object inheriting from AbstractGPKernel that is the Gaussian process kernel. (optional - default is the ARD-RBF/squared exponential kernel).\nbatch_size::Int64: The number of predictions to be made in each batch (optional - default is 10 times n_particles).\nmax_iter::Int64: The maximum number of iterations/batches before termination.\nkwargs: optional keyword arguments passed to \'ABCSMC\'.\n\n\n\n"
+},
+
+{
+    "location": "reference/#GpABC.EmulatedModelSelection-Union{Tuple{AD}, Tuple{D}, Tuple{Int64,AbstractArray{Float64,2},Int64,AbstractArray{Float64,1},AbstractArray{AD,1},Union{AbstractArray{String,1}, Function, String},AbstractArray{Function,1}}} where AD<:AbstractArray{D,1} where D<:Distributions.Distribution{Distributions.Univariate,Distributions.Continuous}",
+    "page": "Reference",
+    "title": "GpABC.EmulatedModelSelection",
+    "category": "method",
+    "text": "EmulatedModelSelection\n\nPerform model selection using emulation-based ABC.\n\nArguments\n\nn_design_points::Int64: The number of parameter vectors used to train the Gaussian process emulator.\nreference_data::AbstractArray{Float64,2}: The observed data to which the simulated model output will be compared. Size: (n_model_trajectories, n_time_points)\nn_particles::Int64: The number of parameter vectors (particles) that will be included in the final posterior.\nthreshold_schedule::AbstractArray{Float64}: A set of maximum distances from the summarised model output to summarised observed data for a parameter vector to be included in the posterior. Each distance will be used in a single run of the ABC-SMC algorithm.\nparameter_priors::AbstractArray{AbstractArray{ContinuousUnivariateDistribution},1}: Priors for the parameters of each model. The length of the outer array is the number of models.\nsummary_statistic::Union{String,AbstractArray{String,1},Function}: Either: 1. A String or 1D Array of strings that Or 2. A function that outputs a 1D Array of Floats that summarises model output. REFER TO DOCS\nsimulator_functions::AbstractArray{Function,1}: An array of functions that take a parameter vector as an argument and outputs model results (one per model).\n\'model_prior::DiscreteUnivariateDistribution\': The prior from which models are sampled. Default is a discrete, uniform distribution.\ndistance_function::Function: Any function that computes the distance between 2 1D Arrays. Optional argument (default is to use the Euclidean distance).\nmax_iter::Integer: The maximum number of simulations that will be run. The default is 1000*n_particles. Each iteration samples a single model and performs ABC using a single particle.\nmax_batch_size::Integer: The maximum batch size for the emulator when making predictions.\n\nReturns\n\nA \'ModelSelectionOutput\' object that contains which models are supported by the observed data.\n\n\n\n"
 },
 
 {
@@ -310,6 +318,14 @@ var documenterSearchIndex = {"docs": [
     "title": "GpABC.SimulatedABCSMC",
     "category": "method",
     "text": "SimulatedABCSMC\n\nRun a emulation-based ABC-rejection computation. This is a convenience wrapper that constructs a SimulatedABCSMCInput object then calls \'ABCrejection\'.\n\nArguments\n\nreference_data::AbstractArray{Float64,2}: The observed data to which the simulated model output will be compared. Size: (n_model_trajectories, n_time_points)\nthreshold_schedule::AbstractArray{Float64}: A set of maximum distances from the summarised model output to summarised observed data for a parameter vector to be included in the posterior. Each distance will be used in a single run of the ABC-SMC algorithm.\npriors::AbstractArray{ContinuousUnivariateDistribution,1}: A 1D Array of continuous univariate distributions with length n_params from which candidate parameter vectors will be sampled.\nsummary_statistic::Union{String,AbstractArray{String,1},Function}: Either: 1. A String or 1D Array of strings that Or 2. A function that outputs a 1D Array of Floats that summarises model output. REFER TO DOCS\nsimulator_function::Function: A function that takes a parameter vector as an argument and outputs model results.\ndistance_function::Function: Any function that computes the distance between 2 1D Arrays. Optional argument (default is to use the Euclidean distance).\nmax_iter::Integer: The maximum number of simulations that will be run. The default is 1000*n_particles.\nkwargs: optional keyword arguments passed to \'ABCrejection\'.\n\nReturns\n\nA \'SimulatedABCSMCOutput\' object that contains the posteriors at each ABC-SMC population and other information.\n\n\n\n"
+},
+
+{
+    "location": "reference/#GpABC.SimulatedModelSelection-Union{Tuple{AD}, Tuple{AbstractArray{Float64,2},Integer,AbstractArray{Float64,1},AbstractArray{AD,1},Union{AbstractArray{String,1}, Function, String},AbstractArray{Function,1}}, Tuple{D}} where AD<:AbstractArray{D,1} where D<:Distributions.Distribution{Distributions.Univariate,Distributions.Continuous}",
+    "page": "Reference",
+    "title": "GpABC.SimulatedModelSelection",
+    "category": "method",
+    "text": "SimulatedModelSelection\n\nPerform model selection using simulation-based ABC.\n\nArguments\n\nreference_data::AbstractArray{Float64,2}: The observed data to which the simulated model output will be compared. Size: (n_model_trajectories, n_time_points)\nthreshold_schedule::AbstractArray{Float64}: A set of maximum distances from the summarised model output to summarised observed data for a parameter vector to be included in the posterior. Each distance will be used in a single run of the ABC-SMC algorithm.\nparameter_priors::AbstractArray{AbstractArray{ContinuousUnivariateDistribution},1}: Priors for the parameters of each model. The length of the outer array is the number of models.\nsummary_statistic::Union{String,AbstractArray{String,1},Function}: Either: 1. A String or 1D Array of strings that Or 2. A function that outputs a 1D Array of Floats that summarises model output. REFER TO DOCS\nsimulator_functions::AbstractArray{Function,1}: An array of functions that take a parameter vector as an argument and outputs model results (one per model).\n\'model_prior::DiscreteUnivariateDistribution\': The prior from which models are sampled. Default is a discrete, uniform distribution.\ndistance_function::Function: Any function that computes the distance between 2 1D Arrays. Optional argument (default is to use the Euclidean distance).\nmax_iter::Integer: The maximum number of simulations that will be run. The default is 1000*n_particles. Each iteration samples a single model and performs ABC using a single particle.\n\nReturns\n\nA \'ModelSelectionOutput\' object that contains which models are supported by the observed data.\n\n\n\n"
 },
 
 {
@@ -433,30 +449,6 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "reference/#GpABC.model_selection-Tuple{GpABC.SimulatedModelSelectionInput,AbstractArray{Float64,2}}",
-    "page": "Reference",
-    "title": "GpABC.model_selection",
-    "category": "method",
-    "text": "model_selection(input::SimulatedModelSelectionInput,\n	reference_data::AbstractArray{Float64,2})\n\nArguments\n\ninput::SimulatedModelSelectionInput: A [\'SimulatedModelSelectionInput\']@(ref) object that contains the settings for the model selection algorithm.\nreference_data::AbstractArray{Float64,2}: The observed data to which the simulated model output will be compared. Size: (n_model_trajectories, n_time_points)\n\n\n\n"
-},
-
-{
-    "location": "reference/#GpABC.model_selection-Union{Tuple{AD}, Tuple{AbstractArray{Float64,2},Integer,AbstractArray{Float64,1},AbstractArray{AD,1},Union{AbstractArray{String,1}, Function, String},AbstractArray{Function,1}}, Tuple{D}} where AD<:AbstractArray{D,1} where D<:Distributions.Distribution{Distributions.Univariate,Distributions.Continuous}",
-    "page": "Reference",
-    "title": "GpABC.model_selection",
-    "category": "method",
-    "text": "model_selection\n\nPerform model selection using simulation-based ABC.\n\nArguments\n\nreference_data::AbstractArray{Float64,2}: The observed data to which the simulated model output will be compared. Size: (n_model_trajectories, n_time_points)\nthreshold_schedule::AbstractArray{Float64}: A set of maximum distances from the summarised model output to summarised observed data for a parameter vector to be included in the posterior. Each distance will be used in a single run of the ABC-SMC algorithm.\nparameter_priors::AbstractArray{AbstractArray{ContinuousUnivariateDistribution},1}: Priors for the parameters of each model. The length of the outer array is the number of models.\nsummary_statistic::Union{String,AbstractArray{String,1},Function}: Either: 1. A String or 1D Array of strings that Or 2. A function that outputs a 1D Array of Floats that summarises model output. REFER TO DOCS\nsimulator_functions::AbstractArray{Function,1}: An array of functions that take a parameter vector as an argument and outputs model results (one per model).\n\'model_prior::DiscreteUnivariateDistribution\': The prior from which models are sampled. Default is a discrete, uniform distribution.\ndistance_function::Function: Any function that computes the distance between 2 1D Arrays. Optional argument (default is to use the Euclidean distance).\nmax_iter::Integer: The maximum number of simulations that will be run. The default is 1000*n_particles. Each iteration samples a single model and performs ABC using a single particle.\n\nReturns\n\nA \'ModelSelectionOutput\' object that contains which models are supported by the observed data.\n\n\n\n"
-},
-
-{
-    "location": "reference/#GpABC.model_selection-Union{Tuple{AD}, Tuple{D}, Tuple{Int64,AbstractArray{Float64,2},Int64,AbstractArray{Float64,1},AbstractArray{AD,1},Union{AbstractArray{String,1}, Function, String},AbstractArray{Function,1}}} where AD<:AbstractArray{D,1} where D<:Distributions.Distribution{Distributions.Univariate,Distributions.Continuous}",
-    "page": "Reference",
-    "title": "GpABC.model_selection",
-    "category": "method",
-    "text": "model_selection\n\nPerform model selection using emulation-based ABC.\n\nArguments\n\nn_design_points::Int64: The number of parameter vectors used to train the Gaussian process emulator.\nreference_data::AbstractArray{Float64,2}: The observed data to which the simulated model output will be compared. Size: (n_model_trajectories, n_time_points)\nn_particles::Int64: The number of parameter vectors (particles) that will be included in the final posterior.\nthreshold_schedule::AbstractArray{Float64}: A set of maximum distances from the summarised model output to summarised observed data for a parameter vector to be included in the posterior. Each distance will be used in a single run of the ABC-SMC algorithm.\nparameter_priors::AbstractArray{AbstractArray{ContinuousUnivariateDistribution},1}: Priors for the parameters of each model. The length of the outer array is the number of models.\nsummary_statistic::Union{String,AbstractArray{String,1},Function}: Either: 1. A String or 1D Array of strings that Or 2. A function that outputs a 1D Array of Floats that summarises model output. REFER TO DOCS\nsimulator_functions::AbstractArray{Function,1}: An array of functions that take a parameter vector as an argument and outputs model results (one per model).\n\'model_prior::DiscreteUnivariateDistribution\': The prior from which models are sampled. Default is a discrete, uniform distribution.\ndistance_function::Function: Any function that computes the distance between 2 1D Arrays. Optional argument (default is to use the Euclidean distance).\nmax_iter::Integer: The maximum number of simulations that will be run. The default is 1000*n_particles. Each iteration samples a single model and performs ABC using a single particle.\nmax_batch_size::Integer: The maximum batch size for the emulator when making predictions.\n\nReturns\n\nA \'ModelSelectionOutput\' object that contains which models are supported by the observed data.\n\n\n\n"
-},
-
-{
     "location": "reference/#GpABC.sample_LNA_trajectories-Tuple{GpABC.LNA,Int64}",
     "page": "Reference",
     "title": "GpABC.sample_LNA_trajectories",
@@ -486,6 +478,14 @@ var documenterSearchIndex = {"docs": [
     "title": "GpABC.set_hyperparameters",
     "category": "method",
     "text": "set_hyperparameters(gpm::GPModel, hypers::AbstractArray{Float64, 1})\n\nSet the hyperparameters of the GPModel\n\n\n\n"
+},
+
+{
+    "location": "reference/#GpABC.model_selection-Tuple{GpABC.ModelSelectionInput,AbstractArray{Float64,2}}",
+    "page": "Reference",
+    "title": "GpABC.model_selection",
+    "category": "method",
+    "text": "model_selection(input::ModelSelectionInput,\n	reference_data::AbstractArray{Float64,2})\n\nArguments\n\ninput::ModelSelectionInput: A [\'ModelSelectionInput\']@(ref) object that contains the settings for the model selection algorithm. \nreference_data::AbstractArray{Float64,2}: The observed data to which the simulated model output will be compared. Size: (n_model_trajectories, n_time_points)\n\n\n\n"
 },
 
 {
