@@ -86,7 +86,7 @@ function SimulatedABCSMC(
 end
 
 """
-    model_selection
+    SimulatedModelSelection
 
 Perform model selection using simulation-based ABC.
 
@@ -103,7 +103,7 @@ Perform model selection using simulation-based ABC.
 # Returns
 A ['ModelSelectionOutput'](@ref) object that contains which models are supported by the observed data.
 """
-function model_selection(
+function SimulatedModelSelection(
     reference_data::AbstractArray{Float64,2},
     n_particles::Integer,
     threshold_schedule::AbstractArray{Float64,1},

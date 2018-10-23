@@ -29,7 +29,7 @@ export
 	compute_LNA, sample_LNA_trajectories, get_LNA_trajectories,
 
 
-	model_selection,
+	SimulatedModelSelection, EmulatedModelSelection,
 	SimulatedModelSelectionInput,
 	EmulatedModelSelectionInput,
 	ModelSelectionOutput,

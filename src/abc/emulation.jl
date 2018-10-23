@@ -49,9 +49,9 @@ function EmulatedABCRejection(n_design_points::Int64,
     end
 
     input = EmulatedABCRejectionInput(length(priors), n_particles, threshold,
-        priors, batch_size, max_iter, gp_train_function)
+        priors, max_iter, gp_train_function)
 
-    return ABCrejection(input, reference_data; kwargs...)
+    return ABCrejection(input, reference_data, batch_size; kwargs...)
 end
 
 """
@@ -108,13 +108,13 @@ function EmulatedABCSMC(
     end
 
     input = EmulatedABCSMCInput(length(priors), n_particles, threshold_schedule,
-        priors, batch_size, max_iter, gp_train_function)
+        priors, max_iter, gp_train_function)
 
-    return ABCSMC(input, reference_data; kwargs...)
+    return ABCSMC(input, reference_data, batch_size; kwargs...)
 end
 
 """
-    model_selection
+    EmulatedModelSelection
 
 Perform model selection using emulation-based ABC.
 
@@ -134,7 +134,7 @@ Perform model selection using emulation-based ABC.
 # Returns
 A ['ModelSelectionOutput'](@ref) object that contains which models are supported by the observed data.
 """
-function model_selection(
+function EmulatedModelSelection(
     n_design_points::Int64,
     reference_data::AbstractArray{Float64,2},
     n_particles::Int64,
