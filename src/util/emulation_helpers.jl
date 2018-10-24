@@ -5,18 +5,19 @@ function simulate_distance(parameters::AbstractArray{Float64, 2},
     y = zeros(n_design_points)
     for i in 1:n_design_points
         model_output = distance_simulation_input.simulator_function(parameters[i,:])
-        y[i] = distance_simulation_input.distance_metric(distance_simulation_input.summary_statistic(model_output),
-        distance_simulation_input.reference_summary_statistic)
+        y[i] = distance_simulation_input.distance_metric(
+            distance_simulation_input.summary_statistic(model_output),
+            distance_simulation_input.reference_summary_statistic
+        )
     end
     y
 end
 
-function abc_train_emulator(
-    prior_sampling_function::Function,
-    n_design_points::Int64,
-    training_input::EmulatorTrainingInput
-    )
-    X = prior_sampling_function(n_design_points)
+function abc_train_emulator(priors::AbstractArray{CUD}, training_input::EmulatorTrainingInput) where {CUD<:ContinuousUnivariateDistribution}
+    n_dims = length(priors)
+    priors = reshape(priors, 1, n_dims)
+    X = zeros(training_input.design_points, n_dims)
+    X .= rand.(priors)
     y = simulate_distance(X, training_input.distance_simulation_input)
     train_emulator(X, reshape(y, (length(y), 1)), training_input.emulator_training)
 end

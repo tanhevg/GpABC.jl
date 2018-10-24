@@ -19,17 +19,21 @@ the emulator, creates the [`EmulatedABCRejectionInput`](@ref) object then calls 
 - `max_iter::Int64`: The maximum number of iterations/batches before termination.
 - `kwargs`: optional keyword arguments passed to ['ABCrejection'](@ref).
 """
-function EmulatedABCRejection(n_design_points::Int64,
-    reference_data::AbstractArray{Float64,2},
-    n_particles::Int64, threshold::Float64, priors::AbstractArray{D,1},
-    summary_statistic::Union{String,AbstractArray{String,1},Function},
-    simulator_function::Function;
-    emulation_type::AbstractEmulatorTraining = DefaultEmulatorTraining(),
+function EmulatedABCRejection(reference_data::AbstractArray{AF,2},
+    simulator_function::Function,
+    priors::AbstractArray{D,1},
+    threshold::AF,
+    n_particles::Int,
+    n_design_points::Int;
+    summary_statistic::Union{String,AbstractArray{String,1},Function}="keep_all",
     distance_metric::Function=Distances.euclidean,
-    batch_size::Int64=10*n_particles, max_iter::Int64=1000,
+    emulation_type::AbstractEmulatorTraining = DefaultEmulatorTraining(),
+    batch_size::Int=10*n_particles,
+    max_iter::Int=1000,
     emulator_training::ET = DefaultEmulatorTraining(),
     emulated_particle_selection::EPS = MeanEmulatedParticleSelection(),
     kwargs...) where {
+    AF<:AbstractFloat,
     D<:ContinuousUnivariateDistribution,
     EPS<:AbstractEmulatedParticleSelection,
     ET<:AbstractEmulatorTraining
@@ -46,7 +50,7 @@ function EmulatedABCRejection(n_design_points::Int64,
     input = EmulatedABCRejectionInput(length(priors), n_particles, threshold,
         priors, batch_size, max_iter, emulator_training_input, emulated_particle_selection)
 
-    return ABCrejection(input, reference_data; kwargs...)
+    return ABCrejection(input; kwargs...)
 end
 
 """
@@ -70,21 +74,21 @@ the emulator, creates the [`EmulatedABCSMCInput`](@ref) object then calls [`ABCS
 - `max_iter::Int64`: The maximum number of iterations/batches before termination.
 - `kwargs`: optional keyword arguments passed to ['ABCSMC'](@ref).
 """
-function EmulatedABCSMC(
-    n_design_points::Int64,
-    reference_data::AbstractArray{Float64,2},
-    n_particles::Int64,
-    threshold_schedule::AbstractArray{Float64,1},
+function EmulatedABCSMC(reference_data::AbstractArray{AF,2},
+    simulator_function::Function,
     priors::AbstractArray{D,1},
-    summary_statistic::Union{String,AbstractArray{String,1},Function},
-    simulator_function::Function;
+    threshold_schedule::AbstractArray{AF,1},
+    n_particles::Int,
+    n_design_points::Int;
+    summary_statistic::Union{String,AbstractArray{String,1},Function}="keep_all",
     emulator_training::ET = DefaultEmulatorTraining(),
     distance_metric::Function=Distances.euclidean,
-    batch_size::Int64=10*n_particles, max_iter::Int64=20,
+    batch_size::Int=10*n_particles,
+    max_iter::Int=20,
     emulator_retraining::ER = NoopRetraining(),
     emulated_particle_selection::EPS = MeanEmulatedParticleSelection(),
-    # emulator_retraining::ER = IncrementalRetraining(10, 1000),
     kwargs...) where {
+    AF<:AbstractFloat,
     ET<:AbstractEmulatorTraining,
     ER<:AbstractEmulatorRetraining,
     EPS<:AbstractEmulatedParticleSelection,
@@ -102,11 +106,11 @@ function EmulatedABCSMC(
     input = EmulatedABCSMCInput(length(priors), n_particles, threshold_schedule,
         priors, batch_size, max_iter, emulator_training_input, emulator_retraining, emulated_particle_selection)
 
-    return ABCSMC(input, reference_data; kwargs...)
+    return ABCSMC(input, reference_data, batch_size; kwargs...)
 end
 
 """
-    model_selection
+    EmulatedModelSelection
 
 Perform model selection using emulation-based ABC.
 
@@ -120,41 +124,52 @@ Perform model selection using emulation-based ABC.
 - `simulator_functions::AbstractArray{Function,1}`: An array of functions that take a parameter vector as an argument and outputs model results (one per model).
 - 'model_prior::DiscreteUnivariateDistribution': The prior from which models are sampled. Default is a discrete, uniform distribution.
 - `distance_function::Function`: Any function that computes the distance between 2 1D Arrays. Optional argument (default is to use the Euclidean distance).
-- `max_iter::Integer`: The maximum number of simulations that will be run. The default is 1000*`n_particles`. Each iteration samples a single model and performs ABC using a single particle.
-- `max_batch_size::Integer`: The maximum batch size for the emulator when making predictions.
+- `max_iter::Int`: The maximum number of simulations that will be run. The default is 1000*`n_particles`. Each iteration samples a single model and performs ABC using a single particle.
+- `max_batch_size::Int`: The maximum batch size for the emulator when making predictions.
 
 # Returns
 A ['ModelSelectionOutput'](@ref) object that contains which models are supported by the observed data.
 """
-function model_selection(
-    n_design_points::Int64,
-    reference_data::AbstractArray{Float64,2},
-    n_particles::Int64,
-    threshold_schedule::AbstractArray{Float64,1},
+function EmulatedModelSelection(
+    reference_data::AbstractArray{AF,2},
+    simulator_functions::AbstractArray{Function,1},
     parameter_priors::AbstractArray{AD,1},
-    summary_statistic::Union{String,AbstractArray{String,1},Function},
-    simulator_functions::AbstractArray{Function,1};
-    model_prior::DiscreteUnivariateDistribution=Distributions.DiscreteUniform(1,length(parameter_priors)),
+    threshold_schedule::AbstractArray{AF,1},
+    n_particles::Int,
+    n_design_points::Int,
+    model_prior::DiscreteUnivariateDistribution=Distributions.DiscreteUniform(1,length(parameter_priors));
+    summary_statistic::Union{String,AbstractArray{String,1},Function}="keep_all",
     distance_function::Function=Distances.euclidean,
-    max_iter::Integer=1000,
-    max_batch_size::Integer=1000) where {
+    max_iter::Int=1000,
+    max_batch_size::Int=1000,
+    emulator_training::ET = DefaultEmulatorTraining(),
+    emulator_retraining::ER = NoopRetraining(),
+    emulated_particle_selection::EPS = MeanEmulatedParticleSelection(),
+    ) where {
     D<:ContinuousUnivariateDistribution,
-    AD<:AbstractArray{D,1}
+    AD<:AbstractArray{D,1},
+    AF<:AbstractFloat,
+    ET<:AbstractEmulatorTraining,
+    ER<:AbstractEmulatorRetraining,
+    EPS<:AbstractEmulatedParticleSelection,
     }
 
-    #
-    # A set of functions that return a trained emulator with a prior sampling function as an argument
-    #
-    emulator_trainers = [f(prior_sampler) = abc_train_emulator(prior_sampler,
-            n_design_points,
-            build_summary_statistic(summary_statistic)(reference_data),
-            sim,
-            build_summary_statistic(summary_statistic),
-            distance_function)
-        for sim in simulator_functions]
+    summary_statistic = build_summary_statistic(summary_statistic)
+    reference_summary_statistic = summary_statistic(reference_data)
+    emulator_training_input = [EmulatorTrainingInput(
+        DistanceSimulationInput(reference_summary_statistic, simulator_functions[m], summary_statistic, distance_function),
+        n_design_points, emulator_training) for m in 1:length(parameter_priors)]
 
-    input = EmulatedModelSelectionInput(length(parameter_priors), n_particles, threshold_schedule, model_prior,
-        parameter_priors, emulator_trainers, max_batch_size, max_iter)
+    input = EmulatedModelSelectionInput(length(parameter_priors),
+        n_particles,
+        threshold_schedule,
+        model_prior,
+        parameter_priors,
+        emulator_training_input,
+        emulator_retraining,
+        emulated_particle_selection,
+        max_batch_size,
+        max_iter)
 
-    return model_selection(input, reference_data)
+    return model_selection(input)
 end

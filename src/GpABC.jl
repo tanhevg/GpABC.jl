@@ -16,34 +16,24 @@ export
 	get_hyperparameters_size, set_hyperparameters,
     gp_train,
 
-	ABCrejection, ABCSMC,
-	ABCRejectionInput, ABCSMCInput,
-	SimulatedABCRejectionInput, EmulatedABCRejectionInput,
-	SimulatedABCSMCInput, EmulatedABCSMCInput,
 	ABCRejectionOutput, ABCSMCOutput,
 	SimulatedABCRejection, SimulatedABCSMC,
 	EmulatedABCRejection, EmulatedABCSMC,
-	get_training_data,
 	read_rejection_output, read_smc_output,
 
-	model_selection,
-	SimulatedModelSelectionInput,
-	EmulatedModelSelectionInput,
-	ModelSelectionOutput,
+	LNAInput, LNA, compute_LNA, sample_LNA_trajectories, get_LNA_trajectories,
 
-	# RepetitiveTraining,
-
-    AbstractEmulatorTraining, DefaultEmulatorTraining, train_emulator,
+	SimulatedModelSelection, EmulatedModelSelection, ModelSelectionOutput,
+    AbstractEmulatorTraining, DefaultEmulatorTraining,
     EmulatorTrainingInput,
-    AbstractEmulatorRetraining, NoopRetraining, IncrementalRetraining, PreviousPopulationRetraining, PreviousPopulationThresholdRetraining, abc_retrain_emulator,
-    AbstractEmulatedParticleSelection, MeanEmulatedParticleSelection, MeanVarEmulatedParticleSelection, abc_select_emulated_particles;
+    AbstractEmulatorRetraining, NoopRetraining, IncrementalRetraining, PreviousPopulationRetraining, PreviousPopulationThresholdRetraining,
+    AbstractEmulatedParticleSelection, MeanEmulatedParticleSelection, MeanVarEmulatedParticleSelection;
 
-using Optim, Distributions, Distances, DifferentialEquations
+using Optim, Distributions, Distances, DifferentialEquations, ForwardDiff
 
 import StatsBase
 
 import Base: write
-
 
 include("gp/kernels/scaled_squared_distance.jl")
 include("gp/kernels/abstract_kernel.jl")
@@ -61,12 +51,9 @@ include("abc/smc.jl")
 include("abc/model_selection_io.jl")
 include("abc/model_selection.jl")
 include("abc/simulation.jl")
-include("util/emulation_helpers.jl")
 include("abc/emulation.jl")
 include("abc/plot_recipe.jl")
-
-# include("abc.jl")
-# include("multiple_training_abc.jl")
-
+include("util/lna.jl")
+include("util/emulation_helpers.jl")
 
 end;

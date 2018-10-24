@@ -13,66 +13,42 @@ An object that defines settings for a simulation-based model selection computati
 - `parameter_priors::AbstractArray{AbstractArray{ContinuousUnivariateDistribution,1},1}`: Parameter priors for each model. Each element is an array of priors for the corresponding model (one prior per parameter).
 - `distance_function::Function`: Any function that computes the distance between 2 1D Arrays.
 - `simulator_functions::AbstractArray{Function,1}`: Each element is a function that takes a parameter vector as an argument and outputs model results for a single model.
-- `max_iter::Integer`: The maximum number of iterations in each population before algorithm termination.
+- `max_iter::Int`: The maximum number of iterations in each population before algorithm termination.
 """
-struct SimulatedModelSelectionInput <: ModelSelectionInput
-	M::Int64
-	n_particles::Int64
-	threshold_schedule::AbstractArray{Float64,1}
+struct SimulatedModelSelectionInput{AF<:AbstractFloat, CUD<:ContinuousUnivariateDistribution} <: ModelSelectionInput
+	M::Int
+	n_particles::Int
+	threshold_schedule::AbstractArray{AF,1}
 	model_prior::DiscreteUnivariateDistribution
-	parameter_priors::AbstractArray{AbstractArray{ContinuousUnivariateDistribution,1},1}
-	summary_statistic::Union{String,AbstractArray{String,1},Function}
-	distance_function::Function
-	simulator_functions::AbstractArray{Function,1}
-	max_iter::Integer
+	parameter_priors::AbstractArray{Array{CUD, 1},1}
+	distance_simulation_input::AbstractArray{DistanceSimulationInput,1}
+	max_iter::Int
 end
 
-struct EmulatedModelSelectionInput <: ModelSelectionInput
-	M::Int64
-	n_particles::Int64
-	threshold_schedule::AbstractArray{Float64,1}
+struct EmulatedModelSelectionInput{AF<:AbstractFloat, CUD<:ContinuousUnivariateDistribution,
+	    ER<:AbstractEmulatorRetraining, EPS<:AbstractEmulatedParticleSelection, ET<:AbstractEmulatorTraining} <: ModelSelectionInput
+	M::Int
+	n_particles::Int
+	threshold_schedule::AbstractArray{AF,1}
 	model_prior::DiscreteUnivariateDistribution
-	parameter_priors::AbstractArray{AbstractArray{ContinuousUnivariateDistribution,1},1}
-	emulator_trainers::AbstractArray{Function, 1}
-	max_batch_size::Int64
-	max_iter::Integer
+	parameter_priors::AbstractArray{Array{CUD,1},1}
+	emulator_training_input::AbstractArray{EmulatorTrainingInput{ET},1}
+	emulator_retraining::ER
+	emulated_particle_selection::EPS
+	max_batch_size::Int
+	max_iter::Int
 end
 
-mutable struct ModelSelectionRejectionTracker
-	n_accepted::Int64
-	n_tries::Int64
-	population::AbstractArray{Float64,2}
-	distances::AbstractArray{Float64,1}
-	weight_values::AbstractArray{Float64,1}
+mutable struct CandidateModelTracker{AF<:AbstractFloat}
+	n_accepted::Int
+	n_tries::Int
+	population::AbstractArray{AF,2}
+	distances::AbstractArray{AF,1}
+	weight_values::AbstractArray{AF,1}
 end
 
-function ModelSelectionRejectionTracker(n_params::Int64)
-	return ModelSelectionRejectionTracker(0, 0, zeros(0, n_params), zeros(0), zeros(0))
-end
-
-abstract type CandidateModelTracker end
-
-mutable struct SimulatedCandidateModelTracker <: CandidateModelTracker
-	n_params::Integer
-	n_accepted::AbstractArray{Int64,1}
-	n_tries::AbstractArray{Int64,1}
-	population::AbstractArray{AbstractArray{Float64,2},1}
-	distances::AbstractArray{AbstractArray{Float64,1},1}
-	weights::AbstractArray{StatsBase.Weights,1}
-	priors::AbstractArray{ContinuousUnivariateDistribution,1}
-	simulator_function::Function
-end
-
-mutable struct EmulatedCandidateModelTracker <: CandidateModelTracker
-	n_params::Integer
-	n_accepted::AbstractArray{Int64,1}
-	n_tries::AbstractArray{Int64,1}
-	population::AbstractArray{AbstractArray{Float64,2},1}
-	distances::AbstractArray{AbstractArray{Float64,1},1}
-	weights::AbstractArray{StatsBase.Weights,1}
-	priors::AbstractArray{ContinuousUnivariateDistribution,1}
-	emulator_trainer::Function
-	emulators::AbstractArray{Any,1}
+function CandidateModelTracker(n_params::Int)
+	return CandidateModelTracker(0, 0, zeros(0, n_params), zeros(0), zeros(0))
 end
 
 abstract type ModelSelectionTracker end
@@ -82,20 +58,19 @@ mutable struct SimulatedModelSelectionTracker <: ModelSelectionTracker
 	n_particles::Int64
 	threshold_schedule::AbstractArray{Float64,1}
 	model_prior::DiscreteUnivariateDistribution
-	model_trackers::AbstractArray{SimulatedCandidateModelTracker,1}
-	summary_statistic::Union{String,AbstractArray{String,1},Function}
-	distance_function::Function
-	max_iter::Integer
+	smc_trackers::AbstractArray{SimulatedABCSMCTracker,1}
+	max_iter::Int
 end
 
-mutable struct EmulatedModelSelectionTracker <: ModelSelectionTracker
+mutable struct EmulatedModelSelectionTracker{CUD<:ContinuousUnivariateDistribution, ET,
+        ER<:AbstractEmulatorRetraining, EPS<:AbstractEmulatedParticleSelection} <: ModelSelectionTracker
 	M::Int64
 	n_particles::Int64
 	threshold_schedule::AbstractArray{Float64,1}
 	model_prior::DiscreteUnivariateDistribution
-	model_trackers::AbstractArray{EmulatedCandidateModelTracker,1}
+	smc_trackers::AbstractArray{EmulatedABCSMCTracker{CUD, ET, ER, EPS},1}
 	max_batch_size::Int64
-	max_iter::Integer
+	max_iter::Int
 end
 
 """
