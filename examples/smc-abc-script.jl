@@ -8,9 +8,6 @@ using GpABC, DifferentialEquations, Distances, Distributions
 
 n_particles = 1000
 threshold_schedule = [3.0, 2.0, 1.0, 0.5, 0.2]
-# threshold_schedule = [3.0, 2.0, 1.0]
-distance_metric = euclidean
-summary_stats = GpABC.keep_all_summary_statistic
 progress_every = 1000
 
 #
@@ -95,15 +92,20 @@ function simulate_distance(var_param_indices::AbstractArray{Int, 1}, var_params:
 end
 
 println("EMULATION")
-emu_out = EmulatedABCSMC(n_design_points, reference_data, n_particles, threshold_schedule,
-    priors[param_indices], summary_stats, simulator_function;
-    # emulator_retraining = IncrementalRetraining(10, 100)
-    # emulator_retraining = PreviousPopulationRetraining()
+emu_out = EmulatedABCSMC(reference_data,
+    simulator_function,
+    priors[param_indices],
+    threshold_schedule,
+    n_particles,
+    n_design_points;
     batch_size=1000,
-    emulator_retraining = PreviousPopulationThresholdRetraining(n_design_points, min(100, n_design_points/2), 10)
-    # repetitive_training=RepetitiveTraining(rt_iterations=3, rt_extra_training_points=5),
+    emulator_retraining = PreviousPopulationThresholdRetraining(n_design_points, min(100, n_design_points/2), 10),
+    emulated_particle_selection = MeanVarEmulatedParticleSelection()
     )
 
 println("SIMULATION")
-sim_out = SimulatedABCSMC(reference_data, n_particles, threshold_schedule,
-    priors[param_indices], summary_stats, simulator_function)
+sim_out = SimulatedABCSMC(reference_data,
+    simulator_function,
+    priors[param_indices],
+    threshold_schedule,
+    n_particles)
