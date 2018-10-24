@@ -52,22 +52,23 @@ using Base.Test, GpABC, DifferentialEquations, Distributions, Distances
     end
 
     sim_abcsmc_res = SimulatedABCSMC(reference_data,
-    n_particles,
-    threshold_schedule,
+    simulator_function,
     priors,
-    "keep_all",
-    simulator_function)
+    threshold_schedule,
+    n_particles,
+    )
 
     @test size(sim_abcsmc_res.population, 1) > 0
 
     #ABC-SMC emulation with LNA
 
-    emu_abcsmc_res = EmulatedABCSMC(n_design_points, reference_data,
-    n_particles,
-    threshold_schedule,
+    emu_abcsmc_res = EmulatedABCSMC(reference_data,
+    simulator_function,
     priors,
-    "keep_all",
-    simulator_function)
+    threshold_schedule,
+    n_particles,
+    n_design_points,
+    )
 
     @test size(emu_abcsmc_res.population, 1) > 0
 

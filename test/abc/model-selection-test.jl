@@ -2,11 +2,9 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
 
 @testset "Model selection test" begin
 
-	threshold_schedule = [20.0, 15.0, 10.0, 8.0] 
-	summary_statistic = "keep_all"
+	threshold_schedule = [20.0, 15.0, 10.0]
 	max_iter = 1e4
 	n_particles = 200
-	distance_metric = euclidean
 
 	#
 	# Experimental data - from ABCSysBio example at
@@ -37,13 +35,13 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
 	# Priors and initial conditions - these are model-specfic as each model can
 	# have different numbers of parameters/species
 	#
-	priors1 = [Uniform(0.0, 5.0) for i in 1:4]
+	priors1 = [Uniform(0.2, 5.0) for i in 1:4]
 	ic1 = [20.0, 10.0, 0.0]
 
-	priors2 = vcat([Uniform(0.0, 5.0) for i in 1:4], Uniform(0.0, 10.0))
+	priors2 = vcat([Uniform(0.2, 5.0) for i in 1:4], Uniform(0.2, 10.0))
 	ic2 = [20.0, 0.0, 10.0, 0.0]
 
-	priors3 = [Uniform(0.0, 5.0) for i in 1:6]
+	priors3 = [Uniform(0.2, 5.0) for i in 1:6]
 	ic3 = [20.0, 10.0, 0.0]
 
 	priors = [priors1, priors2, priors3]
@@ -109,7 +107,7 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
 			for i in 1:length(ms_res.threshold_schedule)]
 					for m in 1:ms_res.M]...))
 
-		# Total number of accepted particles at each population can't be more than n_particles 
+		# Total number of accepted particles at each population can't be more than n_particles
 		@test all([sum(arr) <= n_particles for arr in ms_res.n_accepted])
 
 		# There should be as many populations, distances as weights as populations
@@ -147,53 +145,47 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
 
 	#
 	# Do model selection using simulation
-	#
-	input = SimulatedModelSelectionInput(3, n_particles, threshold_schedule, modelprior,
-	    priors, summary_statistic, distance_metric, simulators, max_iter)
-
-	ms_res = GpABC.model_selection(input, data);
+	ms_res = SimulatedModelSelection(data,
+		simulators,
+		priors,
+		threshold_schedule,
+		n_particles)
 	test_ms_output(ms_res, true)
 
-	# User-level function for the same computation
-	ms_res  = SimulatedModelSelection(data, n_particles, threshold_schedule, priors,
-		summary_statistic, simulators)
-	test_ms_output(ms_res, true)
-
-	#
-	# Do model selection using emulation
-	#
+	# Same with emulation; no re-training
 	n_design_points = 200
-	distance_metric = euclidean
-	rt = RepetitiveTraining()
-	gpkernel = SquaredExponentialArdKernel()
-
-	#
-	# A set of functions that return a trained emulator with a prior sampling function as an argument
-	#
-	emulator_trainers = [f(prior_sampler) = GpABC.abc_train_emulator(prior_sampler,
-	        n_design_points,
-	        GpABC.build_summary_statistic(summary_statistic)(data),
-	        sim,
-	        GpABC.build_summary_statistic(summary_statistic),
-	        distance_metric)
-	    for sim in simulators]
-
-	input = EmulatedModelSelectionInput(3, 200, threshold_schedule, modelprior, priors,
-	    emulator_trainers, 100, 1e3)
-
-	ms_res = GpABC.model_selection(input, data)
+	ms_res = EmulatedModelSelection(data,
+		simulators,
+		priors,
+		threshold_schedule,
+		n_particles,
+		n_design_points)
 	test_ms_output(ms_res, false)
 
-	# The same computation using user-level function
-	EmulatedModelSelection(n_design_points, data, n_particles, threshold_schedule, [priors1, priors2, priors3],
-		summary_statistic, simulators)
+	# With emulator re-training on
+	ms_res = EmulatedModelSelection(data,
+		simulators,
+		priors,
+		threshold_schedule,
+		n_particles,
+		n_design_points;
+		emulator_retraining=PreviousPopulationThresholdRetraining(200, 50, 10),
+		emulated_particle_selection=MeanVarEmulatedParticleSelection())
 	test_ms_output(ms_res, false)
 
 	# Repeat above with thresholds that are too small for any particles to be accepted. Algorithm will terminate early
-	ms_res = SimulatedModelSelection(data, n_particles, [0.4, 0.2], priors,
-		summary_statistic, simulators)
+	ms_res = SimulatedModelSelection(data,
+		simulators,
+		priors,
+		[0.4, 0.2], # threshold_schedule,
+		n_particles)
 	@test !ms_res.completed_all_populations
-	ms_res = EmulatedModelSelection(n_design_points, data, n_particles, [0.4, 0.2], priors,
-		summary_statistic, simulators)
+
+	ms_res = EmulatedModelSelection(data,
+		simulators,
+		priors,
+		[0.4, 0.2], # threshold_schedule,
+		n_particles,
+		n_design_points)
 	@test !ms_res.completed_all_populations
 end
