@@ -32,7 +32,7 @@ function generate_parameters(
     parameters = zeros(batch_size, n_dims)
     priors = reshape(priors, 1, n_dims)
     parameters .= rand.(priors)
-    weights = prod(pdf.(priors, parameters), 2)
+    weights = prod(pdf.(priors, parameters), dims=2)
     weights = reshape(weights, batch_size) # So that this returns a 1D array, like the simulation version
 
     return parameters, weights

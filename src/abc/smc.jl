@@ -13,7 +13,7 @@ function generate_kernels(
     n_params = size(population, 2)
 
     if n_particles > 1
-        stds = reshape(std(population, 1), n_params)
+        stds = reshape(std(population, dims=1), n_params)
     else
         stds = 1e-3 * ones(n_params) # If there is only one particle we cannot compute the sd - use a small value instead?
     end
@@ -21,7 +21,7 @@ function generate_kernels(
     lowers = minimum.(priors)
     uppers = maximum.(priors)
 
-    kernels = Matrix{ContinuousUnivariateDistribution}(n_particles, n_params)
+    kernels = Matrix{ContinuousUnivariateDistribution}(undef, n_particles, n_params)
     for j in 1:n_params
         means = population[:, j]
         kernels[:, j] = TruncatedNormal.(means, stds[j]*sqrt(2.0), lowers[j], uppers[j])
@@ -48,17 +48,17 @@ function generate_parameters(
     # the kernels must be centered around the old particles
     # and truncated to the priors.
 
-    particles = StatsBase.sample(indices(kernels, 1), old_weights, batch_size)
+    particles = StatsBase.sample(axes(kernels, 1), old_weights, batch_size)
     perturbed_parameters = rand.(kernels[particles,:])
 
     # gives a batch_size x n_params matrix of prior pdfs in perturbed parameters
     pdfs = pdf.(reshape(priors, 1, n_params), perturbed_parameters)
-    numerators = prod(pdfs, 2) # multiply across rows, to get a column vector of products of size batch_size
+    numerators = prod(pdfs, dims=2) # multiply across rows, to get a column vector of products of size batch_size
 
     denominators = zeros(length(numerators), 1)
     for k in eachindex(denominators)
         denominator_pdfs = pdf.(kernels, reshape(perturbed_parameters[k, :], 1, n_params))
-        denominator_summands = prod(denominator_pdfs, 2)
+        denominator_summands = prod(denominator_pdfs, dims=2)
         denominators[k] = sum(old_weights .* denominator_summands)
     end
 
@@ -89,7 +89,7 @@ function generate_parameters_no_weights(
         D2<:ContinuousUnivariateDistribution,
         F<:AbstractFloat,
         }
-    particles = StatsBase.sample(indices(old_parameters, 1), old_weights, n_batch_size)
+    particles = StatsBase.sample(axes(old_parameters, 1), old_weights, n_batch_size)
     return rand.(kernels[particles,:])
 end
 

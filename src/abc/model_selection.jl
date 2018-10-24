@@ -343,7 +343,7 @@ function iterate_modelselection!(
 	end
 
 	# Retrain emulators for alive models only
-	retrained_emulators = Array{ET,1}(tracker.M)
+	retrained_emulators = Array{ET,1}(undef,tracker.M)
 	for m in 1:tracker.M
 		smc_tracker = tracker.smc_trackers[m]
 		if smc_tracker.n_accepted[end] > 0

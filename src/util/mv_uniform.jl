@@ -1,6 +1,6 @@
 import Distributions: length, _rand!, _logpdf
 
-type MvUniform{T<:Real} <: ContinuousMultivariateDistribution
+struct MvUniform{T<:Real} <: ContinuousMultivariateDistribution
     contents::AbstractArray{Uniform{T},1}
 end
 

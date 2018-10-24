@@ -22,7 +22,7 @@ struct IncrementalRetraining <: AbstractEmulatorRetraining
     max_simulations::Int64
 end
 
-type PreviousPopulationRetraining <: AbstractEmulatorRetraining end
+struct PreviousPopulationRetraining <: AbstractEmulatorRetraining end
 
 struct PreviousPopulationThresholdRetraining <: AbstractEmulatorRetraining
     n_design_points::Int
@@ -30,7 +30,7 @@ struct PreviousPopulationThresholdRetraining <: AbstractEmulatorRetraining
     max_iter::Int
 end
 
-type NoopRetraining <: AbstractEmulatorRetraining end
+struct NoopRetraining <: AbstractEmulatorRetraining end
 
 
 abstract type AbstractEmulatorTraining end
@@ -53,7 +53,7 @@ EmulatorTrainingInput(n_design_points, reference_summary_statistic, simulator_fu
 
 abstract type AbstractEmulatedParticleSelection end
 
-type MeanEmulatedParticleSelection <: AbstractEmulatedParticleSelection end
+    struct MeanEmulatedParticleSelection <: AbstractEmulatedParticleSelection end
 
 struct MeanVarEmulatedParticleSelection <: AbstractEmulatedParticleSelection
     variance_threshold_factor::Float64

@@ -1,6 +1,6 @@
 using GpABC, DifferentialEquations, Distances, Distributions
 
-# srand(4)
+# seed!(4)
 
 #
 # ABC settings

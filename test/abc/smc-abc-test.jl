@@ -1,4 +1,4 @@
-using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
+using Test, GpABC, DifferentialEquations, Distances, Distributions
 
 @testset "SMC ABC Test" begin
     #

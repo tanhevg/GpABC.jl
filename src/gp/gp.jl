@@ -92,7 +92,7 @@ function GPModel(;training_x::Union{AbstractArray{Float64, 2}, AbstractArray{Flo
         training_y::Union{AbstractArray{Float64, 2}, AbstractArray{Float64, 1}}=zeros(0,0),
         test_x::Union{AbstractArray{Float64, 2}, AbstractArray{Float64, 1}}=zeros(0,0),
         kernel::AbstractGPKernel=SquaredExponentialIsoKernel(),
-        gp_hyperparameters::AbstractArray{Float64, 1}=Array{Float64}(0))
+        gp_hyperparameters::AbstractArray{Float64, 1}=zeros(0))
 
     if ndims(training_x) == 1
         training_x = reshape(training_x, length(training_x), 1)
@@ -273,8 +273,8 @@ function gp_regression_log(theta::AbstractArray{Float64, 1},
     xs_idx_start = 1
     multiple_batches = !full_covariance_matrix && n_s > batch_size
     xs_idx_end = full_covariance_matrix ? n_s : min(n_s, batch_size)
-    ret_mean = Array{Float64}(n_s)
-    ret_var = Array{Float64}(n_s)
+    ret_mean = Array{Float64}(undef, n_s)
+    ret_var = Array{Float64}(undef, n_s)
     batch_counter = 1
     while xs_idx_start <= n_s
         if log_level > 0
@@ -291,7 +291,7 @@ function gp_regression_log(theta::AbstractArray{Float64, 1},
             if observation_noise
                 K_ss += ones(size(batch, 1), 1) * exp(2 * theta[end])
             end
-            batch_var = K_ss - sum(v .^ 2, 1)'
+            batch_var = K_ss - sum(v .^ 2, dims=1)'
             batch_var = reshape(batch_var, length(batch_var))
         else
             K_ss = covariance(gpem.kernel, theta_kernel, batch, batch)
@@ -321,12 +321,12 @@ function update_cache!(kernel::AbstractGPKernel, cache::HPOptimisationCache,
         if size(cache.theta) != size(theta)
             cache.theta = copy(theta)
         else
-            copy!(cache.theta, theta)
+            copyto!(cache.theta, theta)
         end
         sigma_n2_inv = exp(-2*theta[end])
         cache.K = covariance_training(kernel, theta[1:end-1], x)
         cache.B = cache.K * sigma_n2_inv + I
-        cache.L = chol(Hermitian(cache.B))
+        cache.L = cholesky(Hermitian(cache.B)).U
         cache.Q = cache.L \ (cache.L' \ I)
         cache.alpha = (cache.L \ (cache.L' \ y)) .* sigma_n2_inv
         cache.R = cache.alpha * cache.alpha' - cache.Q .* sigma_n2_inv

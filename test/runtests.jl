@@ -1,4 +1,4 @@
-using Base.Test
+using Test
 @testset "GpABC Full Test Suite" begin
 include("kernels/abstract_kernel_tests.jl")
 include("kernels/scaled_squared_distance_test.jl")

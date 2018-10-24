@@ -59,7 +59,7 @@ end
 
 # Mean of each trajectory
 function mean_summary_statistic(data::AbstractArray{Float64,2})
-    return mean(data, 2)[:]
+    return mean(data, dims=2)[:]
 end
 
 # Variance of each trajectory

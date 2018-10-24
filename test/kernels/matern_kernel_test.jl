@@ -1,4 +1,4 @@
-using Base.Test, GpABC
+using Test, GpABC
 
 @testset "Matern Kernel Tests" begin
     mi1 = ExponentialIsoKernel()

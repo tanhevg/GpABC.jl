@@ -9,7 +9,6 @@ This is a structure which holds the inputs needed for computing the Linear Noise
 - `reaction_rate_function::Function,`: This is a function f(x, parameters) which should return an array of the reaction rates of the system, i.e. S*f would describe the ODE representation of the system.
 - `volume::Float64`: The volume of the reactants of the system.
 """
-
 struct LNAInput
     params::AbstractArray{Float64,1}
     S::AbstractArray{Float64,2}
@@ -28,8 +27,6 @@ This is a structure which will hold the LNA: the mean of the trajectories and th
 - `traj_covars`: An array which holds the covariance matrix of the species at each time point.
 - `time_points`: The timepoints the system was solved for.
 """
-
-
 struct LNA
     traj_means::AbstractArray{Float64,2}
     traj_covars::AbstractArray{AbstractArray{Float64,2},1}
@@ -55,7 +52,6 @@ The function computes the linear noise approximation to system through construct
 #Returns
 - LNA
 """
-
 function compute_LNA(input::LNAInput,
     x0::Tuple{AbstractArray{Float64,1},AbstractArray{Float64,2}},
     Tspan::Tuple{Float64,Float64},
@@ -80,15 +76,17 @@ function compute_LNA(input::LNAInput,
         D = ForwardDiff.jacobian(y -> input.reaction_rate_function(y, pars), diag(x))
         D = D[:,1:no_of_species]
         A = input.S*D
-        dx[1:no_of_species, 1:no_of_species] = diagm(input.S*input.reaction_rate_function(diag(x),pars))
-        dx[no_of_species+1:end,1:no_of_species]= A*x[no_of_species+1:no_of_species*2,1:no_of_species] + x[no_of_species+1:no_of_species*2,1:no_of_species]*(A') + (1/sqrt(input.volume))*input.S* diagm(input.reaction_rate_function(diag(x),pars)) * input.S'
+        dx[1:no_of_species, 1:no_of_species] = diagm(0 => input.S*input.reaction_rate_function(diag(x),pars))
+        dx[no_of_species+1:end,1:no_of_species]= A*x[no_of_species+1:no_of_species*2,1:no_of_species]
+            + x[no_of_species+1:no_of_species*2,1:no_of_species]*(A')
+            + (1/sqrt(input.volume))*input.S* diagm(0 => input.reaction_rate_function(diag(x),pars)) * input.S'
     end
 
-    prob = ODEProblem(Mean_ODE, vcat(diagm(x0[1]), x0[2]), Tspan, input.params)
+    prob = ODEProblem(Mean_ODE, vcat(diagm(0=>x0[1]), x0[2]), Tspan, input.params)
     mean_and_var = solve(prob, solver, saveat=saveat; kwargs...)
 
-    mean_traj = Array{Float64,2}(no_of_species, length(mean_and_var.t))
-    covar_traj = Array{Array{Float64,2},1}(length(mean_and_var.t))
+    mean_traj = Array{Float64,2}(undef, no_of_species, length(mean_and_var.t))
+    covar_traj = Array{Array{Float64,2},1}(undef, length(mean_and_var.t))
 
     for j in 1:length(mean_and_var.t)
         mean_traj[:,j] = diag(mean_and_var[j][1:no_of_species,1:no_of_species])
@@ -110,10 +108,9 @@ A function which samples from the LNA to output sampled trajectories. The LNA gi
 #Returns
 -  A (number of species) x (number of time points) array which holds the averaged trajectory for each species on each row of the array.
 """
-
 function sample_LNA_trajectories(lna::LNA, n_samples::Int64)
     trajectories = [rand(MvNormal(lna.traj_means[:,j], lna.traj_covars[j]), n_samples) for j in 1:length(lna.time_points)]
-    return hcat([mean(traj,2) for traj in trajectories]...)
+    return hcat([mean(traj,dims=2) for traj in trajectories]...)
 end
 
 """
@@ -139,7 +136,6 @@ A function which computes the LNA and then samples from the it to output sampled
 #Returns
 -  A (number of species) x (number of time points) array which holds the averaged trajectory for each species on each row of the array.
 """
-
 function get_LNA_trajectories(input::LNAInput, n_samples::Int64,
     x0::Tuple{AbstractArray{Float64,1},AbstractArray{Float64,2}},
     Tspan::Tuple{Float64,Float64},

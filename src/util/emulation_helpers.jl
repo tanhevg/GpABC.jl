@@ -97,8 +97,8 @@ function abc_retrain_emulator(
     while(n_below_threshold < retraining_settings.n_below_threshold && n_iter < retraining_settings.max_iter)
         sample_x = particle_sampling_function(retraining_settings.n_design_points)
         sample_y = simulate_distance(sample_x, training_input.distance_simulation_input)
-        idx_below_threshold = find(sample_y .<= epsilon)
-        idx_above_threshold = filter(x->!(x in idx_below_threshold), indices(sample_y, 1))
+        idx_below_threshold = findall(sample_y .<= epsilon)
+        idx_above_threshold = filter(x->!(x in idx_below_threshold), axes(sample_y, 1))
         info("Iteration $(n_iter + 1): $(length(idx_below_threshold)) design points with distance below $(epsilon)", prefix="GpABC Emulator retraining ")
         if n_below_threshold + length(idx_below_threshold) > cap_below_threshold
             idx_below_threshold = idx_below_threshold[1:cap_below_threshold - n_below_threshold]
@@ -139,13 +139,13 @@ end
 function abc_select_emulated_particles(gpm::GPModel, parameters::AbstractArray{T, 2},
         threshold::T, selection::MeanEmulatedParticleSelection) where {T<:Real}
     distances, vars = gp_regression(parameters, gpm)
-    accepted_indices = find(distances .<= threshold)
+    accepted_indices = findall(distances .<= threshold)
     distances[accepted_indices], accepted_indices
 end
 
 function abc_select_emulated_particles(gpm::GPModel, parameters::AbstractArray{T, 2},
         threshold::T, selection::MeanVarEmulatedParticleSelection) where {T<:Real}
     distances, vars = gp_regression(parameters, gpm)
-    accepted_indices = find((distances .<= threshold) .& (sqrt.(vars) .<= selection.variance_threshold_factor * threshold))
+    accepted_indices = findall((distances .<= threshold) .& (sqrt.(vars) .<= selection.variance_threshold_factor * threshold))
     distances[accepted_indices], accepted_indices
 end

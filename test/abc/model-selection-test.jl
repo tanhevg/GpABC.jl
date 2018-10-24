@@ -1,4 +1,4 @@
-using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
+using Test, GpABC, DifferentialEquations, Distances, Distributions
 
 @testset "Model selection test" begin
 
@@ -77,7 +77,7 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
 	    solve(ODEProblem(model2, ics[2], (times[1], times[end]), params), saveat=times, force_dtmin=true))[[1,3,4],:]
 
 	# Model to test dead behaviour
-	simulator3(params) = rand(size(data))
+	simulator3(params) = rand(Float64, size(data))
 
 	simulators = [simulator1, simulator2, simulator3]
 
@@ -126,7 +126,7 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
 		@test all(weight_sums[nonzero_weights] .== 1.0)
 
 		# Check that dead models are properly dead
-		zero_acceptance_populations = [find(ms_res.smc_outputs[m].n_accepted .== 0) for m in 1:ms_res.M]
+		zero_acceptance_populations = [findall(ms_res.smc_outputs[m].n_accepted .== 0) for m in 1:ms_res.M]
 		for m in 1:ms_res.M
 			if size(zero_acceptance_populations[m],1) > 1
 				first_dead_pop = zero_acceptance_populations[m][2]
