@@ -67,19 +67,22 @@ function compute_LNA(input::LNAInput,
     no_of_species, no_of_reactions = size(input.S)
 
 
-    ### the below ODE solves the ODE of the mean and the ODE of the covariance together.
-    ##this function is the mean variance decomposition of the LNA. The derviation of which can be
-    ##found in "Approximation  and  inference  methods  forstochastic  biochemical  kinetics—a  tutorial  review" (2017) by
-    ##David  Schnoerr et al.
-
+    ###  the below ODE solves the ODE of the mean and the ODE of the covariance together.
+    ## this function is the mean variance decomposition of the LNA. The derviation of which can be
+    ## found in "Approximation  and  inference  methods  forstochastic  biochemical  kinetics—a  tutorial  review" (2017) by
+    ## David  Schnoerr et al.
+    ## x is two matrices concatenated on top of each other: a diagonal matrix with the means on the diagonal follwed by the covariance matrix
     function Mean_ODE(dx, x, pars, t)
-        D = ForwardDiff.jacobian(y -> input.reaction_rate_function(y, pars), diag(x))
-        D = D[:,1:no_of_species]
-        A = input.S*D
-        dx[1:no_of_species, 1:no_of_species] = diagm(0 => input.S*input.reaction_rate_function(diag(x),pars))
-        dx[no_of_species+1:end,1:no_of_species]= A*x[no_of_species+1:no_of_species*2,1:no_of_species]
-            + x[no_of_species+1:no_of_species*2,1:no_of_species]*(A')
-            + (1/sqrt(input.volume))*input.S* diagm(0 => input.reaction_rate_function(diag(x),pars)) * input.S'
+        mean_vec = diag(x)
+        covar_mx = x[no_of_species+1:no_of_species*2,:]
+        reaction_rates = input.reaction_rate_function(mean_vec, pars)
+        reaction_rates_jac = ForwardDiff.jacobian(y -> input.reaction_rate_function(y, pars), mean_vec)
+        # D = D[:,1:no_of_species]
+        A = input.S * reaction_rates_jac
+        dx .= vcat(
+            diagm(0 => input.S*reaction_rates),
+            A*covar_mx + covar_mx*A' + input.S * diagm(0 => reaction_rates) * input.S' ./ sqrt(input.volume)
+            )
     end
 
     prob = ODEProblem(Mean_ODE, vcat(diagm(0=>x0[1]), x0[2]), Tspan, input.params)

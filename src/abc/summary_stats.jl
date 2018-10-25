@@ -64,17 +64,17 @@ end
 
 # Variance of each trajectory
 function var_summary_statistic(data::AbstractArray{Float64,2})
-    return var(data, 2)[:]
+    return var(data, dims=2)[:]
 end
 
 # Max of each trajectory
 function max_summary_statistic(data::AbstractArray{Float64,2})
-    return maximum(data, 2)[:]
+    return maximum(data, dims=2)[:]
 end
 
 # Min of each trajectory
 function min_summary_statistic(data::AbstractArray{Float64,2})
-    return minimum(data, 2)[:]
+    return minimum(data, dims=2)[:]
 end
 
 # Range of each trajectory
@@ -84,7 +84,7 @@ end
 
 # Median of each trajectory
 function median_summary_statistic(data::AbstractArray{Float64,2})
-    return median(data, 2)[:]
+    return median(data, dims=2)[:]
 end
 
 # First quartile of each trajectory

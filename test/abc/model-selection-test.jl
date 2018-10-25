@@ -2,6 +2,7 @@ using Test, GpABC, DifferentialEquations, Distances, Distributions
 
 @testset "Model selection test" begin
 
+	Random.seed!(4)
 	threshold_schedule = [20.0, 15.0, 10.0]
 	max_iter = 1e4
 	n_particles = 200

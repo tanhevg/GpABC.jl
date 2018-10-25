@@ -24,7 +24,6 @@ using Test, GpABC, DifferentialEquations, Distributions, Distances, LinearAlgebr
             params[5]*x[2],
             params[3]*params[9]*x[1]*params[10]*x[2]/(1+params[9]*x[1])/(1+params[10]*x[2]),
             params[6]*x[3]]
-        return f
     end
 
     #LNA Mean Var example
