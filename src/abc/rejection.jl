@@ -61,7 +61,7 @@ function ABCrejection(input::SimulatedABCRejectionInput;
 
 	checkABCInput(input)
     if write_progress
-        @info "GpABC rejection simulation . ϵ = $(input.threshold)."
+        @info "GpABC rejection simulation. ϵ = $(input.threshold)."
     end
 
 	# initialise
@@ -101,7 +101,7 @@ function ABCrejection(input::SimulatedABCRejectionInput;
         end
 
         if write_progress && (n_tries % progress_every == 0)
-            @info "GpABC rejection simulation . Accepted $(n_accepted)/$(n_tries) particles."
+            @info "GpABC rejection simulation. Accepted $(n_accepted)/$(n_tries) particles."
         end
     end
 
@@ -148,7 +148,7 @@ function ABCrejection(input::EmulatedABCRejectionInput;
     checkABCInput(input)
 
     if write_progress
-        @info "GpABC rejection emulation . ϵ = $(input.threshold)."
+        @info "GpABC rejection emulation. ϵ = $(input.threshold)."
     end
     # initialise
     n_accepted = 0

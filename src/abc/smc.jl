@@ -389,7 +389,12 @@ function ABCSMC(
                            write_progress = write_progress,
                            progress_every = progress_every,
                            )
+            println("complete_threshold 1 ", complete_threshold,
+                ' ', !complete_threshold,
+                ' ', bitstring(complete_threshold),
+                ' ', typeof(complete_threshold))
             if !complete_threshold
+                println("break")
                 break
             end
         end
