@@ -1,3 +1,8 @@
+name = "GpABC"
+uuid = "e850a1a4-d859-11e8-3d54-a195e6d045d3"
+authors = ["Evgeny Tankhilevich <et517@ic.ac.uk>"]
+version = "0.1.0"
+
 [deps]
 DifferentialEquations = "0c46a032-eb83-5123-abaf-570d42b7fbaa"
 Distances = "b4f34e82-e78d-54a5-968a-f98e89d6e8f7"
