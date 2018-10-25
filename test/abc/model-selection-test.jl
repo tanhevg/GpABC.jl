@@ -1,4 +1,5 @@
 using Test, GpABC, DifferentialEquations, Distances, Distributions
+import Random
 
 @testset "Model selection test" begin
 

@@ -110,8 +110,7 @@ end
 #
 # Initialise a simulated ABC-SMC run
 #
-function initialiseABCSMC(input::SimulatedABCSMCInput,
-        reference_data::AbstractArray{Float64,2};
+function initialiseABCSMC(input::SimulatedABCSMCInput;
         write_progress = true,
         progress_every = 1000,
         )
@@ -137,11 +136,12 @@ function initialiseABCSMC(input::SimulatedABCSMCInput,
     return tracker
 end
 
+
 #
 # Initialise an emulated ABC-SMC run
 #
 function initialiseABCSMC(input::EmulatedABCSMCInput{CUD, ER, EPS};
-        write_progress = true) where
+        write_progress = true, progress_every = 1000) where
         {CUD<:ContinuousUnivariateDistribution,
         ER<:AbstractEmulatorRetraining,
         EPS<:AbstractEmulatedParticleSelection}
@@ -182,14 +182,12 @@ end
 #
 function iterateABCSMC!(tracker::SimulatedABCSMCTracker,
         threshold::AbstractFloat,
-        n_toaccept::Int,
-        reference_data::AbstractArray{Float64,2};
+        n_toaccept::Int;
         write_progress = true,
         progress_every = 1000)
 
     if write_progress
-        # info(string(DateTime(now())), " ϵ = $threshold.", prefix="GpABC SMC Simulation ")
-        @info "ϵ = $threshold"
+        @info "GpABC SMC simulation ϵ = $threshold"
     end
     if threshold > tracker.threshold_schedule[end]
         @warn "current threshold less strict than previous one."
@@ -234,8 +232,7 @@ function iterateABCSMC!(tracker::SimulatedABCSMCTracker,
         end
 
         if write_progress && (n_tries % progress_every == 0)
-            # info(string(DateTime(now())), " Accepted $(n_accepted)/$(n_tries) particles.", prefix="GpABC SMC Simulation ")
-            @info "Accepted $(n_accepted)/$(n_tries) particles."
+            @info "GpABC SMC simulation accepted $(n_accepted)/$(n_tries) particles."
         end
     end
 
@@ -249,9 +246,6 @@ function iterateABCSMC!(tracker::SimulatedABCSMCTracker,
         weight_values = weight_values[1:n_accepted]
         distances = distances[1:n_accepted]
         @warn "Simulation reached maximum $(tracker.max_iter) iterations before finding $(n_toaccept) particles - will return $n_accepted"
-    else
-        # info(string(DateTime(now())), " Finished. Accepted $(n_accepted)/$(n_toaccept).", prefix="GpABC SMC Simulation ")
-        @info "Finished. Accepted $(n_accepted)/$(n_toaccept)."
     end
 
     update_smctracker!(tracker, n_accepted, n_tries, threshold,
@@ -265,15 +259,12 @@ end
 #
 function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
         threshold::AbstractFloat,
-        n_toaccept::Int,
-        reference_data::AbstractArray{Float64,2},
-        batch_size::Int;
+        n_toaccept::Int;
         write_progress = true,
         progress_every = 1000
         )
     if write_progress
-        # info(string(DateTime(now())), " ϵ = $threshold.", prefix="GpABC SMC Emulation ")
-        @info "ϵ = $threshold."
+        @info "GpABC SMC emulation ϵ = $threshold."
     end
 
     if threshold > tracker.threshold_schedule[end]
@@ -319,8 +310,7 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
         n_accepted += n_include
 
         if write_progress
-            # info(string(DateTime(now())), " Accepted $(n_accepted)/$(n_tries) particles.", prefix="GpABC SMC Emulation ")
-            @info "Accepted $(n_accepted)/$(n_tries) particles."
+            @info "GpABC SMC emulation accepted $(n_accepted)/$(n_tries) particles."
         end
 
         iter_no += 1
@@ -340,7 +330,7 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
 
     update_smctracker!(tracker, n_accepted, n_tries, threshold,
                         population, all_distances, all_weight_values, emulator)
-
+    println("return true")
     return true
 end
 
@@ -382,15 +372,12 @@ parameter vector directly is used to construct the posterior). Whether simulatio
 An object that inherits from ['ABCSMCOutput'](@ref), depending on whether a `input` is a ['SimulatedABCSMCInput'](@ref) or ['EmulatedABCSMCInput'](@ref).
 """
 function ABCSMC(
-        input::SimulatedABCSMCInput,
-        reference_data::AbstractArray{Float64,2};
+        input::T;
         write_progress = true,
         progress_every = 1000,
-        )
+        ) where {T<:ABCSMCInput}
 
-    tracker = initialiseABCSMC(input,
-                               reference_data;
-                               write_progress = write_progress)
+    tracker = initialiseABCSMC(input; write_progress = write_progress, progress_every = progress_every)
 
     if tracker.n_accepted[1] > 0
         for i in 2:length(input.threshold_schedule)
@@ -399,7 +386,6 @@ function ABCSMC(
             complete_threshold = iterateABCSMC!(tracker,
                            threshold,
                            input.n_particles,
-                           reference_data,
                            write_progress = write_progress,
                            progress_every = progress_every,
                            )
@@ -414,39 +400,39 @@ function ABCSMC(
     return buildAbcSmcOutput(tracker)
 end
 
-function ABCSMC(
-        input::EmulatedABCSMCInput,
-        reference_data::AbstractArray{Float64,2},
-        batch_size::Int;
-        write_progress = true,
-        progress_every = 1000,
-        )
-
-    tracker = initialiseABCSMC(input; write_progress = write_progress)
-
-    if tracker.n_accepted[1] > 0
-        for i in 2:length(input.threshold_schedule)
-            threshold = input.threshold_schedule[i]
-            complete_threshold = iterateABCSMC!(tracker,
-                           threshold,
-                           input.n_particles,
-                           reference_data,
-                           batch_size,
-                           write_progress = write_progress,
-                           progress_every = progress_every,
-                           )
-            println("complete_threshold ", complete_threshold, ' ', typeof(complete_threshold))
-            if complete_threshold
-                println("break")
-                break
-            end
-        end
-    else
-        @warn "No particles selected at initial rejection ABC step of emulated SMC ABC - terminating algorithm"
-    end
-
-    return buildAbcSmcOutput(tracker)
-end
+# function ABCSMC(
+#         input::EmulatedABCSMCInput,
+#         reference_data::AbstractArray{Float64,2},
+#         batch_size::Int;
+#         write_progress = true,
+#         progress_every = 1000,
+#         )
+#
+#     tracker = initialiseABCSMC(input; write_progress = write_progress)
+#
+#     if tracker.n_accepted[1] > 0
+#         for i in 2:length(input.threshold_schedule)
+#             threshold = input.threshold_schedule[i]
+#             complete_threshold = iterateABCSMC!(tracker,
+#                            threshold,
+#                            input.n_particles,
+#                            reference_data,
+#                            batch_size,
+#                            write_progress = write_progress,
+#                            progress_every = progress_every,
+#                            )
+#             println("complete_threshold ", complete_threshold, ' ', typeof(complete_threshold))
+#             if complete_threshold
+#                 println("break")
+#                 break
+#             end
+#         end
+#     else
+#         @warn "No particles selected at initial rejection ABC step of emulated SMC ABC - terminating algorithm"
+#     end
+#
+#     return buildAbcSmcOutput(tracker)
+# end
 
 # not exported
 function initialise_abcsmc_iteration(tracker::ABCSMCTracker, n_toaccept::Int)

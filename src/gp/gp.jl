@@ -98,8 +98,7 @@ function GPModel(;training_x::Union{AbstractArray{Float64, 2}, AbstractArray{Flo
         training_x = reshape(training_x, length(training_x), 1)
     end
     if size(training_x, 1) < size(training_x, 2)
-        warn("GPModel: got a $(size(training_x)) size training array. ",
-            "Are you using column major data instead of row major?")
+        @warn "GPModel: got a $(size(training_x)) size training array. Are you using column major data instead of row major?"
     end
     if ndims(training_y) == 1
         training_y = reshape(training_y, length(training_y), 1)

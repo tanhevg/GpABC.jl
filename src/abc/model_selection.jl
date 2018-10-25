@@ -14,36 +14,33 @@ function model_selection(input::ModelSelectionInput)
 		log_prefix = "GpABC model selection emulation "
 	end
 
-	info(string(DateTime(now())),
-		" Population 1 - ABC Rejection ϵ = $(input.threshold_schedule[1])",
-		prefix=log_prefix)
+	@info "$(log_prefix) Population 1 - ABC Rejection ϵ = $(input.threshold_schedule[1])"
 
 	tracker = initialise_modelselection(input)
 
 	if all_models_dead(tracker)
-		warn("No particles were accepted in population 1 with threshold $(input.threshold_schedule[1])- terminating model selection algorithm")
+		@warn "No particles were accepted in population 1 with threshold $(input.threshold_schedule[1])- terminating model selection algorithm"
 		return build_modelselection_output(tracker, false)
 	end
 
 	if all_but_one_models_dead(tracker)
-		warn("All but one model is dead after population 1 - terminating model selection algorithm")
+		@warn "All but one model is dead after population 1 - terminating model selection algorithm"
 		return build_modelselection_output(tracker, true)
 	end
 
 	for i in 2:length(input.threshold_schedule)
-		info(string(DateTime(now())),
-			" Population $i - ABC SMC ϵ = $(input.threshold_schedule[i])",
-			prefix=log_prefix)
+		@info "$(log_prefix) Population $i - ABC SMC ϵ = $(input.threshold_schedule[i])"
+
 		iterate_modelselection!(tracker, input.threshold_schedule[i])
 
 		# Avoid infinite loop if no particles are accepted
 		if all_models_dead(tracker)
-			warn("No particles were accepted in population $i with threshold $(input.threshold_schedule[i])- terminating model selection algorithm")
+			@warn "No particles were accepted in population $i with threshold $(input.threshold_schedule[i])- terminating model selection algorithm"
 			return build_modelselection_output(tracker, false)
 		end
 
 		if all_but_one_models_dead(tracker)
-			warn("All but one model is dead after population $i - terminating model selection algorithm")
+			@warn "All but one model is dead after population $i - terminating model selection algorithm"
 			return build_modelselection_output(tracker, true)
 		end
 	end
@@ -98,7 +95,7 @@ function initialise_modelselection(input::SimulatedModelSelectionInput)
                 # This prevents the whole code from failing if there is a problem
                 # solving the differential equation(s). The exception is thrown by the
                 # distance function
-                warn("The summarised simulated data does not have the same size as the summarised reference data. If this is not happening at every iteration it may be due to the behaviour of DifferentialEquations::solve - please check for related warnings. Continuing to the next iteration.")
+                @warn "The summarised simulated data does not have the same size as the summarised reference data. If this is not happening at every iteration it may be due to the behaviour of DifferentialEquations::solve - please check for related warnings. Continuing to the next iteration."
                 n_iterations += 1
                 continue
             else
@@ -118,15 +115,14 @@ function initialise_modelselection(input::SimulatedModelSelectionInput)
 	end
 
 	if n_iterations == input.max_iter+1
-		warn("Simulated model selection reached maximum number of iterations ($(input.max_iter)) on the first population - consider trying more iterations.")
+		@warn "Simulated model selection reached maximum number of iterations ($(input.max_iter)) on the first population - consider trying more iterations."
 	end
 
-	info(string(DateTime(now())),
-		" Completed $(n_iterations-1) iterations, accepting $total_n_accepted particles in total.\n",
-		"Number of accepted parameters by model: ",
-		join([string("Model ", m, ": ",  cm_trackers[m].n_accepted) for m in 1:input.M], "\t"),
-		prefix="GpABC model selection simulation ",
-	)
+	@info join(["GpABC model selection simulation",
+		"Completed $(n_iterations-1) iterations, accepting $total_n_accepted particles in total.",
+		"Number of accepted parameters by model:",
+		join([string("Model ", m, ": ",  cm_trackers[m].n_accepted) for m in 1:input.M], "\t")
+		], "\n")
 
 	smc_trackers = [SimulatedABCSMCTracker(
 		length(input.parameter_priors[m]),
@@ -217,15 +213,14 @@ function initialise_modelselection(input::EmulatedModelSelectionInput{AF, CUD, E
 	end
 
 	if n_iterations == input.max_iter+1
-		warn("Emulated model selection reached maximum number of iterations ($(input.max_iter)) without accepting $(input.n_particles) particles on the first population - consider trying more iterations.")
+		@warn "Emulated model selection reached maximum number of iterations ($(input.max_iter)) without accepting $(input.n_particles) particles on the first population - consider trying more iterations."
 	end
 
-	info(string(DateTime(now())),
-		" Completed $(n_iterations-1) iterations, accepting $total_n_accepted particles in total.\n",
-		"Number of accepted parameters by model: ",
-		join([string("Model ", m, ": ",  cm_trackers[m].n_accepted) for m in 1:input.M], "\t"),
-		prefix="GpABC model selection emulation ",
-	)
+	@info join(["GpABC model selection emulation",
+			"Completed $(n_iterations-1) iterations, accepting $total_n_accepted particles in total.",
+			"Number of accepted parameters by model: ",
+			join([string("Model ", m, ": ",  cm_trackers[m].n_accepted) for m in 1:input.M], "\t")
+		], "\n")
 
 	smc_trackers = [EmulatedABCSMCTracker{CUD, typeof(emulators[m]), ER, EPS}(
 		length(input.parameter_priors[m]),
@@ -292,7 +287,7 @@ function iterate_modelselection!(tracker::SimulatedModelSelectionTracker,
                 # This prevents the whole code from failing if there is a problem
                 # solving the differential equation(s). The exception is thrown by the
                 # distance function
-                warn("The summarised simulated data does not have the same size as the summarised reference data. If this is not happening at every iteration it may be due to the behaviour of DifferentialEquations::solve - please check for related warnings. Continuing to the next iteration.")
+                @warn "The summarised simulated data does not have the same size as the summarised reference data. If this is not happening at every iteration it may be due to the behaviour of DifferentialEquations::solve - please check for related warnings. Continuing to the next iteration."
                 n_iterations += 1
                 continue
             else
@@ -312,15 +307,14 @@ function iterate_modelselection!(tracker::SimulatedModelSelectionTracker,
 	end
 
 	if n_iterations == tracker.max_iter+1
-		warn("Simulated model selection reached maximum number of iterations ($(tracker.max_iter)) on an SMC run - consider trying more iterations.")
+		@warn "Simulated model selection reached maximum number of iterations ($(tracker.max_iter)) on an SMC run - consider trying more iterations."
 	end
 
-	info(string(DateTime(now())),
-		" Completed $(n_iterations-1) iterations, accepting $total_n_accepted particles in total.\n",
-		"Number of accepted parameters by model: ",
-		join([string("Model ", m, ": ",  cm_trackers[m].n_accepted) for m in 1:tracker.M], "\t"),
-		prefix="GpABC model selection simulation "
-	)
+	@info join(["GpABC model selection simulation",
+			"Completed $(n_iterations-1) iterations, accepting $total_n_accepted particles in total.",
+			"Number of accepted parameters by model: ",
+			join([string("Model ", m, ": ",  cm_trackers[m].n_accepted) for m in 1:tracker.M], "\t")
+		], "\n")
 
 	update_modelselection_tracker!(tracker, cm_trackers, threshold)
 end
@@ -404,15 +398,14 @@ function iterate_modelselection!(
 	end
 
 	if n_iterations == tracker.max_iter+1
-		warn("Emulated model selection reached maximum number of iterations ($(tracker.max_iter)) on an SMC run - consider trying more iterations.")
+		@warn "Emulated model selection reached maximum number of iterations ($(tracker.max_iter)) on an SMC run - consider trying more iterations."
 	end
 
-	info(string(DateTime(now())),
-		" Completed $(n_iterations-1) iterations, accepting $total_n_accepted particles in total.\n",
-		"Number of accepted parameters by model: ",
-		join([string("Model ", m, ": ",  cm_trackers[m].n_accepted) for m in 1:tracker.M], "\t"),
-		prefix="GpABC model selection emulation ",
-	)
+	@info join(["GpABC model selection emulation",
+			"Completed $(n_iterations-1) iterations, accepting $total_n_accepted particles in total.",
+			"Number of accepted parameters by model: ",
+			join([string("Model ", m, ": ",  cm_trackers[m].n_accepted) for m in 1:tracker.M], "\t")],
+		"\n")
 
 	update_modelselection_tracker!(tracker, cm_trackers, retrained_emulators, threshold)
 end

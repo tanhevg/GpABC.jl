@@ -86,7 +86,7 @@ function SimulatedABCSMC(reference_data::AbstractArray{AF,2},
                                     priors, distance_simulation_input,
                                     max_iter)
 
-    return ABCSMC(input, reference_data; kwargs...)
+    return ABCSMC(input; kwargs...)
 
 end
 
@@ -133,7 +133,7 @@ function SimulatedModelSelection(
         threshold_schedule,
         model_prior,
         parameter_priors,
-        distance_simulation_input,        
+        distance_simulation_input,
         max_iter)
 
     return model_selection(input)

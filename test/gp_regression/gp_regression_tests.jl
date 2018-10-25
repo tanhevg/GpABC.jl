@@ -36,11 +36,11 @@ end
     regression_var = readdlm("$(@__DIR__)/test_y1_var.csv")
     (r_mean, r_var) = gp_regression(gpem, batch_size=10)
     @test r_mean ≈ regression_mean
-    @test r_var ≈ regression_var
+    @test r_var ≈ regression_var rtol=1e-3
 
     regression_cov = readdlm("$(@__DIR__)/test_y1_cov.csv", ',')
     (r_mean, r_cov) = gp_regression(gpem, batch_size=10, full_covariance_matrix=true)
-    @test r_cov ≈ regression_cov
+    @test r_cov ≈ regression_cov rtol=1e-3
 
     gpem = GPModel(training_x, training_y, NoGradKernel())
     theta_mle = gp_train(gpem)

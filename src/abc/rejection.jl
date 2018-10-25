@@ -61,7 +61,7 @@ function ABCrejection(input::SimulatedABCRejectionInput;
 
 	checkABCInput(input)
     if write_progress
-        info(string(DateTime(now())), " ϵ = $(input.threshold)."; prefix="GpABC rejection simulation ")
+        @info "GpABC rejection simulation . ϵ = $(input.threshold)."
     end
 
 	# initialise
@@ -83,7 +83,7 @@ function ABCrejection(input::SimulatedABCRejectionInput;
                 # This prevents the whole code from failing if there is a problem
                 # solving the differential equation(s). The exception is thrown by the
                 # distance function
-                warn("The summarised simulated data does not have the same size as the summarised reference data. If this is not happening at every iteration it may be due to the behaviour of DifferentialEquations::solve - please check for related warnings. Continuing to the next iteration.")
+                @warn "The summarised simulated data does not have the same size as the summarised reference data. If this is not happening at every iteration it may be due to the behaviour of DifferentialEquations::solve - please check for related warnings. Continuing to the next iteration."
                 n_tries += 1
                 continue
             else
@@ -101,12 +101,12 @@ function ABCrejection(input::SimulatedABCRejectionInput;
         end
 
         if write_progress && (n_tries % progress_every == 0)
-            info(string(DateTime(now())), " Accepted $(n_accepted)/$(n_tries) particles.", prefix="GpABC rejection simulation ")
+            @info "GpABC rejection simulation . Accepted $(n_accepted)/$(n_tries) particles."
         end
     end
 
     if n_accepted < input.n_particles
-        warn("Simulation reached maximum iterations $(input.max_iter) before finding $(input.n_particles) particles - will return $n_accepted")
+        @warn "Simulation reached maximum iterations $(input.max_iter) before finding $(input.n_particles) particles - will return $n_accepted"
         accepted_parameters = accepted_parameters[1:n_accepted, :]
         accepted_distances = accepted_distances[1:n_accepted]
         weight_values = weight_values[1:n_accepted]
@@ -148,7 +148,7 @@ function ABCrejection(input::EmulatedABCRejectionInput;
     checkABCInput(input)
 
     if write_progress
-        info(string(DateTime(now())), " ϵ = $(input.threshold).", prefix="GpABC rejection emulation ")
+        @info "GpABC rejection emulation . ϵ = $(input.threshold)."
     end
     # initialise
     n_accepted = 0
@@ -191,16 +191,14 @@ function ABCrejection(input::EmulatedABCRejectionInput;
         end
 
         if write_progress
-            info(string(DateTime(now())),
-                " accepted $(n_accepted)/$(n_tries) particles ($(batch_no) batches of size $(input.batch_size)).",
-                prefix="GpABC rejection emulation ")
+            @info "GpABC rejection emulation. Accepted $(n_accepted)/$(n_tries) particles ($(batch_no) batches of size $(input.batch_size))."
         end
 
         batch_no += 1
     end
 
     if n_accepted < input.n_particles
-        warn("Emulation reached maximum $(input.max_iter) iterations before finding $(input.n_particles) particles - will return $n_accepted")
+        @warn "Emulation reached maximum $(input.max_iter) iterations before finding $(input.n_particles) particles - will return $n_accepted"
         accepted_parameters = accepted_parameters[1:n_accepted, :]
         accepted_distances = accepted_distances[1:n_accepted]
         weights = weights[1:n_accepted]

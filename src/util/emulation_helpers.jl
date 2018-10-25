@@ -46,10 +46,10 @@ function abc_retrain_emulator(
     if n_accepted > 0
         training_x = vcat(gpm.gp_training_x, extra_x[1:n_accepted, :])
         training_y = vcat(gpm.gp_training_y, extra_y[1:n_accepted])
-        info("Accepted $(n_accepted) new training points below threshold $(epsilon) after $(n_simulations) simulations"; prefix="GpABC Emulator retraining ")
+        @info "GpABC Emulator retraining . Accepted $(n_accepted) new training points below threshold $(epsilon) after $(n_simulations) simulations"
         train_emulator(training_x, training_y, training_input.emulator_training)
     else
-        warn("No new training points accepted below threshold $(epsilon); the emulator is not changed"; prefix="GpABC Emulator retraining ")
+        @warn "No new training points accepted below threshold $(epsilon); the emulator is not changed"; prefix="GpABC Emulator retraining "
         gpm
     end
 end
@@ -99,7 +99,7 @@ function abc_retrain_emulator(
         sample_y = simulate_distance(sample_x, training_input.distance_simulation_input)
         idx_below_threshold = findall(sample_y .<= epsilon)
         idx_above_threshold = filter(x->!(x in idx_below_threshold), axes(sample_y, 1))
-        info("Iteration $(n_iter + 1): $(length(idx_below_threshold)) design points with distance below $(epsilon)", prefix="GpABC Emulator retraining ")
+        @info "GpABC Emulator retraining . Iteration $(n_iter + 1): $(length(idx_below_threshold)) design points with distance below $(epsilon)"
         if n_below_threshold + length(idx_below_threshold) > cap_below_threshold
             idx_below_threshold = idx_below_threshold[1:cap_below_threshold - n_below_threshold]
             idx_above_threshold = vcat(idx_below_threshold[cap_below_threshold - n_below_threshold + 1:end], idx_above_threshold, )
@@ -122,7 +122,7 @@ function abc_retrain_emulator(
         n_iter += 1
     end
     if n_above_threshold == 0
-        warn("No design points with distance below $(epsilon) were accepted")
+        @warn "No design points with distance below $(epsilon) were accepted"
     end
     n_above_threshold = min(n_above_threshold, retraining_settings.n_design_points - n_below_threshold)
     training_x = vcat(training_x_below_threshold[1:n_below_threshold, :], training_x_above_threshold[1:n_above_threshold, :])
