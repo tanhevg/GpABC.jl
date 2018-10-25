@@ -421,7 +421,6 @@ function ABCSMC(
 
     if tracker.n_accepted[1] > 0
         for i in 2:length(input.threshold_schedule)
-            # @assert size(tracker.population[end], 1) > 0 "No particles were accepted by step #$(i-1) of ABC SMC"
             threshold = input.threshold_schedule[i]
             complete_threshold = iterateABCSMC!(tracker,
                            threshold,
@@ -431,7 +430,9 @@ function ABCSMC(
                            write_progress = write_progress,
                            progress_every = progress_every,
                            )
-            if !complete_threshold
+            println("complete_threshold ", complete_threshold, ' ', typeof(complete_threshold))
+            if !(complete_threshold)
+                println("break")
                 break
             end
         end

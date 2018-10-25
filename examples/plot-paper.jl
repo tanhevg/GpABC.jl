@@ -1,6 +1,7 @@
 using KernelDensity
 using PyPlot
 using PyCall
+import Random.randperm
 @pyimport matplotlib.patches as patches
 @pyimport matplotlib.legend_handler as lh
 @pyimport matplotlib.lines as lines

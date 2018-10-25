@@ -29,7 +29,7 @@ export
     AbstractEmulatorRetraining, NoopRetraining, IncrementalRetraining, PreviousPopulationRetraining, PreviousPopulationThresholdRetraining,
     AbstractEmulatedParticleSelection, MeanEmulatedParticleSelection, MeanVarEmulatedParticleSelection;
 
-using Optim, Distributions, Distances, DifferentialEquations, ForwardDiff, Dates, LinearAlgebra
+using Optim, Distributions, Distances, DifferentialEquations, ForwardDiff, Dates, LinearAlgebra, Logging
 
 import StatsBase
 
