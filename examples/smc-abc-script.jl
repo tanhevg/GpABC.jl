@@ -1,6 +1,6 @@
 import Pkg
 Pkg.activate("examples")
-using GpABC, DifferentialEquations, Distances, Distributions
+using Revise, GpABC, DifferentialEquations, Distances, Distributions
 
 # seed!(4)
 
@@ -105,9 +105,9 @@ emu_out = EmulatedABCSMC(reference_data,
     emulated_particle_selection = MeanVarEmulatedParticleSelection()
     )
 
-# println("SIMULATION")
-# sim_out = SimulatedABCSMC(reference_data,
-#     simulator_function,
-#     priors[param_indices],
-#     threshold_schedule,
-#     n_particles)
+println("SIMULATION")
+sim_out = SimulatedABCSMC(reference_data,
+    simulator_function,
+    priors[param_indices],
+    threshold_schedule,
+    n_particles)

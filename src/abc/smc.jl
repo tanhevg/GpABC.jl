@@ -188,10 +188,11 @@ function iterateABCSMC!(tracker::SimulatedABCSMCTracker,
         progress_every = 1000)
 
     if write_progress
-        info(string(DateTime(now())), " ϵ = $threshold.", prefix="GpABC SMC Simulation ")
+        # info(string(DateTime(now())), " ϵ = $threshold.", prefix="GpABC SMC Simulation ")
+        @info "ϵ = $threshold"
     end
     if threshold > tracker.threshold_schedule[end]
-        warn("current threshold less strict than previous one.")
+        @warn "current threshold less strict than previous one."
     end
 
     # initialise
@@ -214,7 +215,7 @@ function iterateABCSMC!(tracker::SimulatedABCSMCTracker,
                 # This prevents the whole code from failing if there is a problem
                 # solving the differential equation(s). The exception is thrown by the
                 # distance function
-                warn("The summarised simulated data does not have the same size as the summarised reference data. If this is not happening at every iteration it may be due to the behaviour of DifferentialEquations::solve - please check for related warnings. Continuing to the next iteration.")
+                @warn "The summarised simulated data does not have the same size as the summarised reference data. If this is not happening at every iteration it may be due to the behaviour of DifferentialEquations::solve - please check for related warnings. Continuing to the next iteration."
                 n_tries += 1
                 continue
             else
@@ -233,12 +234,13 @@ function iterateABCSMC!(tracker::SimulatedABCSMCTracker,
         end
 
         if write_progress && (n_tries % progress_every == 0)
-            info(string(DateTime(now())), " Accepted $(n_accepted)/$(n_tries) particles.", prefix="GpABC SMC Simulation ")
+            # info(string(DateTime(now())), " Accepted $(n_accepted)/$(n_tries) particles.", prefix="GpABC SMC Simulation ")
+            @info "Accepted $(n_accepted)/$(n_tries) particles."
         end
     end
 
     if n_accepted == 0
-        warn("Simulation reached maximum $(tracker.max_iter) iterations without selecting any particles")
+        @warn "Simulation reached maximum $(tracker.max_iter) iterations without selecting any particles"
         return false
     end
 
@@ -246,9 +248,10 @@ function iterateABCSMC!(tracker::SimulatedABCSMCTracker,
         population = population[1:n_accepted, :]
         weight_values = weight_values[1:n_accepted]
         distances = distances[1:n_accepted]
-        warn("Simulation reached maximum $(tracker.max_iter) iterations before finding $(n_toaccept) particles - will return $n_accepted")
+        @warn "Simulation reached maximum $(tracker.max_iter) iterations before finding $(n_toaccept) particles - will return $n_accepted"
     else
-        info(string(DateTime(now())), " Finished. Accepted $(n_accepted)/$(n_toaccept).", prefix="GpABC SMC Simulation ")
+        # info(string(DateTime(now())), " Finished. Accepted $(n_accepted)/$(n_toaccept).", prefix="GpABC SMC Simulation ")
+        @info "Finished. Accepted $(n_accepted)/$(n_toaccept)."
     end
 
     update_smctracker!(tracker, n_accepted, n_tries, threshold,
@@ -269,11 +272,12 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
         progress_every = 1000
         )
     if write_progress
-        info(string(DateTime(now())), " ϵ = $threshold.", prefix="GpABC SMC Emulation ")
+        # info(string(DateTime(now())), " ϵ = $threshold.", prefix="GpABC SMC Emulation ")
+        @info "ϵ = $threshold."
     end
 
     if threshold > tracker.threshold_schedule[end]
-        warn("Current threshold less strict than previous one.")
+        @warn "Current threshold less strict than previous one."
     end
 
     # initialise
@@ -315,14 +319,15 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
         n_accepted += n_include
 
         if write_progress
-            info(string(DateTime(now())), " Accepted $(n_accepted)/$(n_tries) particles.", prefix="GpABC SMC Emulation ")
+            # info(string(DateTime(now())), " Accepted $(n_accepted)/$(n_tries) particles.", prefix="GpABC SMC Emulation ")
+            @info "Accepted $(n_accepted)/$(n_tries) particles."
         end
 
         iter_no += 1
     end
 
     if n_accepted == 0
-        warn("Emulation reached maximum $(tracker.max_iter) iterations without selecting any particles")
+        @warn "Emulation reached maximum $(tracker.max_iter) iterations without selecting any particles"
         return false
     end
 
@@ -330,7 +335,7 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
         population = population[1:n_accepted, :]
         all_weight_values = all_weight_values[1:n_accepted]
         all_distances = all_distances[1:n_accepted]
-        warn("Emulation reached maximum $(tracker.max_iter) iterations before finding $(n_toaccept) particles - will return $n_accepted")
+        @warn "Emulation reached maximum $(tracker.max_iter) iterations before finding $(n_toaccept) particles - will return $n_accepted"
     end
 
     update_smctracker!(tracker, n_accepted, n_tries, threshold,
@@ -403,7 +408,7 @@ function ABCSMC(
             end
         end
     else
-        warn("No particles selected at initial rejection ABC step of simulated SMC ABC - terminating algorithm")
+        @warn "No particles selected at initial rejection ABC step of simulated SMC ABC - terminating algorithm"
     end
 
     return buildAbcSmcOutput(tracker)
@@ -431,13 +436,13 @@ function ABCSMC(
                            progress_every = progress_every,
                            )
             println("complete_threshold ", complete_threshold, ' ', typeof(complete_threshold))
-            if !(complete_threshold)
+            if complete_threshold
                 println("break")
                 break
             end
         end
     else
-        warn("No particles selected at initial rejection ABC step of emulated SMC ABC - terminating algorithm")
+        @warn "No particles selected at initial rejection ABC step of emulated SMC ABC - terminating algorithm"
     end
 
     return buildAbcSmcOutput(tracker)
