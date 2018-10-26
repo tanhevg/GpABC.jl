@@ -141,7 +141,8 @@ end
 # Initialise an emulated ABC-SMC run
 #
 function initialiseABCSMC(input::EmulatedABCSMCInput{CUD, ER, EPS};
-        write_progress = true, progress_every = 1000) where
+        write_progress = true,
+        progress_every = 1000) where
         {CUD<:ContinuousUnivariateDistribution,
         ER<:AbstractEmulatorRetraining,
         EPS<:AbstractEmulatedParticleSelection}
@@ -381,11 +382,10 @@ function ABCSMC(
 
     if tracker.n_accepted[1] > 0
         for i in 2:length(input.threshold_schedule)
-            # @assert size(tracker.population[end], 1) > 0 "No particles were accepted by step #$(i-1) of ABC SMC"
             threshold = input.threshold_schedule[i]
             complete_threshold = iterateABCSMC!(tracker,
                            threshold,
-                           input.n_particles,
+                           input.n_particles;
                            write_progress = write_progress,
                            progress_every = progress_every,
                            )
@@ -404,40 +404,6 @@ function ABCSMC(
 
     return buildAbcSmcOutput(tracker)
 end
-
-# function ABCSMC(
-#         input::EmulatedABCSMCInput,
-#         reference_data::AbstractArray{Float64,2},
-#         batch_size::Int;
-#         write_progress = true,
-#         progress_every = 1000,
-#         )
-#
-#     tracker = initialiseABCSMC(input; write_progress = write_progress)
-#
-#     if tracker.n_accepted[1] > 0
-#         for i in 2:length(input.threshold_schedule)
-#             threshold = input.threshold_schedule[i]
-#             complete_threshold = iterateABCSMC!(tracker,
-#                            threshold,
-#                            input.n_particles,
-#                            reference_data,
-#                            batch_size,
-#                            write_progress = write_progress,
-#                            progress_every = progress_every,
-#                            )
-#             println("complete_threshold ", complete_threshold, ' ', typeof(complete_threshold))
-#             if complete_threshold
-#                 println("break")
-#                 break
-#             end
-#         end
-#     else
-#         @warn "No particles selected at initial rejection ABC step of emulated SMC ABC - terminating algorithm"
-#     end
-#
-#     return buildAbcSmcOutput(tracker)
-# end
 
 # not exported
 function initialise_abcsmc_iteration(tracker::ABCSMCTracker, n_toaccept::Int)
