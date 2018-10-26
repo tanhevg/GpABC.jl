@@ -301,7 +301,7 @@ uuid = "01680d73-4ee2-5a08-a1aa-533608c188bb"
 version = "0.2.0"
 
 [[GpABC]]
-deps = ["Dates", "DifferentialEquations", "Distances", "Distributions", "ForwardDiff", "LinearAlgebra", "Logging", "Optim", "RecipesBase", "StatsBase"]
+deps = ["DifferentialEquations", "Distances", "Distributions", "ForwardDiff", "LinearAlgebra", "Logging", "Optim", "RecipesBase", "StatsBase"]
 path = ".."
 uuid = "e850a1a4-d859-11e8-3d54-a195e6d045d3"
 version = "0.1.0"
