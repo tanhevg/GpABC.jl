@@ -106,7 +106,7 @@ function EmulatedABCSMC(reference_data::AbstractArray{AF,2},
     input = EmulatedABCSMCInput(length(priors), n_particles, threshold_schedule,
         priors, batch_size, max_iter, emulator_training_input, emulator_retraining, emulated_particle_selection)
 
-    return ABCSMC(input, reference_data, batch_size; kwargs...)
+    return ABCSMC(input; kwargs...)
 end
 
 """

@@ -110,8 +110,7 @@ end
 #
 # Initialise a simulated ABC-SMC run
 #
-function initialiseABCSMC(input::SimulatedABCSMCInput,
-        reference_data::AbstractArray{Float64,2};
+function initialiseABCSMC(input::SimulatedABCSMCInput;
         write_progress = true,
         progress_every = 1000,
         )
@@ -141,7 +140,8 @@ end
 # Initialise an emulated ABC-SMC run
 #
 function initialiseABCSMC(input::EmulatedABCSMCInput{CUD, ER, EPS};
-        write_progress = true) where
+        write_progress = true,
+        progress_every = 1000) where
         {CUD<:ContinuousUnivariateDistribution,
         ER<:AbstractEmulatorRetraining,
         EPS<:AbstractEmulatedParticleSelection}
@@ -182,8 +182,7 @@ end
 #
 function iterateABCSMC!(tracker::SimulatedABCSMCTracker,
         threshold::AbstractFloat,
-        n_toaccept::Int,
-        reference_data::AbstractArray{Float64,2};
+        n_toaccept::Int;
         write_progress = true,
         progress_every = 1000)
 
@@ -262,9 +261,7 @@ end
 #
 function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
         threshold::AbstractFloat,
-        n_toaccept::Int,
-        reference_data::AbstractArray{Float64,2},
-        batch_size::Int;
+        n_toaccept::Int;
         write_progress = true,
         progress_every = 1000
         )
@@ -377,24 +374,21 @@ parameter vector directly is used to construct the posterior). Whether simulatio
 An object that inherits from ['ABCSMCOutput'](@ref), depending on whether a `input` is a ['SimulatedABCSMCInput'](@ref) or ['EmulatedABCSMCInput'](@ref).
 """
 function ABCSMC(
-        input::SimulatedABCSMCInput,
-        reference_data::AbstractArray{Float64,2};
+        input::T;
         write_progress = true,
         progress_every = 1000,
-        )
+        ) where {T<:ABCSMCInput}
 
-    tracker = initialiseABCSMC(input,
-                               reference_data;
-                               write_progress = write_progress)
+    tracker = initialiseABCSMC(input;
+                               write_progress = write_progress,
+                               progress_every = progress_every)
 
     if tracker.n_accepted[1] > 0
         for i in 2:length(input.threshold_schedule)
-            # @assert size(tracker.population[end], 1) > 0 "No particles were accepted by step #$(i-1) of ABC SMC"
             threshold = input.threshold_schedule[i]
             complete_threshold = iterateABCSMC!(tracker,
                            threshold,
-                           input.n_particles,
-                           reference_data,
+                           input.n_particles;
                            write_progress = write_progress,
                            progress_every = progress_every,
                            )
@@ -404,39 +398,6 @@ function ABCSMC(
         end
     else
         warn("No particles selected at initial rejection ABC step of simulated SMC ABC - terminating algorithm")
-    end
-
-    return buildAbcSmcOutput(tracker)
-end
-
-function ABCSMC(
-        input::EmulatedABCSMCInput,
-        reference_data::AbstractArray{Float64,2},
-        batch_size::Int;
-        write_progress = true,
-        progress_every = 1000,
-        )
-
-    tracker = initialiseABCSMC(input; write_progress = write_progress)
-
-    if tracker.n_accepted[1] > 0
-        for i in 2:length(input.threshold_schedule)
-            # @assert size(tracker.population[end], 1) > 0 "No particles were accepted by step #$(i-1) of ABC SMC"
-            threshold = input.threshold_schedule[i]
-            complete_threshold = iterateABCSMC!(tracker,
-                           threshold,
-                           input.n_particles,
-                           reference_data,
-                           batch_size,
-                           write_progress = write_progress,
-                           progress_every = progress_every,
-                           )
-            if !complete_threshold
-                break
-            end
-        end
-    else
-        warn("No particles selected at initial rejection ABC step of emulated SMC ABC - terminating algorithm")
     end
 
     return buildAbcSmcOutput(tracker)
