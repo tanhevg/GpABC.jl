@@ -174,6 +174,7 @@ mutable struct SimulatedABCSMCTracker <: ABCSMCTracker
     n_accepted::AbstractArray{Int64,1}
     n_tries::AbstractArray{Int64,1}
     threshold_schedule::AbstractArray{Float64,1}
+	can_continue::Bool # we used to return this flag from iterateABCSMC!, but it got broken in julia 1.0 - see https://github.com/JuliaLang/julia/issues/29805
     population::AbstractArray{AbstractArray{Float64,2},1}
     distances::AbstractArray{AbstractArray{Float64,1},1}
     weights::AbstractArray{StatsBase.Weights,1}
@@ -188,6 +189,7 @@ mutable struct EmulatedABCSMCTracker{CUD<:ContinuousUnivariateDistribution, ET,
     n_accepted::AbstractArray{Int64,1}
     n_tries::AbstractArray{Int64,1}
     threshold_schedule::AbstractArray{Float64,1}
+	can_continue::Bool # we used to return this flag from iterateABCSMC!, but it got broken in julia 1.0 - see https://github.com/JuliaLang/julia/issues/29805
     population::AbstractArray{AbstractArray{Float64,2},1}
     distances::AbstractArray{AbstractArray{Float64,1},1}
     weights::AbstractArray{StatsBase.Weights,1}

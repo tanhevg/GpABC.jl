@@ -125,6 +125,7 @@ function initialiseABCSMC(input::SimulatedABCSMCInput;
                              [rejection_output.n_accepted],
                              [rejection_output.n_tries],
                              [rejection_output.threshold],
+                             rejection_output.n_accepted > 0,
                              [rejection_output.population],
                              [rejection_output.distances],
                              [rejection_output.weights],
@@ -163,6 +164,7 @@ function initialiseABCSMC(input::EmulatedABCSMCInput{CUD, ER, EPS};
                              [rejection_output.n_accepted],
                              [rejection_output.n_tries],
                              [rejection_output.threshold],
+                             rejection_output.n_accepted > 0,
                              [rejection_output.population],
                              [rejection_output.distances],
                              [rejection_output.weights],
@@ -239,10 +241,7 @@ function iterateABCSMC!(tracker::SimulatedABCSMCTracker,
 
     if n_accepted == 0
         @warn "Simulation reached maximum $(tracker.max_iter) iterations without selecting any particles"
-        return false
-    end
-
-    if n_accepted < n_toaccept
+    elseif n_accepted < n_toaccept
         population = population[1:n_accepted, :]
         weight_values = weight_values[1:n_accepted]
         distances = distances[1:n_accepted]
@@ -251,19 +250,17 @@ function iterateABCSMC!(tracker::SimulatedABCSMCTracker,
 
     update_smctracker!(tracker, n_accepted, n_tries, threshold,
                         population, distances, weight_values)
-
-    return true
 end
 
 #
 # Iterate a emulated ABC-SMC
 #
-function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
+function iterateABCSMC!(tracker::EmulatedABCSMCTracker{CUD, ET, ER, EPS},
         threshold::AbstractFloat,
         n_toaccept::Int;
         write_progress = true,
         progress_every = 1000
-        )
+        ) where {CUD<:ContinuousUnivariateDistribution, ET, ER<:AbstractEmulatorRetraining, EPS<:AbstractEmulatedParticleSelection}
     if write_progress
         @info "GpABC SMC emulation ϵ = $threshold."
     end
@@ -319,10 +316,7 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
 
     if n_accepted == 0
         @warn "Emulation reached maximum $(tracker.max_iter) iterations without selecting any particles"
-        return false
-    end
-
-    if n_accepted < n_toaccept
+    elseif n_accepted < n_toaccept
         population = population[1:n_accepted, :]
         all_weight_values = all_weight_values[1:n_accepted]
         all_distances = all_distances[1:n_accepted]
@@ -331,8 +325,6 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
 
     update_smctracker!(tracker, n_accepted, n_tries, threshold,
                         population, all_distances, all_weight_values, emulator)
-    println("return true")
-    return true
 end
 
 function buildAbcSmcOutput(tracker::EmulatedABCSMCTracker)
@@ -380,21 +372,13 @@ function ABCSMC(
 
     tracker = initialiseABCSMC(input; write_progress = write_progress, progress_every = progress_every)
 
-    if tracker.n_accepted[1] > 0
+    if tracker.can_continue
         for i in 2:length(input.threshold_schedule)
             threshold = input.threshold_schedule[i]
-            complete_threshold = iterateABCSMC!(tracker,
-                           threshold,
-                           input.n_particles;
-                           write_progress = write_progress,
-                           progress_every = progress_every,
-                           )
-            println("complete_threshold 1 ", complete_threshold,
-                ' ', !complete_threshold,
-                ' ', bitstring(complete_threshold),
-                ' ', typeof(complete_threshold))
-            if !complete_threshold
-                println("break")
+            iterateABCSMC!(tracker, threshold, input.n_particles;
+                write_progress = write_progress,
+                progress_every = progress_every)
+            if !tracker.can_continue
                 break
             end
         end
@@ -421,14 +405,19 @@ function update_smctracker!(tracker::SimulatedABCSMCTracker, n_accepted::Int,
     n_tries::Int, threshold::AbstractFloat, population::AbstractArray{Float64,2},
     distances::AbstractArray{Float64,1}, weight_values::AbstractArray{Float64,1})
 
-    push!(tracker.n_accepted, n_accepted)
-    push!(tracker.n_tries, n_tries)
-    push!(tracker.threshold_schedule, threshold)
-    push!(tracker.population, population)
-    push!(tracker.distances, distances)
-    # Do not want to normalise weights now if doing model selection - will do at
-    # end of population at model selection level
-    push!(tracker.weights, normalise(weight_values))
+    if n_accepted > 0
+        tracker.can_continue = true
+        push!(tracker.n_accepted, n_accepted)
+        push!(tracker.n_tries, n_tries)
+        push!(tracker.threshold_schedule, threshold)
+        push!(tracker.population, population)
+        push!(tracker.distances, distances)
+        # Do not want to normalise weights now if doing model selection - will do at
+        # end of population at model selection level
+        push!(tracker.weights, normalise(weight_values))
+    else
+        tracker.can_continue = false
+    end
 end
 
 # not exported
@@ -437,13 +426,18 @@ function update_smctracker!(tracker::EmulatedABCSMCTracker, n_accepted::Int,
     distances::AbstractArray{Float64,1}, weight_values::AbstractArray{Float64,1},
     emulator::GPModel)
 
-    push!(tracker.n_accepted, n_accepted)
-    push!(tracker.n_tries, n_tries)
-    push!(tracker.threshold_schedule, threshold)
-    push!(tracker.population, population)
-    push!(tracker.distances, distances)
-    # Do not want to normalise weights now if doing model selection - will do at
-    # end of population at model selection level
-    push!(tracker.weights, normalise(weight_values))
-    push!(tracker.emulators, emulator)
+    if n_accepted > 0
+        tracker.can_continue = true
+        push!(tracker.n_accepted, n_accepted)
+        push!(tracker.n_tries, n_tries)
+        push!(tracker.threshold_schedule, threshold)
+        push!(tracker.population, population)
+        push!(tracker.distances, distances)
+        # Do not want to normalise weights now if doing model selection - will do at
+        # end of population at model selection level
+        push!(tracker.weights, normalise(weight_values))
+        push!(tracker.emulators, emulator)
+    else
+        tracker.can_continue = false
+    end
 end

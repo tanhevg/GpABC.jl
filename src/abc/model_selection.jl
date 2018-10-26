@@ -129,6 +129,7 @@ function initialise_modelselection(input::SimulatedModelSelectionInput)
 		[cm_trackers[m].n_accepted],
 		[cm_trackers[m].n_tries],
 		[input.threshold_schedule[1]],
+        cm_trackers[m].n_accepted > 0,
 		[cm_trackers[m].population],
 		[cm_trackers[m].distances],
 		[StatsBase.Weights(cm_trackers[m].weight_values ./ sum(cm_trackers[m].weight_values), 1.0)], 	# Normalise weights for each model
@@ -227,6 +228,7 @@ function initialise_modelselection(input::EmulatedModelSelectionInput{AF, CUD, E
 		[cm_trackers[m].n_accepted],
 		[cm_trackers[m].n_tries],
 		[input.threshold_schedule[1]],
+		cm_trackers[m].n_accepted > 0,
 		[cm_trackers[m].population],
 		[cm_trackers[m].distances],
 		[StatsBase.Weights(cm_trackers[m].weight_values ./ sum(cm_trackers[m].weight_values), 1.0)],
