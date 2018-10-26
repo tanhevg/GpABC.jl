@@ -449,7 +449,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "reference/#GpABC.ABCSMC-Tuple{GpABC.SimulatedABCSMCInput,AbstractArray{Float64,2}}",
+    "location": "reference/#GpABC.ABCSMC-Union{Tuple{T}, Tuple{T}} where T<:GpABC.ABCSMCInput",
     "page": "Reference",
     "title": "GpABC.ABCSMC",
     "category": "method",
