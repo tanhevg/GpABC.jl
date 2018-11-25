@@ -5,46 +5,163 @@ abstract type ABCInput end
 
 abstract type ABCRejectionInput <: ABCInput end
 
+RepetitiveTraining(; rt_iterations::Int64=0, rt_extra_training_points::Int64=1, rt_sample_size::Int64=1000) =
+    RepetitiveTraining(rt_iterations, rt_extra_training_points, rt_sample_size)
+
+struct DistanceSimulationInput
+    reference_summary_statistic::AbstractArray{Float64,1}
+    simulator_function::Function
+    summary_statistic::Function
+    distance_metric::Function
+end
+
+abstract type AbstractEmulatorRetraining end
+
+struct IncrementalRetraining <: AbstractEmulatorRetraining
+    design_points::Int64
+    max_simulations::Int64
+end
+
+type PreviousPopulationRetraining <: AbstractEmulatorRetraining end
+
+struct PreviousPopulationThresholdRetraining <: AbstractEmulatorRetraining
+    n_design_points::Int
+    n_below_threshold::Int
+    max_iter::Int
+end
+
+type NoopRetraining <: AbstractEmulatorRetraining end
+
+
+abstract type AbstractEmulatorTraining end
+struct DefaultEmulatorTraining{K<:AbstractGPKernel} <: AbstractEmulatorTraining
+    kernel::K
+end
+DefaultEmulatorTraining() = DefaultEmulatorTraining(SquaredExponentialArdKernel())
+
+struct EmulatorTrainingInput{ET<:AbstractEmulatorTraining}
+    distance_simulation_input::DistanceSimulationInput
+    design_points::Int64
+    emulator_training::ET
+end
+EmulatorTrainingInput(dsi::DistanceSimulationInput) = EmulatorTrainingInput(dsi, DefaultEmulatorTraining())
+EmulatorTrainingInput(n_design_points, reference_summary_statistic, simulator_function, summary_statistic, distance_metric, et=DefaultEmulatorTraining()) =
+    EmulatorTrainingInput(DistanceSimulationInput(
+        reference_summary_statistic, simulator_function,
+        build_summary_statistic(summary_statistic), distance_metric),
+        n_design_points, et)
+
+abstract type AbstractEmulatedParticleSelection end
+
+type MeanEmulatedParticleSelection <: AbstractEmulatedParticleSelection end
+
+struct MeanVarEmulatedParticleSelection <: AbstractEmulatedParticleSelection
+    variance_threshold_factor::Float64
+end
+MeanVarEmulatedParticleSelection() = MeanVarEmulatedParticleSelection(1.0)
+
+"""
+    SimulatedABCRejectionInput
+
+An object that defines the settings for a simulation-based rejection-ABC computation.
+
+# Fields
+- `n_params::Int64`: The number of parameters to be estimated.
+- `n_particles::Int64`: The number of parameter vectors (particles) that will be included in the final posterior.
+- `threshold::Float64`: The maximum distance from the summarised model output to summarised observed data for a parameter vector to be included in the posterior.
+- `priors::AbstractArray{ContinuousUnivariateDistribution,1}`: A 1D Array of distributions with length `n_params` from which candidate parameter vectors will be sampled.
+- `summary_statistic::Union{String,AbstractArray{String,1},Function}`: Either: 1. A `String` or 1D Array of strings that Or 2. A function that outputs a 1D Array of Floats that summarises model output. REFER TO DOCS
+- `distance_function::Function`: Any function that computes the distance between 2 1D Arrays.
+- `simulator_function::Function`: A function that takes a parameter vector as an argument and outputs model results.
+"""
 struct SimulatedABCRejectionInput <: ABCRejectionInput
     n_params::Int64
     n_particles::Int64
     threshold::Float64
-    priors::Vector{ContinuousUnivariateDistribution}
-    summary_statistic::Union{String,Vector{String},Function}
-    distance_function::Function
-    simulator_function::Function
+    priors::AbstractArray{ContinuousUnivariateDistribution,1}
+    distance_simulation_input::DistanceSimulationInput
+    max_iter::Int
 end
 
-struct EmulatedABCRejectionInput <: ABCRejectionInput
+"""
+    EmulatedABCRejectionInput
+
+An object that defines the settings for a emulation-based rejection-ABC computation.
+
+# Fields
+- `n_params::Int64`: The number of parameters to be estimated.
+- `n_particles::Int64`: The number of parameter vectors (particles) that will be included in the final posterior.
+- `threshold::Float64`: The maximum distance from the summarised model output to summarised observed data for a parameter vector to be included in the posterior.
+- `priors::AbstractArray{ContinuousUnivariateDistribution,1}`: A 1D Array of distributions with length `n_params` from which candidate parameter vectors will be sampled.
+- `max_iter::Int64`: The maximum number of iterations/batches before termination.
+"""
+struct EmulatedABCRejectionInput{CUD<:ContinuousUnivariateDistribution, EPS<:AbstractEmulatedParticleSelection} <: ABCRejectionInput
 	n_params::Int64
 	n_particles::Int64
 	threshold::Float64
-	priors::Vector{ContinuousUnivariateDistribution}
-	distance_prediction_function::Function
+	priors::AbstractArray{CUD,1}
 	batch_size::Int64
-    max_iter::Int
+    max_iter::Int64
+    emulator_training_input::EmulatorTrainingInput
+    selection::EPS
 end
 
 abstract type ABCSMCInput <: ABCInput end
 
+"""
+    SimulatedABCSMCInput
+
+An object that defines the settings for a simulation-based ABC-SMC computation.
+
+# Fields
+- `n_params::Int64`: The number of parameters to be estimated.
+- `n_particles::Int64`: The number of parameter vectors (particles) that will be included in the final posterior.
+- `threshold_schedule::AbstractArray{Float64}`: A set of maximum distances from the summarised model output to summarised observed data for a parameter vector to be included in the posterior. Each distance will be used in a single run of the ABC-SMC algorithm.
+- `priors::AbstractArray{ContinuousUnivariateDistribution,1}`: A 1D Array of distributions with length `n_params` from which candidate parameter vectors will be sampled.
+- `summary_statistic::Union{String,AbstractArray{String,1},Function}`: Either: 1. A `String` or 1D Array of strings that Or 2. A function that outputs a 1D Array of Floats that summarises model output. REFER TO DOCS
+- `distance_function::Function`: Any function that computes the distance between 2 1D Arrays.
+- `simulator_function::Function`: A function that takes a parameter vector as an argument and outputs model results.
+- `max_iter::Int`: The maximum number of iterations in each population before algorithm termination.
+"""
 struct SimulatedABCSMCInput <: ABCSMCInput
     n_params::Int64
     n_particles::Int64
-    threshold_schedule::Vector{Float64}
-    priors::Vector{ContinuousUnivariateDistribution}
-    summary_statistic::Union{String,Vector{String},Function}
-    distance_function::Function
-    simulator_function::Function
+    threshold_schedule::AbstractArray{Float64,1}
+    priors::AbstractArray{ContinuousUnivariateDistribution,1}
+    distance_simulation_input::DistanceSimulationInput
+    max_iter::Int
 end
+SimulatedABCRejectionInput(smc_input::SimulatedABCSMCInput) =
+    SimulatedABCRejectionInput(smc_input.n_params,
+        smc_input.n_particles,
+        smc_input.threshold_schedule[1],
+        smc_input.priors,
+        smc_input.distance_simulation_input,
+        smc_input.max_iter)
 
-struct EmulatedABCSMCInput <: ABCSMCInput
+"""
+    EmulatedABCRejectionInput
+
+An object that defines the settings for a emulation-based rejection-ABC computation.
+
+# Fields
+- `n_params::Int64`: The number of parameters to be estimated (the length of each parameter vector/particle).
+- `n_particles::Int64`: The number of parameter vectors (particles) that will be included in the final posterior.
+- `threshold_schedule::AbstractArray{Float64}`: A set of maximum distances from the summarised model output to summarised observed data for a parameter vector to be included in the posterior. Each distance will be used in a single run of the ABC-SMC algorithm.
+- `priors::AbstractArray{ContinuousUnivariateDistribution,1}`: A 1D Array of distributions with length `n_params` from which candidate parameter vectors will be sampled.
+- `max_iter::Int64`: The maximum number of iterations/batches before termination.
+"""
+struct EmulatedABCSMCInput{CUD<:ContinuousUnivariateDistribution,
+        ER<:AbstractEmulatorRetraining, EPS<:AbstractEmulatedParticleSelection} <: ABCSMCInput
     n_params::Int64
     n_particles::Int64
-    threshold_schedule::Vector{Float64}
-    priors::Vector{ContinuousUnivariateDistribution}
-    distance_prediction_function::Function
+    threshold_schedule::AbstractArray{Float64,1}
+    priors::AbstractArray{CUD,1}
     batch_size::Int64
-    max_iter::Int
+    max_iter::Int64
+    emulator_training_input::EmulatorTrainingInput
+    emulator_retraining::ER
+    selection::EPS
 end
 
 #
@@ -54,28 +171,33 @@ abstract type ABCSMCTracker end
 
 mutable struct SimulatedABCSMCTracker <: ABCSMCTracker
     n_params::Int64
-    n_accepted::Vector{Int64}
-    n_tries::Vector{Int64}
-    threshold_schedule::Vector{Float64}
-    population::Vector{Matrix{Float64}}
-    distances::Vector{Vector{Float64}}
-    weights::Vector{StatsBase.Weights}
-    priors::Vector{ContinuousUnivariateDistribution}
-    summary_statistic::Function
-    distance_function::Function
-    simulator_function::Function
+    n_accepted::AbstractArray{Int64,1}
+    n_tries::AbstractArray{Int64,1}
+    threshold_schedule::AbstractArray{Float64,1}
+    population::AbstractArray{AbstractArray{Float64,2},1}
+    distances::AbstractArray{AbstractArray{Float64,1},1}
+    weights::AbstractArray{StatsBase.Weights,1}
+    priors::AbstractArray{ContinuousUnivariateDistribution,1}
+    distance_simulation_input::DistanceSimulationInput
+    max_iter::Int
 end
 
-mutable struct EmulatedABCSMCTracker <: ABCSMCTracker
+mutable struct EmulatedABCSMCTracker{CUD<:ContinuousUnivariateDistribution, ET,
+        ER<:AbstractEmulatorRetraining, EPS<:AbstractEmulatedParticleSelection} <: ABCSMCTracker
     n_params::Int64
-    n_accepted::Vector{Int64}
-    n_tries::Vector{Int64}
-    threshold_schedule::Vector{Float64}
-    population::Vector{Matrix{Float64}}
-    distances::Vector{Vector{Float64}}
-    weights::Vector{StatsBase.Weights}
-    priors::Vector{ContinuousUnivariateDistribution}
-    distance_prediction_function::Function
+    n_accepted::AbstractArray{Int64,1}
+    n_tries::AbstractArray{Int64,1}
+    threshold_schedule::AbstractArray{Float64,1}
+    population::AbstractArray{AbstractArray{Float64,2},1}
+    distances::AbstractArray{AbstractArray{Float64,1},1}
+    weights::AbstractArray{StatsBase.Weights,1}
+    priors::AbstractArray{CUD,1}
+    emulator_training_input::EmulatorTrainingInput
+    emulator_retraining::ER
+    selection::EPS
+    batch_size::Int64
+    max_iter::Int64
+    emulators::AbstractArray{ET,1}
 end
 
 #
@@ -83,26 +205,80 @@ end
 #
 abstract type ABCOutput end
 
-struct ABCRejectionOutput <: ABCOutput
+"""
+    ABCRejectionOutput
+
+A container for the output of a rejection-ABC computation.
+
+# Fields
+- `n_params::Int64`: The number of parameters to be estimated.
+- `n_accepted::Int64`: The number of accepted parameter vectors (particles) in the posterior.
+- `n_tries::Int64`: The total number of parameter vectors (particles) that were tried.
+- `threshold::Float64`: The maximum distance from the summarised model output to summarised observed data for a parameter vector to be included in the posterior.
+- `population::AbstractArray{Float64,2}`: The parameter vectors (particles) in the posterior. Size: (`n_accepted`, `n_params`).
+- `distances::AbstractArray{Float64,1}`: The distances for each parameter vector (particle) in the posterior to the observed data in summary statistic space. Size: (`n_accepted`).
+- `weights::StatsBase.Weights`: The weight of each parameter vector (particle) in the posterior.
+"""
+abstract type ABCRejectionOutput <: ABCOutput end
+
+struct EmulatedABCRejectionOutput{ET} <: ABCRejectionOutput
     n_params::Int64
     n_accepted::Int64
     n_tries::Int64
     threshold::Float64
-    population::Matrix{Float64}
-    distances::Vector{Float64}
+    population::AbstractArray{Float64,2}
+    distances::AbstractArray{Float64,1}
+    weights::StatsBase.Weights
+    emulator::ET
+end
+
+struct SimulatedABCRejectionOutput <: ABCRejectionOutput
+    n_params::Int64
+    n_accepted::Int64
+    n_tries::Int64
+    threshold::Float64
+    population::AbstractArray{Float64,2}
+    distances::AbstractArray{Float64,1}
     weights::StatsBase.Weights
 end
 
+"""
+    ABCSMCOutput
 
-struct ABCSMCOutput <: ABCOutput
+A container for the output of a rejection-ABC computation.
+
+# Fields
+- `n_params::Int64`: The number of parameters to be estimated.
+- `n_accepted::Int64`: The number of accepted parameter vectors (particles) in the posterior.
+- `n_tries::Int64`: The total number of parameter vectors (particles) that were tried.
+- `threshold_schedule::AbstractArray{Float64}`: A set of maximum distances from the summarised model output to summarised observed data for a parameter vector to be included in the posterior. Each distance will be used in a single run of the ABC-SMC algorithm.
+- `population::AbstractArray{Float64,2}`: The parameter vectors (particles) in the posterior. Size: (`n_accepted`, `n_params`).
+- `distances::AbstractArray{Float64,1}`: The distances for each parameter vector (particle) in the posterior to the observed data in summary statistic space. Size: (`n_accepted`).
+- `weights::StatsBase.Weights`: The weight of each parameter vector (particle) in the posterior.
+"""
+abstract type ABCSMCOutput <: ABCOutput end
+
+struct SimulatedABCSMCOutput <: ABCSMCOutput
     n_params::Int64
-    n_accepted::Vector{Int64}
-    n_tries::Vector{Int64}
-    threshold_schedule::Vector{Float64}
-    population::Vector{Matrix{Float64}}
-    distances::Vector{Vector{Float64}}
-    weights::Vector{StatsBase.Weights}
+    n_accepted::AbstractArray{Int64,1}
+    n_tries::AbstractArray{Int64,1}
+    threshold_schedule::AbstractArray{Float64,1}
+    population::AbstractArray{AbstractArray{Float64,2},1}
+    distances::AbstractArray{AbstractArray{Float64,1},1}
+    weights::AbstractArray{StatsBase.Weights,1}
 end
+
+struct EmulatedABCSMCOutput <: ABCSMCOutput
+    n_params::Int64
+    n_accepted::AbstractArray{Int64,1}
+    n_tries::AbstractArray{Int64,1}
+    threshold_schedule::AbstractArray{Float64,1}
+    population::AbstractArray{AbstractArray{Float64,2},1}
+    distances::AbstractArray{AbstractArray{Float64,1},1}
+    weights::AbstractArray{StatsBase.Weights,1}
+    emulators::AbstractArray{GPModel,1}
+end
+
 
 #
 # Read/write functions

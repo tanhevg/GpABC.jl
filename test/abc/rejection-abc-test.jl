@@ -1,21 +1,18 @@
 using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
 
 @testset "Rejection ABC Test" begin
+    srand(2)
     #
     # ABC settings
     #
-    n_var_params = 2
     n_particles = 1000
     priors = [Uniform(0., 5.), Uniform(0., 5.)]
-    distance_metric = euclidean
     progress_every = 1000
 
     #
     # Emulation settings
     #
     n_design_points = 100
-    batch_size = 1000
-    max_iter = 1000
 
     #
     # True parameters
@@ -47,42 +44,34 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
         dx[3] = pars[3]*pars[9]*x[1]*pars[10]*x[2]./(1+pars[9]*x[1])./(1+pars[10]*x[2]) - pars[6]*x[3]
       end
 
-      prob = ODEProblem(ODE_3GeneReg, x0 ,Tspan, params)
+      prob = ODEProblem(ODE_3GeneReg, x0, Tspan, params)
       Obs = solve(prob, solver, saveat=saveat)
 
       return Obs
     end
 
     reference_data = GeneReg(true_params, Tspan, x0, solver, saveat)
-    simulator_function(var_params) = GeneReg(vcat(var_params, true_params[n_var_params+1:end]), Tspan, x0, solver, saveat)
+    simulator_function(var_params) = GeneReg(vcat(var_params, true_params[length(var_params)+1:end]), Tspan, x0, solver, saveat)
 
     #
-    # Test using keep all as summary statistic
+    # Test using default keep_all summary statistics
     #
-    sim_rej_input = SimulatedABCRejectionInput(n_var_params,
-                            n_particles,
-                            0.5,
-                            priors,
-                            "keep_all",
-                            distance_metric,
-                            simulator_function)
+    sim_out = SimulatedABCRejection(reference_data, simulator_function, priors, 0.5, n_particles)
+    @test size(sim_out.population, 1) > 0
 
-    sim_result = ABCrejection(sim_rej_input, reference_data, write_progress=false)
-    @test size(sim_result.population, 1) > 0
+    emu_out = EmulatedABCRejection(reference_data, simulator_function, priors, 1.0, n_particles, n_design_points)
+    @test size(emu_out.population, 1) > 0
 
     #
-    # Test using mean and variance as summary statistic
+    # Test using built-in summary statistics
     #
-    sim_rej_input = SimulatedABCRejectionInput(n_var_params,
-                            n_particles,
-                            3.0,
-                            priors,
-                            ["mean", "variance"],
-                            distance_metric,
-                            simulator_function)
-
-    sim_result = ABCrejection(sim_rej_input, reference_data, write_progress=false)
-    @test size(sim_result.population, 1) > 0
+    stats = ["mean", "variance", "max", "min", "range", "median", "q1", "q3", "iqr"]
+    sim_out = SimulatedABCRejection(reference_data, simulator_function, priors, 3.0, n_particles;
+        summary_statistic=stats)
+    @test size(sim_out.population, 1) > 0
+    emu_out = EmulatedABCRejection(reference_data, simulator_function, priors, 3.0, n_particles, n_design_points;
+        summary_statistic=stats)
+    @test size(emu_out.population, 1) > 0
 
     #
     # Test using custom summary statistic
@@ -90,57 +79,23 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
     function sum_stat(data::AbstractArray{Float64,2})
         return std(data, 2)[:]
     end
-    sim_rej_input = SimulatedABCRejectionInput(n_var_params,
-                            n_particles,
-                            3.0,
-                            priors,
-                            sum_stat,
-                            distance_metric,
-                            simulator_function)
+    sim_out = SimulatedABCRejection(reference_data, simulator_function, priors, 3.0, n_particles;
+        summary_statistic=sum_stat)
+    @test size(sim_out.population, 1) > 0
+    emu_out = EmulatedABCRejection(reference_data, simulator_function, priors, 3.0, n_particles, n_design_points;
+        summary_statistic=sum_stat)
+    @test size(emu_out.population, 1) > 0
 
-    sim_result = ABCrejection(sim_rej_input, reference_data, write_progress=false)
-    @test size(sim_result.population, 1) > 0
+    #
+    # Custom emulator training and particle selection
+    #
+    emu_out = EmulatedABCRejection(reference_data, simulator_function, priors, 1.0, n_particles, n_design_points;
+        batch_size=500,
+        max_iter=3,
+        emulator_training = DefaultEmulatorTraining(SquaredExponentialIsoKernel()),
+        emulated_particle_selection=MeanVarEmulatedParticleSelection(),
+        write_progress=false)
+    @test size(emu_out.population, 1) > 0
 
-    function get_training_data(n_design_points,
-        priors,
-        simulator_function, distance_metric,
-        reference_data)
-
-        n_var_params = length(priors)
-
-        X = zeros(n_design_points, n_var_params)
-        y = zeros(n_design_points)
-
-        for j in 1:n_var_params
-            X[:,j] = rand(priors[j], n_design_points)
-        end
-
-        for i in 1:n_design_points
-            y[i] = distance_metric(simulator_function(X[i,:]), reference_data)
-        end
-
-        return X, y
-    end
-
-    X, y = get_training_data(n_design_points, priors, simulator_function, distance_metric, reference_data)
-
-    gpem = GPModel(training_x=X, training_y=y, kernel=SquaredExponentialArdKernel())
-    gp_train(gpem)
-
-    function predict_distance(p::AbstractArray{Float64})
-        result = gp_regression(p,gpem)[1]
-        return result
-    end
-
-    emu_rej_input = EmulatedABCRejectionInput(n_var_params,
-          n_particles,
-          0.5,
-          priors,
-          predict_distance,
-          batch_size,
-          max_iter)
-
-    emu_result = ABCrejection(emu_rej_input, reference_data, write_progress=false)
-    @test size(emu_result.population, 1) > 0
 
 end
