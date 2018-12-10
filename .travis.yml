@@ -1,6 +1,7 @@
 branches:
   only:
   - master
+  - ev/julia_1_0
   - /^v[\d.]+$/
 language: julia
 julia:
