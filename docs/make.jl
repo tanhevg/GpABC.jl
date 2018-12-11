@@ -18,10 +18,9 @@ makedocs(
 if !local_build
     deploydocs(
         # deps   = Deps.pip("mkdocs", "python-markdown-math"),
-        deps   = nothing,
-        make   = nothing,
-        target = "build",
-        repo   = "github.com/tanhevg/GpABC.jl.git",
-        julia  = "0.6.2"
+        # deps   = nothing,
+        # make   = nothing,
+        # target = "build",
+        repo   = "github.com/tanhevg/GpABC.jl.git"
     )
 end

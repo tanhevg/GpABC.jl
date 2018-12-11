@@ -77,12 +77,9 @@ function compute_LNA(input::LNAInput,
         covar_mx = x[no_of_species+1:no_of_species*2,:]
         reaction_rates = input.reaction_rate_function(mean_vec, pars)
         reaction_rates_jac = ForwardDiff.jacobian(y -> input.reaction_rate_function(y, pars), mean_vec)
-        # D = D[:,1:no_of_species]
         A = input.S * reaction_rates_jac
-        dx .= vcat(
-            diagm(0 => input.S*reaction_rates),
-            A*covar_mx + covar_mx*A' + input.S * diagm(0 => reaction_rates) * input.S' ./ sqrt(input.volume)
-            )
+        dx[1:no_of_species, :] .= diagm(0 => input.S*reaction_rates)
+        dx[no_of_species + 1:end, :] .= A*covar_mx + covar_mx*A' + input.S * diagm(0 => reaction_rates) * input.S' ./ sqrt(input.volume)
     end
 
     prob = ODEProblem(Mean_ODE, vcat(diagm(0=>x0[1]), x0[2]), Tspan, input.params)
