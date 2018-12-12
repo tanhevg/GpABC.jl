@@ -118,7 +118,7 @@ function GPModel(;training_x::Union{AbstractArray{Float64, 2}, AbstractArray{Flo
     end
     if length(gp_hyperparameters) != expected_hypers_size
         error("Incorrect size of initial hyperparameters vector for ",
-            "$(typeof(kernel)): $(length(hyperparameters)). ",
+            "$(typeof(kernel)): $(length(gp_hyperparameters)). ",
             "Expected $(expected_hypers_size).")
     end
     GPModel(kernel,

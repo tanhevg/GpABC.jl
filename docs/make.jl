@@ -5,7 +5,7 @@ local_build = "local" in ARGS
 makedocs(
     format=:html,
     sitename = "GpABC.jl",
-    authors = "Tara Abdul Hameed, Fei He, Jonathan Ish-Horowitz, Istvan Klein, Elizabeth Roesch, Evgeny Tankhilevich",
+    authors = "Tara Abdul Hameed, Fei He, Jonathan Ish-Horowitz, Istvan Klein, Michael Stumpf, Evgeny Tankhilevich",
     pages = [
         "Home" => "index.md",
         "examples.md",
