@@ -60,20 +60,6 @@ struct MeanVarEmulatedParticleSelection <: AbstractEmulatedParticleSelection
 end
 MeanVarEmulatedParticleSelection() = MeanVarEmulatedParticleSelection(1.0)
 
-"""
-    SimulatedABCRejectionInput
-
-An object that defines the settings for a simulation-based rejection-ABC computation.
-
-# Fields
-- `n_params::Int64`: The number of parameters to be estimated.
-- `n_particles::Int64`: The number of parameter vectors (particles) that will be included in the final posterior.
-- `threshold::Float64`: The maximum distance from the summarised model output to summarised observed data for a parameter vector to be included in the posterior.
-- `priors::AbstractArray{ContinuousUnivariateDistribution,1}`: A 1D Array of distributions with length `n_params` from which candidate parameter vectors will be sampled.
-- `summary_statistic::Union{String,AbstractArray{String,1},Function}`: Either: 1. A `String` or 1D Array of strings that Or 2. A function that outputs a 1D Array of Floats that summarises model output. REFER TO DOCS
-- `distance_function::Function`: Any function that computes the distance between 2 1D Arrays.
-- `simulator_function::Function`: A function that takes a parameter vector as an argument and outputs model results.
-"""
 struct SimulatedABCRejectionInput <: ABCRejectionInput
     n_params::Int64
     n_particles::Int64
@@ -83,18 +69,6 @@ struct SimulatedABCRejectionInput <: ABCRejectionInput
     max_iter::Int
 end
 
-"""
-    EmulatedABCRejectionInput
-
-An object that defines the settings for a emulation-based rejection-ABC computation.
-
-# Fields
-- `n_params::Int64`: The number of parameters to be estimated.
-- `n_particles::Int64`: The number of parameter vectors (particles) that will be included in the final posterior.
-- `threshold::Float64`: The maximum distance from the summarised model output to summarised observed data for a parameter vector to be included in the posterior.
-- `priors::AbstractArray{ContinuousUnivariateDistribution,1}`: A 1D Array of distributions with length `n_params` from which candidate parameter vectors will be sampled.
-- `max_iter::Int64`: The maximum number of iterations/batches before termination.
-"""
 struct EmulatedABCRejectionInput{CUD<:ContinuousUnivariateDistribution, EPS<:AbstractEmulatedParticleSelection} <: ABCRejectionInput
 	n_params::Int64
 	n_particles::Int64

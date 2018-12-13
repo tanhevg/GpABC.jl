@@ -38,23 +38,6 @@ function generate_parameters(
     return parameters, weights
 end
 
-"""
-    ABCrejection
-
-Run a simulationed-based rejection-ABC computation. Parameter posteriors are obtained by simulating the model
-for a parameter vector, computing the summary statistic of the output then computing the distance to the
-summary statistic of the reference data. If this distance is sufficiently small the parameter vector is
-included in the posterior.
-
-# Arguments
-- `input::SimulatedABCRejectionInput`: A ['SimulatedABCRejectionInput'](@ref) object that defines the settings for the simulated rejection-ABC run.
-- `reference_data::AbstractArray{Float64,2}`: The observed data to which the simulated model output will be compared. Size: (n_model_trajectories, n_time_points)
-- `write_progress::Bool`: Optional argument controlling whether progress is written to `out_stream`.
-- `progress_every::Int`: Progress will be written to `out_stream` every `progress_every` simulations (optional, ignored if `write_progress` is `False`).
-
-# Returns
-A ['SimulatedABCRejectionOutput'](@ref) object.
-"""
 function ABCrejection(input::SimulatedABCRejectionInput;
     write_progress::Bool = true,
     progress_every::Int = 1000)
@@ -127,20 +110,6 @@ function ABCrejection(input::SimulatedABCRejectionInput;
 
 end
 
-"""
-    ABCrejection
-Run a emulation-based rejection-ABC computation. Parameter posteriors are obtained using a regression model
-(the emulator), that has learnt a mapping from parameter vectors to the distance between the
-model output and observed data in summary statistic space. If this distance is sufficiently small the parameter vector is
-included in the posterior.
-# Arguments
-- `input::EmulatedABCRejectionInput`: An ['EmulatedABCRejectionInput'](@ref) object that defines the settings for the emulated rejection-ABC run.
-- `reference_data::AbstractArray{Float64,2}`: The observed data to which the simulated model output will be compared. Size: (n_model_trajectories, n_time_points)
-- `write_progress::Bool`: Optional argument controlling whether progress is logged.
-- `progress_every::Int`: Progress will be logged every `progress_every` simulations (optional, ignored if `write_progress` is `False`).
-# Returns
-An ['EmulatedABCRejectionOutput'](@ref) object.
-"""
 function ABCrejection(input::EmulatedABCRejectionInput;
     write_progress = true,
     progress_every = 1000)

@@ -9,7 +9,7 @@ makedocs(
     pages = [
         "Home" => "index.md",
         "examples.md",
-        "Reference" => "reference.md"
+        "Reference" => ["reference.md", "summary_stats.md"]
     ],
     html_prettyurls = !local_build
     # html_canonical = "https://tanhevg.github.io/GpABC.jl/stable/",  TODO

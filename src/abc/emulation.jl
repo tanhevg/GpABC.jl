@@ -1,23 +1,42 @@
 """
-    EmulatedABCRejection
+    EmulatedABCRejection(
+        reference_data,
+        simulator_function,
+        priors,
+        threshold,
+        n_particles,
+        n_design_points;
+        summary_statistic               = "keep_all",
+        distance_function               = Distances.euclidean,
+        batch_size                      = 10*n_particles,
+        max_iter                        = 1000,
+        emulator_training               = DefaultEmulatorTraining(),
+        emulated_particle_selection     = MeanEmulatedParticleSelection(),
+        write_progress                  = true,
+        progress_every                  = 1000,
+        )
 
-A convenience function that trains a Gaussian process emulator of  type [`GPmodel](@ref) then uses it in emulation-based
-rejection-ABC. It creates the training data by simulating the model for the design points, trains
-the emulator, creates the [`EmulatedABCRejectionInput`](@ref) object then calls [`ABCrejection](@ref).
+Run emulation-based rejection ABC algorithm.
 
-# Fields
-- `n_design_points::Int64`: The number of parameter vectors used to train the Gaussian process emulator
-- `reference_data::AbstractArray{Float64,2}`: The observed data to which the simulated model output will be compared. Size: (n_model_trajectories, n_time_points)
-- `n_particles::Int64`: The number of parameter vectors (particles) that will be included in the final posterior.
-- `threshold::Float64`: The maximum distance from the summarised model output to summarised observed data for a parameter vector to be included in the posterior.
-- `priors::AbstractArray{D,1}`: A 1D Array of continuous univariate distributions with length `n_params` from which candidate parameter vectors will be sampled.
-- `summary_statistic::Union{String,AbstractArray{String,1},Function}`: Either: 1. A `String` or 1D Array of strings that Or 2. A function that outputs a 1D Array of Floats that summarises model output. REFER TO DOCS
+# Mandatory arguments
+- `reference_data::AbstractArray{Float,2}`: Observed data to which the simulated model output will be compared. Array dimensions sould match that of the simulator function result.
 - `simulator_function::Function`: A function that takes a parameter vector as an argument and outputs model results.
-- `distance_metric::Function`: Any function that computes the distance between 2 1D Arrays (optional - default is to use the Euclidean distance).
-- `gpkernel::AbstractGPKernel`: An object inheriting from [`AbstractGPKernel`](@ref) that is the Gaussian process kernel. (optional - default is the ARD-RBF/squared exponential kernel).
-- `batch_size::Int64`: The number of predictions to be made in each batch (optional - default is 10 ``\\times`` `n_particles`).
-- `max_iter::Int64`: The maximum number of iterations/batches before termination.
-- `kwargs`: optional keyword arguments passed to ['ABCrejection'](@ref).
+- `priors::AbstractArray{ContinuousUnivariateDistribution,1}`: Continuous univariate distributions, from which candidate parameters will be sampled. Array size should match the number of parameters.
+- `threshold::Float`: The ``\\epsilon`` threshold to be used in ABC algorithm. Only those particles that produce emulated results that are within this threshold from the reference data are included into the posterior.
+- `n_particles::Int`: The number of parameter vectors (particles) that will be included in the posterior.
+- `n_design_points::Int`: The number of design particles that will be simulated to traing the emulator.
+
+# Optional keyword arguments
+- `summary_statistic::Union{String,AbstractArray{String,1},Function}`: Summary statistics that will be applied to the data before computing the distances. Defaults to `keep_all`. See [detailed documentation of summary statistics](@ref summary_stats). 
+- `distance_function::Function`: A function that will be used to compute the distance between the summary statistic of the simulated data and that of reference data. Defaults to `Distances.euclidean`.
+- `batch_size::Int`: The number of particles that will be emulated on each iteration. Defaults to `1000 * n_particles`.
+- `max_iter::Int`: The maximum number of emulations that will be run. Defaults to 1000.
+- `emulator_training<:AbstractEmulatorTraining`: This determines how the emulator will be trained. See [`AbstractEmulatorTraining`](@ref) for more details.
+- `emulated_particle_selection<:AbstractEmulatedParticleSelection`: This determines how the particles that will be added to the posterior are selected after each emulation run. See [`AbstractEmulatedParticleSelection`](@ref) for details.
+- `write_progress::Bool`: Whether algorithm progress should be printed on standard output. Defaults to `true`.
+
+# Returns
+An [`ABCRejectionOutput`](@ref) object.
 """
 function EmulatedABCRejection(reference_data::AbstractArray{AF,2},
     simulator_function::Function,
@@ -26,7 +45,7 @@ function EmulatedABCRejection(reference_data::AbstractArray{AF,2},
     n_particles::Int,
     n_design_points::Int;
     summary_statistic::Union{String,AbstractArray{String,1},Function}="keep_all",
-    distance_metric::Function=Distances.euclidean,
+    distance_function::Function=Distances.euclidean,
     emulation_type::AbstractEmulatorTraining = DefaultEmulatorTraining(),
     batch_size::Int=10*n_particles,
     max_iter::Int=1000,
@@ -43,7 +62,7 @@ function EmulatedABCRejection(reference_data::AbstractArray{AF,2},
     reference_summary_statistic = summary_statistic(reference_data)
 
     emulator_training_input = EmulatorTrainingInput(
-        DistanceSimulationInput(reference_summary_statistic, simulator_function, summary_statistic, distance_metric),
+        DistanceSimulationInput(reference_summary_statistic, simulator_function, summary_statistic, distance_function),
         n_design_points,
         emulator_training)
 
