@@ -15,7 +15,11 @@ AbstractEmulatedParticleSelection
 MeanVarEmulatedParticleSelection
 MeanEmulatedParticleSelection
 AbstractEmulatorRetraining
+IncrementalRetraining
+PreviousPopulationRetraining
+PreviousPopulationThresholdRetraining
 NoopRetraining
 GpABC.train_emulator
+GpABC.abc_retrain_emulator
 GpABC.abc_select_emulated_particles
 ```
