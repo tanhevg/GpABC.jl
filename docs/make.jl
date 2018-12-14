@@ -1,4 +1,4 @@
-using Revise, Documenter, GpABC
+using Documenter, GpABC
 
 local_build = "local" in ARGS
 

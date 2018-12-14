@@ -7,5 +7,5 @@ language: julia
 julia:
   - 1.0.0
 after_success:
-  - julia -e 'cd(Pkg.dir("GpABC")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
-  - julia -e 'cd(Pkg.dir("GpABC")); Pkg.add("Documenter"); include(joinpath("docs", "make.jl"))'
+  - julia -e 'import Pkg; Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
+  - julia -e 'import Pkg; Pkg.add("Documenter"); include(joinpath("docs", "make.jl"))'
