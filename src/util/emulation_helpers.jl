@@ -22,6 +22,19 @@ function abc_train_emulator(priors::AbstractArray{CUD}, training_input::Emulator
     train_emulator(X, reshape(y, (length(y), 1)), training_input.emulator_training)
 end
 
+"""
+    abc_retrain_emulator(
+        gp_model,
+        particle_sampling_function,
+        epsilon,
+        training_input::EmulatorTrainingInput,
+        retraining_settings<:AbstractEmulatorRetraining
+        )
+
+Additional retraining procedure for the emulator that may or may not be executed before every iteration of emulation based ABC. Details of the procedure are determined by the subtype of [`AbstractEmulatorRetraining`](@ref) that is passed as an argument.
+"""
+function abc_retrain_emulator end
+
 function abc_retrain_emulator(
     gpm::GPModel,
     particle_sampling_function::Function,
@@ -130,11 +143,24 @@ function abc_retrain_emulator(
     train_emulator(training_x, training_y, training_input.emulator_training)
 end
 
+"""
+    train_emulator(training_x, training_y, emulator_training)
+
+Train the emulator. For custom training procedure, a new subtype of [`AbstractEmulatorTraining`](@ref)
+should be created, and a method of this function should be created for it.
+"""
+function train_emulator end
+
 function train_emulator(training_x::AbstractArray{T, 2}, y::AbstractArray{T, 2}, emulator_training::DefaultEmulatorTraining) where {T<:Real}
     gpem = GPModel(training_x=training_x, training_y=y, kernel=emulator_training.kernel)
     gp_train(gpem)
     gpem
 end
+
+"""
+    abc_select_emulated_particles(gp_model, parameters, threshold, selection<:AbstractEmulatedParticleSelection)
+"""
+function abc_select_emulated_particles end
 
 function abc_select_emulated_particles(gpm::GPModel, parameters::AbstractArray{T, 2},
         threshold::T, selection::MeanEmulatedParticleSelection) where {T<:Real}

@@ -1,7 +1,3 @@
-* [Notation](@ref)
-* [Basic Usage](@ref)
-* [Training the GP](@ref)
-* [Kernels](@ref)
 
 **TODO markdown does not support include, so copy-paste content from /README.md once it is finalised**
 

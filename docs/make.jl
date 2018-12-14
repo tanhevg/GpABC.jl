@@ -1,19 +1,40 @@
-using Documenter, GpABC
+using Revise, Documenter, GpABC
 
 local_build = "local" in ARGS
 
-makedocs(
-    format=:html,
+my_makedocs() = makedocs(
+    modules = [GpABC],
+    format = Documenter.HTML(
+        prettyurls = !local_build,
+        canonical = "https://tanhevg.github.io/GpABC.jl/stable/",
+    ),
     sitename = "GpABC.jl",
     authors = "Tara Abdul Hameed, Fei He, Jonathan Ish-Horowitz, Istvan Klein, Michael Stumpf, Evgeny Tankhilevich",
     pages = [
         "Home" => "index.md",
-        "examples.md",
-        "Reference" => ["reference.md", "summary_stats.md"]
-    ],
-    html_prettyurls = !local_build
-    # html_canonical = "https://tanhevg.github.io/GpABC.jl/stable/",  TODO
+        "notation.md",
+        "Package Overview" => [
+            "ABC" => "overview-abc.md",
+            "summary_stats.md"
+        ],
+        "Examples" => [
+            "Gaussian Processes" => "example-gp.md",
+            "ABC" => "example-abc.md",
+            "LNA" => "example-lna.md",
+            "Model Selection" => "example-ms.md",
+        ],
+        "Reference" => [
+            "ABC Basic" => "ref-abc.md",
+            "ABC Advanced" => "ref-abc-advanced.md",
+            "LNA" => "ref-lna.md",
+            "Model Selection" => "ref-ms.md",
+            "Gaussian Processes" => "ref-gp.md",
+            "Kernels" => "ref-kernels.md"
+        ]
+    ]
 )
+
+my_makedocs()
 
 if !local_build
     deploydocs(

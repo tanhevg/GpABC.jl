@@ -16,7 +16,11 @@
         progress_every                  = 1000,
         )
 
-Run emulation-based rejection ABC algorithm.
+Run emulation-based rejection ABC algorithm. Model simulation results are used to train the
+emulator, which is then used to get the approximated distance for each particle. The rest
+of the workflow is similar to [`SimulatedABCRejection`](@ref).
+
+See [ABC Overview](@ref) for more details.
 
 # Mandatory arguments
 - `reference_data::AbstractArray{Float,2}`: Observed data to which the simulated model output will be compared. Array dimensions sould match that of the simulator function result.
@@ -27,12 +31,12 @@ Run emulation-based rejection ABC algorithm.
 - `n_design_points::Int`: The number of design particles that will be simulated to traing the emulator.
 
 # Optional keyword arguments
-- `summary_statistic::Union{String,AbstractArray{String,1},Function}`: Summary statistics that will be applied to the data before computing the distances. Defaults to `keep_all`. See [detailed documentation of summary statistics](@ref summary_stats). 
+- `summary_statistic::Union{String,AbstractArray{String,1},Function}`: Summary statistics that will be applied to the data before computing the distances. Defaults to `keep_all`. See [detailed documentation of summary statistics](@ref summary_stats).
 - `distance_function::Function`: A function that will be used to compute the distance between the summary statistic of the simulated data and that of reference data. Defaults to `Distances.euclidean`.
 - `batch_size::Int`: The number of particles that will be emulated on each iteration. Defaults to `1000 * n_particles`.
 - `max_iter::Int`: The maximum number of emulations that will be run. Defaults to 1000.
 - `emulator_training<:AbstractEmulatorTraining`: This determines how the emulator will be trained. See [`AbstractEmulatorTraining`](@ref) for more details.
-- `emulated_particle_selection<:AbstractEmulatedParticleSelection`: This determines how the particles that will be added to the posterior are selected after each emulation run. See [`AbstractEmulatedParticleSelection`](@ref) for details.
+- `emulated_particle_selection<:AbstractEmulatedParticleSelection`: This determines how the particles that will be added to the posterior are selected after each emulation run. See [`AbstractEmulatedParticleSelection`](@ref) for details. Defaults to [`MeanEmulatedParticleSelection`](@ref).
 - `write_progress::Bool`: Whether algorithm progress should be printed on standard output. Defaults to `true`.
 
 # Returns
@@ -73,25 +77,53 @@ function EmulatedABCRejection(reference_data::AbstractArray{AF,2},
 end
 
 """
-    EmulatedABCSMC
+    EmulatedABCSMC(
+        reference_data,
+        simulator_function,
+        priors,
+        threshold_schedule,
+        n_particles,
+        n_design_points;
+        summary_statistic               = "keep_all",
+        distance_function               = Distances.euclidean,
+        batch_size                      = 10*n_particles,
+        max_iter                        = 1000,
+        emulator_training               = DefaultEmulatorTraining(),
+        emulator_retraining             = NoopRetraining(),
+        emulated_particle_selection     = MeanEmulatedParticleSelection(),
+        write_progress                  = true,
+        progress_every                  = 1000,
+        )
 
-A convenience function that trains a Gaussian process emulator of type [`GPmodel](@ref) then uses it in emulation-based
-ABC-SMC. It creates the training data by simulating the model for the design points, trains
-the emulator, creates the [`EmulatedABCSMCInput`](@ref) object then calls [`ABCSMC`](@ref).
+Run emulation-based ABC-SMC algorithm. This is similar to [`EmulatedABCRejection`](@ref),
+the main difference being that an array of thresholds is provided instead of a single threshold.
+It is assumed that thresholds are sorted in decreasing order.
 
-# Fields
-- `n_design_points::Int64`: The number of parameter vectors used to train the Gaussian process emulator
-- `reference_data::AbstractArray{Float64,2}`: The observed data to which the simulated model output will be compared. Size: (n_model_trajectories, n_time_points)
-- `n_particles::Int64`: The number of parameter vectors (particles) that will be included in the final posterior.
-- `threshold_schedule::AbstractArray{Float64}`: A set of maximum distances from the summarised model output to summarised observed data for a parameter vector to be included in the posterior. Each distance will be used in a single run of the ABC-SMC algorithm.
-- `priors::AbstractArray{D,1}`: A 1D Array of continuous univariate distributions with length `n_params` from which candidate parameter vectors will be sampled.
-- `summary_statistic::Union{String,AbstractArray{String,1},Function}`: Either: 1. A `String` or 1D Array of strings that Or 2. A function that outputs a 1D Array of Floats that summarise model output. REFER TO DOCS
+An emulation based ABC iteration is executed for each threshold. For the first threshold, the provided prior is used.
+For each subsequent threshold, the posterior from the previous iteration is used as a prior.
+
+See [ABC Overview](@ref) for more details.
+
+# Mandatory arguments
+- `reference_data::AbstractArray{Float,2}`: Observed data to which the simulated model output will be compared. Array dimensions sould match that of the simulator function result.
 - `simulator_function::Function`: A function that takes a parameter vector as an argument and outputs model results.
-- `distance_metric::Function`: Any function that computes the distance between 2 1D Arrays (optional - default is to use the Euclidean distance).
-- `gpkernel::AbstractGPKernel`: An object inheriting from [`AbstractGPKernel`](@ref) that is the Gaussian process kernel. (optional - default is the ARD-RBF/squared exponential kernel).
-- `batch_size::Int64`: The number of predictions to be made in each batch (optional - default is 10 ``\\times`` `n_particles`).
-- `max_iter::Int64`: The maximum number of iterations/batches before termination.
-- `kwargs`: optional keyword arguments passed to ['ABCSMC'](@ref).
+- `priors::AbstractArray{ContinuousUnivariateDistribution,1}`: Continuous univariate distributions, from which candidate parameters will be sampled during the first iteration. Array size should match the number of parameters.
+- `threshold_schedule::AbstractArray{Float,1}`: The threshold schedule to be used in ABC algorithm. An ABC iteration is executed for each threshold. It is assumed that thresholds are sorted in decreasing order.
+- `n_particles::Int`: The number of parameter vectors (particles) that will be included in the posterior.
+- `n_design_points::Int`: The number of design particles that will be simulated to traing the emulator.
+
+# Optional keyword arguments
+- `summary_statistic::Union{String,AbstractArray{String,1},Function}`: Summary statistics that will be applied to the data before computing the distances. Defaults to `keep_all`. See [detailed documentation of summary statistics](@ref summary_stats).
+- `distance_function::Function`: A function that will be used to compute the distance between the summary statistic of the simulated data and that of reference data. Defaults to `Distances.euclidean`.
+- `batch_size::Int`: The number of particles that will be emulated on each iteration. Defaults to `1000 * n_particles`.
+- `max_iter::Int`: The maximum number of emulations that will be run. Defaults to 1000.
+- `emulator_training<:AbstractEmulatorTraining`: This determines how the emulator will be trained for each iteration. See [`AbstractEmulatorTraining`](@ref) for more details.
+- `emulator_retraining<:AbstractEmulatorRetraining`: This is used to specify parameters of additional emulator retraining that can be done for each iteration. By default this retraining is switched off ([`NoopRetraining`](@ref)). See [`AbstractEmulatorRetraining`] for more details.
+- `emulated_particle_selection<:AbstractEmulatedParticleSelection`: This determines how the particles that will be added to the posterior are selected after each emulation run. See [`AbstractEmulatedParticleSelection`](@ref) for details. Defaults to [`MeanEmulatedParticleSelection`](@ref).
+- `write_progress::Bool`: Whether algorithm progress should be printed on standard output. Defaults to `true`.
+
+# Returns
+An [`ABCSMCOutput`](@ref) object.
 """
 function EmulatedABCSMC(reference_data::AbstractArray{AF,2},
     simulator_function::Function,
@@ -147,7 +179,7 @@ Perform model selection using emulation-based ABC.
 - `max_batch_size::Int`: The maximum batch size for the emulator when making predictions.
 
 # Returns
-A ['ModelSelectionOutput'](@ref) object that contains which models are supported by the observed data.
+A [`ModelSelectionOutput`](@ref) object that contains which models are supported by the observed data.
 """
 function EmulatedModelSelection(
     reference_data::AbstractArray{AF,2},

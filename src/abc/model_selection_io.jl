@@ -1,20 +1,5 @@
 abstract type ModelSelectionInput end
 
-"""
-	SimulatedModelSelectionInput
-
-An object that defines settings for a simulation-based model selection computation.
-
-# Fields
-- `M::Int64`: The number of models.
-- `n_particles::Int64`: The number of particles to be accepted per population (at the model level)
-- `threshold_schedule::AbstractArray{Float64,1}`: A set of maximum distances from the summarised model output to summarised observed data for a parameter vector to be included in the posterior.
-- `model_prior::DiscreteUnivariateDistribution`: The prior from which models will be sampled.
-- `parameter_priors::AbstractArray{AbstractArray{ContinuousUnivariateDistribution,1},1}`: Parameter priors for each model. Each element is an array of priors for the corresponding model (one prior per parameter).
-- `distance_function::Function`: Any function that computes the distance between 2 1D Arrays.
-- `simulator_functions::AbstractArray{Function,1}`: Each element is a function that takes a parameter vector as an argument and outputs model results for a single model.
-- `max_iter::Int`: The maximum number of iterations in each population before algorithm termination.
-"""
 struct SimulatedModelSelectionInput{AF<:AbstractFloat, CUD<:ContinuousUnivariateDistribution} <: ModelSelectionInput
 	M::Int
 	n_particles::Int

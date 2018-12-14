@@ -12,7 +12,11 @@
         progress_every      = 1000,
         )
 
-Run simulation-based rejection ABC algorithm.
+Run simulation-based rejection ABC algorithm. Particles are sampled from the prior, and the model is simulated for
+each particle. Only those particles are included in the posterior that have distance between the simulation results
+and the reference data below the threshold (after taking summary statistics into account).
+
+See [ABC Overview](@ref) for more details.
 
 # Mandatory arguments
 - `reference_data::AbstractArray{Float,2}`: Observed data to which the simulated model output will be compared. Array dimensions sould match that of the simulator function result.
@@ -22,7 +26,7 @@ Run simulation-based rejection ABC algorithm.
 - `n_particles::Int`: The number of parameter vectors (particles) that will be included in the posterior.
 
 # Optional keyword arguments
-- `summary_statistic::Union{String,AbstractArray{String,1},Function}`: Summary statistics that will be applied to the data before computing the distances. Defaults to `keep_all`. See [detailed documentation of summary statistics](@ref summary_stats). 
+- `summary_statistic::Union{String,AbstractArray{String,1},Function}`: Summary statistics that will be applied to the data before computing the distances. Defaults to `keep_all`. See [detailed documentation of summary statistics](@ref summary_stats).
 - `distance_function::Function`: A function that will be used to compute the distance between the summary statistic of the simulated data and that of reference data. Defaults to `Distances.euclidean`.
 - `max_iter::Int`: The maximum number of simulations that will be run. The default is `1000 * n_particles`.
 - `write_progress::Bool`: Whether algorithm progress should be printed on standard output. Defaults to `true`.
@@ -59,23 +63,44 @@ function SimulatedABCRejection(reference_data::AbstractArray{AF,2},
 end
 
 """
-    SimulatedABCSMC
+    SimulatedABCSMC(
+        reference_data,
+        simulator_function,
+        priors,
+        threshold_schedule,
+        n_particles;
+        summary_statistic   = "keep_all",
+        distance_function   = Distances.euclidean,
+        max_iter            = 10 * n_particles,
+        write_progress      = true,
+        progress_every      = 1000,
+        )
 
-Run a emulation-based ABC-rejection computation. This is a convenience wrapper that constructs a
-[`SimulatedABCSMCInput`](@ref) object then calls ['ABCrejection'](@ref).
+Run a simulation-based ABC-SMC algorithm. This is similar to [`SimulatedABCRejection`](@ref),
+the main difference being that an array of thresholds is provided instead of a single threshold.
+It is assumed that thresholds are sorted in decreasing order.
 
-# Arguments
-- `reference_data::AbstractArray{Float64,2}`: The observed data to which the simulated model output will be compared. Size: (n_model_trajectories, n_time_points)
-- `threshold_schedule::AbstractArray{Float64}`: A set of maximum distances from the summarised model output to summarised observed data for a parameter vector to be included in the posterior. Each distance will be used in a single run of the ABC-SMC algorithm.
-- `priors::AbstractArray{ContinuousUnivariateDistribution,1}`: A 1D Array of continuous univariate distributions with length `n_params` from which candidate parameter vectors will be sampled.
-- `summary_statistic::Union{String,AbstractArray{String,1},Function}`: Either: 1. A `String` or 1D Array of strings that Or 2. A function that outputs a 1D Array of Floats that summarises model output. REFER TO DOCS
+A simulation based ABC iteration is executed for each threshold. For the first threshold, the provided prior is used.
+For each subsequent threshold, the posterior from the previous iteration is used as a prior.
+
+See [ABC Overview](@ref) for more details.
+
+# Mandatory arguments
+- `reference_data::AbstractArray{Float,2}`: Observed data to which the simulated model output will be compared. Array dimensions sould match that of the simulator function result.
 - `simulator_function::Function`: A function that takes a parameter vector as an argument and outputs model results.
-- `distance_function::Function`: Any function that computes the distance between 2 1D Arrays. Optional argument (default is to use the Euclidean distance).
-- `max_iter::Int`: The maximum number of simulations that will be run. The default is 1000*`n_particles`.
-- `kwargs`: optional keyword arguments passed to ['ABCrejection'](@ref).
+- `priors::AbstractArray{ContinuousUnivariateDistribution,1}`: Continuous univariate distributions, from which candidate parameters will be sampled during the first iteration. Array size should match the number of parameters.
+- `threshold_schedule::AbstractArray{Float,1}`: The threshold schedule to be used in ABC algorithm. An ABC iteration is executed for each threshold. It is assumed that thresholds are sorted in decreasing order.
+- `n_particles::Int`: The number of parameter vectors (particles) that will be included in the posterior.
+
+# Optional keyword arguments
+- `summary_statistic::Union{String,AbstractArray{String,1},Function}`: Summary statistics that will be applied to the data before computing the distances. Defaults to `keep_all`. See [detailed documentation of summary statistics](@ref summary_stats).
+- `distance_function::Function`: A function that will be used to compute the distance between the summary statistic of the simulated data and that of reference data. Defaults to `Distances.euclidean`.
+- `max_iter::Int`: The maximum number of simulations that will be run. The default is `1000 * n_particles`.
+- `write_progress::Bool`: Whether algorithm progress should be printed on standard output. Defaults to `true`.
+- `progress_every::Int`: Number of iterations at which to print progress. Defaults to 1000.
 
 # Returns
-A ['SimulatedABCSMCOutput'](@ref) object that contains the posteriors at each ABC-SMC population and other information.
+An [`ABCSMCOutput`](@ref) object.
 """
 function SimulatedABCSMC(reference_data::AbstractArray{AF,2},
     simulator_function::Function,
@@ -120,7 +145,7 @@ Perform model selection using simulation-based ABC.
 - `max_iter::Int`: The maximum number of simulations that will be run. The default is 1000*`n_particles`. Each iteration samples a single model and performs ABC using a single particle.
 
 # Returns
-A ['ModelSelectionOutput'](@ref) object that contains which models are supported by the observed data.
+A [`ModelSelectionOutput`](@ref) object that contains which models are supported by the observed data.
 """
 function SimulatedModelSelection(
     reference_data::AbstractArray{AF,2},
