@@ -1,7 +1,7 @@
 # Gaussian Processes Reference
 
 `GpABC` functions for Gaussian Process Regression.
-See also [Gaussian Processes Overview](@ref), [Gaussian Processes Examples](@ref).
+See also [Gaussian Processes Overview](@ref gp-overview), [Gaussian Processes Examples](@ref).
 
 ## Index
 ```@index

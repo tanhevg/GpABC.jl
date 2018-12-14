@@ -8,20 +8,23 @@ my_makedocs() = makedocs(
         prettyurls = !local_build,
         canonical = "https://tanhevg.github.io/GpABC.jl/stable/",
     ),
-    sitename = "GpABC.jl",
+    sitename = "GpABC",
     authors = "Tara Abdul Hameed, Fei He, Jonathan Ish-Horowitz, Istvan Klein, Michael Stumpf, Evgeny Tankhilevich",
     pages = [
         "Home" => "index.md",
-        "notation.md",
+        "Notation" => "notation.md",
         "Package Overview" => [
-            "ABC" => "overview-abc.md",
+            "ABC Parameter Inference" => "overview-abc.md",
+            "ABC Model Selection" => "overview-ms.md",
+            "LNA" => "overview-lna.md",
+            "Gaussian Process Regression" => "overview-gp.md",
             "summary_stats.md"
         ],
         "Examples" => [
-            "Gaussian Processes" => "example-gp.md",
-            "ABC" => "example-abc.md",
+            "ABC Parameter Inference" => "example-abc.md",
+            "ABC Model Selection" => "example-ms.md",
             "LNA" => "example-lna.md",
-            "Model Selection" => "example-ms.md",
+            "Gaussian Processes" => "example-gp.md",
         ],
         "Reference" => [
             "ABC Basic" => "ref-abc.md",

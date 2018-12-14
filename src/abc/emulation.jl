@@ -20,13 +20,13 @@ Run emulation-based rejection ABC algorithm. Model simulation results are used t
 emulator, which is then used to get the approximated distance for each particle. The rest
 of the workflow is similar to [`SimulatedABCRejection`](@ref).
 
-See [ABC Overview](@ref) for more details.
+See [ABC Overview](@ref abc-overview) for more details.
 
 # Mandatory arguments
 - `reference_data::AbstractArray{Float,2}`: Observed data to which the simulated model output will be compared. Array dimensions sould match that of the simulator function result.
 - `simulator_function::Function`: A function that takes a parameter vector as an argument and outputs model results.
 - `priors::AbstractArray{ContinuousUnivariateDistribution,1}`: Continuous univariate distributions, from which candidate parameters will be sampled. Array size should match the number of parameters.
-- `threshold::Float`: The ``\\epsilon`` threshold to be used in ABC algorithm. Only those particles that produce emulated results that are within this threshold from the reference data are included into the posterior.
+- `threshold::Float`: The ``\\varepsilon`` threshold to be used in ABC algorithm. Only those particles that produce emulated results that are within this threshold from the reference data are included into the posterior.
 - `n_particles::Int`: The number of parameter vectors (particles) that will be included in the posterior.
 - `n_design_points::Int`: The number of design particles that will be simulated to traing the emulator.
 
@@ -102,7 +102,7 @@ It is assumed that thresholds are sorted in decreasing order.
 An emulation based ABC iteration is executed for each threshold. For the first threshold, the provided prior is used.
 For each subsequent threshold, the posterior from the previous iteration is used as a prior.
 
-See [ABC Overview](@ref) for more details.
+See [ABC Overview](@ref abc-overview) for more details.
 
 # Mandatory arguments
 - `reference_data::AbstractArray{Float,2}`: Observed data to which the simulated model output will be compared. Array dimensions sould match that of the simulator function result.
@@ -171,7 +171,7 @@ Perform model selection using emulation-based ABC.
 - `n_particles::Int64`: The number of parameter vectors (particles) that will be included in the final posterior.
 - `threshold_schedule::AbstractArray{Float64}`: A set of maximum distances from the summarised model output to summarised observed data for a parameter vector to be included in the posterior. Each distance will be used in a single run of the ABC-SMC algorithm.
 - `parameter_priors::AbstractArray{AbstractArray{ContinuousUnivariateDistribution},1}`: Priors for the parameters of each model. The length of the outer array is the number of models.
-- `summary_statistic::Union{String,AbstractArray{String,1},Function}`: Either: 1. A `String` or 1D Array of strings that Or 2. A function that outputs a 1D Array of Floats that summarises model output. REFER TO DOCS
+- `summary_statistic::Union{String,AbstractArray{String,1},Function}`: Either: 1. A `String` or 1D Array of strings that Or 2. A function that outputs a 1D Array of Floats that summarises model output. Defaults to `keep_all`. See [detailed documentation of summary statistics](@ref summary_stats).
 - `simulator_functions::AbstractArray{Function,1}`: An array of functions that take a parameter vector as an argument and outputs model results (one per model).
 - 'model_prior::DiscreteUnivariateDistribution': The prior from which models are sampled. Default is a discrete, uniform distribution.
 - `distance_function::Function`: Any function that computes the distance between 2 1D Arrays. Optional argument (default is to use the Euclidean distance).

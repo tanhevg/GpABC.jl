@@ -1,1 +1,1 @@
-# Gaussian Processes Overview
+# [Gaussian Processes Overview](@id gp-overview)

@@ -144,10 +144,13 @@ function abc_retrain_emulator(
 end
 
 """
-    train_emulator(training_x, training_y, emulator_training)
+    train_emulator(training_x, training_y, emulator_training<:AbstractEmulatorTraining)
 
 Train the emulator. For custom training procedure, a new subtype of [`AbstractEmulatorTraining`](@ref)
 should be created, and a method of this function should be created for it.
+
+# Returns
+A trained emulator. Shipped implementations return a [`GPModel`](@ref).
 """
 function train_emulator end
 
@@ -158,7 +161,12 @@ function train_emulator(training_x::AbstractArray{T, 2}, y::AbstractArray{T, 2},
 end
 
 """
-    abc_select_emulated_particles(gp_model, parameters, threshold, selection<:AbstractEmulatedParticleSelection)
+    abc_select_emulated_particles(emulator, particles, threshold, selection<:AbstractEmulatedParticleSelection)
+
+Compute the approximate distances by running the regression-based `emulator` on the provided `particles`, and return the accepted particles. Acceptance strategy is determined by `selection` - subtype of [`AbstractEmulatedParticleSelection`](@ref).
+
+# Return
+A tuple of accepted distances, and indices of the accepted particles in the supplied `particles` array.
 """
 function abc_select_emulated_particles end
 

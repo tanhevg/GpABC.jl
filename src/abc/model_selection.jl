@@ -1,11 +1,3 @@
-"""
-	model_selection(input::ModelSelectionInput,
-		reference_data::AbstractArray{Float64,2})
-
-# Arguments
-- `input::ModelSelectionInput`: A ['ModelSelectionInput']@(ref) object that contains the settings for the model selection algorithm.
-- `reference_data::AbstractArray{Float64,2}`: The observed data to which the simulated model output will be compared. Size: (n_model_trajectories, n_time_points)
-"""
 function model_selection(input::ModelSelectionInput)
 
 	# For logging
