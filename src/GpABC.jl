@@ -41,8 +41,6 @@ include("gp/kernels/rbf_kernels.jl")
 include("gp/kernels/matern_kernels.jl")
 include("gp/gp.jl")
 include("gp/gp_optimisation.jl")
-include("util/mv_uniform.jl")
-include("util/latin_hypercube_sampler.jl")
 
 include("abc/io.jl")
 include("abc/summary_stats.jl")

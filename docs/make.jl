@@ -45,6 +45,7 @@ if !local_build
         # deps   = nothing,
         # make   = nothing,
         # target = "build",
-        repo   = "github.com/tanhevg/GpABC.jl.git"
+        repo   = "github.com/tanhevg/GpABC.jl.git",
+        devbranch = "ev/julia_1_0"
     )
 end
