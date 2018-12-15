@@ -1,14 +1,13 @@
 branches:
   only:
   - master
-  - ev/julia_1_0
   - /^v[\d.]+$/
 language: julia
 julia:
   - 1.0.0
 after_success:
   - julia -e 'import Pkg; Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
-  
+
 jobs:
   include:
     - stage: "Documentation"
