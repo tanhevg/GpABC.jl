@@ -13,7 +13,7 @@ function generate_kernels(
     n_params = size(population, 2)
 
     if n_particles > 1
-        stds = reshape(std(population, 1), n_params)
+        stds = reshape(std(population, dims=1), n_params)
     else
         stds = 1e-3 * ones(n_params) # If there is only one particle we cannot compute the sd - use a small value instead?
     end
@@ -21,7 +21,7 @@ function generate_kernels(
     lowers = minimum.(priors)
     uppers = maximum.(priors)
 
-    kernels = Matrix{ContinuousUnivariateDistribution}(n_particles, n_params)
+    kernels = Matrix{ContinuousUnivariateDistribution}(undef, n_particles, n_params)
     for j in 1:n_params
         means = population[:, j]
         kernels[:, j] = TruncatedNormal.(means, stds[j]*sqrt(2.0), lowers[j], uppers[j])
@@ -48,17 +48,17 @@ function generate_parameters(
     # the kernels must be centered around the old particles
     # and truncated to the priors.
 
-    particles = StatsBase.sample(indices(kernels, 1), old_weights, batch_size)
+    particles = StatsBase.sample(axes(kernels, 1), old_weights, batch_size)
     perturbed_parameters = rand.(kernels[particles,:])
 
     # gives a batch_size x n_params matrix of prior pdfs in perturbed parameters
     pdfs = pdf.(reshape(priors, 1, n_params), perturbed_parameters)
-    numerators = prod(pdfs, 2) # multiply across rows, to get a column vector of products of size batch_size
+    numerators = prod(pdfs, dims=2) # multiply across rows, to get a column vector of products of size batch_size
 
     denominators = zeros(length(numerators), 1)
     for k in eachindex(denominators)
         denominator_pdfs = pdf.(kernels, reshape(perturbed_parameters[k, :], 1, n_params))
-        denominator_summands = prod(denominator_pdfs, 2)
+        denominator_summands = prod(denominator_pdfs, dims=2)
         denominators[k] = sum(old_weights .* denominator_summands)
     end
 
@@ -89,7 +89,7 @@ function generate_parameters_no_weights(
         D2<:ContinuousUnivariateDistribution,
         F<:AbstractFloat,
         }
-    particles = StatsBase.sample(indices(old_parameters, 1), old_weights, n_batch_size)
+    particles = StatsBase.sample(axes(old_parameters, 1), old_weights, n_batch_size)
     return rand.(kernels[particles,:])
 end
 
@@ -125,6 +125,7 @@ function initialiseABCSMC(input::SimulatedABCSMCInput;
                              [rejection_output.n_accepted],
                              [rejection_output.n_tries],
                              [rejection_output.threshold],
+                             rejection_output.n_accepted > 0,
                              [rejection_output.population],
                              [rejection_output.distances],
                              [rejection_output.weights],
@@ -135,6 +136,7 @@ function initialiseABCSMC(input::SimulatedABCSMCInput;
 
     return tracker
 end
+
 
 #
 # Initialise an emulated ABC-SMC run
@@ -162,6 +164,7 @@ function initialiseABCSMC(input::EmulatedABCSMCInput{CUD, ER, EPS};
                              [rejection_output.n_accepted],
                              [rejection_output.n_tries],
                              [rejection_output.threshold],
+                             rejection_output.n_accepted > 0,
                              [rejection_output.population],
                              [rejection_output.distances],
                              [rejection_output.weights],
@@ -187,10 +190,10 @@ function iterateABCSMC!(tracker::SimulatedABCSMCTracker,
         progress_every = 1000)
 
     if write_progress
-        info(string(DateTime(now())), " ϵ = $threshold.", prefix="GpABC SMC Simulation ")
+        @info "GpABC SMC simulation ϵ = $threshold"
     end
     if threshold > tracker.threshold_schedule[end]
-        warn("current threshold less strict than previous one.")
+        @warn "current threshold less strict than previous one."
     end
 
     # initialise
@@ -213,7 +216,7 @@ function iterateABCSMC!(tracker::SimulatedABCSMCTracker,
                 # This prevents the whole code from failing if there is a problem
                 # solving the differential equation(s). The exception is thrown by the
                 # distance function
-                warn("The summarised simulated data does not have the same size as the summarised reference data. If this is not happening at every iteration it may be due to the behaviour of DifferentialEquations::solve - please check for related warnings. Continuing to the next iteration.")
+                @warn "The summarised simulated data does not have the same size as the summarised reference data. If this is not happening at every iteration it may be due to the behaviour of DifferentialEquations::solve - please check for related warnings. Continuing to the next iteration."
                 n_tries += 1
                 continue
             else
@@ -232,45 +235,38 @@ function iterateABCSMC!(tracker::SimulatedABCSMCTracker,
         end
 
         if write_progress && (n_tries % progress_every == 0)
-            info(string(DateTime(now())), " Accepted $(n_accepted)/$(n_tries) particles.", prefix="GpABC SMC Simulation ")
+            @info "GpABC SMC simulation accepted $(n_accepted)/$(n_tries) particles."
         end
     end
 
     if n_accepted == 0
-        warn("Simulation reached maximum $(tracker.max_iter) iterations without selecting any particles")
-        return false
-    end
-
-    if n_accepted < n_toaccept
+        @warn "Simulation reached maximum $(tracker.max_iter) iterations without selecting any particles"
+    elseif n_accepted < n_toaccept
         population = population[1:n_accepted, :]
         weight_values = weight_values[1:n_accepted]
         distances = distances[1:n_accepted]
-        warn("Simulation reached maximum $(tracker.max_iter) iterations before finding $(n_toaccept) particles - will return $n_accepted")
-    else
-        info(string(DateTime(now())), " Finished. Accepted $(n_accepted)/$(n_toaccept).", prefix="GpABC SMC Simulation ")
+        @warn "Simulation reached maximum $(tracker.max_iter) iterations before finding $(n_toaccept) particles - will return $n_accepted"
     end
 
     update_smctracker!(tracker, n_accepted, n_tries, threshold,
                         population, distances, weight_values)
-
-    return true
 end
 
 #
 # Iterate a emulated ABC-SMC
 #
-function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
+function iterateABCSMC!(tracker::EmulatedABCSMCTracker{CUD, ET, ER, EPS},
         threshold::AbstractFloat,
         n_toaccept::Int;
         write_progress = true,
         progress_every = 1000
-        )
+        ) where {CUD<:ContinuousUnivariateDistribution, ET, ER<:AbstractEmulatorRetraining, EPS<:AbstractEmulatedParticleSelection}
     if write_progress
-        info(string(DateTime(now())), " ϵ = $threshold.", prefix="GpABC SMC Emulation ")
+        @info "GpABC SMC emulation ϵ = $threshold."
     end
 
     if threshold > tracker.threshold_schedule[end]
-        warn("Current threshold less strict than previous one.")
+        @warn "Current threshold less strict than previous one."
     end
 
     # initialise
@@ -312,28 +308,23 @@ function iterateABCSMC!(tracker::EmulatedABCSMCTracker,
         n_accepted += n_include
 
         if write_progress
-            info(string(DateTime(now())), " Accepted $(n_accepted)/$(n_tries) particles.", prefix="GpABC SMC Emulation ")
+            @info "GpABC SMC emulation accepted $(n_accepted)/$(n_tries) particles."
         end
 
         iter_no += 1
     end
 
     if n_accepted == 0
-        warn("Emulation reached maximum $(tracker.max_iter) iterations without selecting any particles")
-        return false
-    end
-
-    if n_accepted < n_toaccept
+        @warn "Emulation reached maximum $(tracker.max_iter) iterations without selecting any particles"
+    elseif n_accepted < n_toaccept
         population = population[1:n_accepted, :]
         all_weight_values = all_weight_values[1:n_accepted]
         all_distances = all_distances[1:n_accepted]
-        warn("Emulation reached maximum $(tracker.max_iter) iterations before finding $(n_toaccept) particles - will return $n_accepted")
+        @warn "Emulation reached maximum $(tracker.max_iter) iterations before finding $(n_toaccept) particles - will return $n_accepted"
     end
 
     update_smctracker!(tracker, n_accepted, n_tries, threshold,
                         population, all_distances, all_weight_values, emulator)
-
-    return true
 end
 
 function buildAbcSmcOutput(tracker::EmulatedABCSMCTracker)
@@ -357,47 +348,26 @@ function buildAbcSmcOutput(tracker::SimulatedABCSMCTracker)
                         tracker.weights)
 end
 
-"""
-  ABCSMC
-
-Run a ABC-SMC computation using either simulation (the model is simulated in full for each parameter vector from which the corresponding
-distance to observed data is used to construct the posterior) or emulation (a regression model trained to predict the distance from the
-parameter vector directly is used to construct the posterior). Whether simulation or emulation is used is controlled by the type of `input`.
-
-# Arguments
-- `input::ABCSMCInput`: An ['SimulatedABCSMCInput'](@ref) or ['EmulatedABCSMCInput'](@ref) object that defines the settings for the ABC-SMC run.
-- `reference_data::AbstractArray{Float64,2}`: The observed data to which the simulated model output will be compared. Size: (n_model_trajectories, n_time_points)
-- `write_progress::Bool`: Optional argument controlling whether progress is written to `out_stream`.
-- `progress_every::Int`: Progress will be written to `out_stream` every `progress_every` simulations (optional, ignored if `write_progress` is `False`).
-
-# Return
-An object that inherits from ['ABCSMCOutput'](@ref), depending on whether a `input` is a ['SimulatedABCSMCInput'](@ref) or ['EmulatedABCSMCInput'](@ref).
-"""
 function ABCSMC(
         input::T;
         write_progress = true,
         progress_every = 1000,
         ) where {T<:ABCSMCInput}
 
-    tracker = initialiseABCSMC(input;
-                               write_progress = write_progress,
-                               progress_every = progress_every)
+    tracker = initialiseABCSMC(input; write_progress = write_progress, progress_every = progress_every)
 
-    if tracker.n_accepted[1] > 0
+    if tracker.can_continue
         for i in 2:length(input.threshold_schedule)
             threshold = input.threshold_schedule[i]
-            complete_threshold = iterateABCSMC!(tracker,
-                           threshold,
-                           input.n_particles;
-                           write_progress = write_progress,
-                           progress_every = progress_every,
-                           )
-            if !complete_threshold
+            iterateABCSMC!(tracker, threshold, input.n_particles;
+                write_progress = write_progress,
+                progress_every = progress_every)
+            if !tracker.can_continue
                 break
             end
         end
     else
-        warn("No particles selected at initial rejection ABC step of simulated SMC ABC - terminating algorithm")
+        @warn "No particles selected at initial rejection ABC step of simulated SMC ABC - terminating algorithm"
     end
 
     return buildAbcSmcOutput(tracker)
@@ -419,14 +389,19 @@ function update_smctracker!(tracker::SimulatedABCSMCTracker, n_accepted::Int,
     n_tries::Int, threshold::AbstractFloat, population::AbstractArray{Float64,2},
     distances::AbstractArray{Float64,1}, weight_values::AbstractArray{Float64,1})
 
-    push!(tracker.n_accepted, n_accepted)
-    push!(tracker.n_tries, n_tries)
-    push!(tracker.threshold_schedule, threshold)
-    push!(tracker.population, population)
-    push!(tracker.distances, distances)
-    # Do not want to normalise weights now if doing model selection - will do at
-    # end of population at model selection level
-    push!(tracker.weights, normalise(weight_values))
+    if n_accepted > 0
+        tracker.can_continue = true
+        push!(tracker.n_accepted, n_accepted)
+        push!(tracker.n_tries, n_tries)
+        push!(tracker.threshold_schedule, threshold)
+        push!(tracker.population, population)
+        push!(tracker.distances, distances)
+        # Do not want to normalise weights now if doing model selection - will do at
+        # end of population at model selection level
+        push!(tracker.weights, normalise(weight_values))
+    else
+        tracker.can_continue = false
+    end
 end
 
 # not exported
@@ -435,13 +410,18 @@ function update_smctracker!(tracker::EmulatedABCSMCTracker, n_accepted::Int,
     distances::AbstractArray{Float64,1}, weight_values::AbstractArray{Float64,1},
     emulator::GPModel)
 
-    push!(tracker.n_accepted, n_accepted)
-    push!(tracker.n_tries, n_tries)
-    push!(tracker.threshold_schedule, threshold)
-    push!(tracker.population, population)
-    push!(tracker.distances, distances)
-    # Do not want to normalise weights now if doing model selection - will do at
-    # end of population at model selection level
-    push!(tracker.weights, normalise(weight_values))
-    push!(tracker.emulators, emulator)
+    if n_accepted > 0
+        tracker.can_continue = true
+        push!(tracker.n_accepted, n_accepted)
+        push!(tracker.n_tries, n_tries)
+        push!(tracker.threshold_schedule, threshold)
+        push!(tracker.population, population)
+        push!(tracker.distances, distances)
+        # Do not want to normalise weights now if doing model selection - will do at
+        # end of population at model selection level
+        push!(tracker.weights, normalise(weight_values))
+        push!(tracker.emulators, emulator)
+    else
+        tracker.can_continue = false
+    end
 end

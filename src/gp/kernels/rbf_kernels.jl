@@ -27,7 +27,7 @@ struct SquaredExponentialIsoKernel <: AbstractGPKernel
 end
 
 function SquaredExponentialIsoKernel()
-    SquaredExponentialIsoKernel(RbfCovarianceCache(Array{Float64}(0), Array{Float64}(0, 0), Array{Float64}(0, 0)))
+    SquaredExponentialIsoKernel(RbfCovarianceCache(Array{Float64}(undef, 0), Array{Float64}(undef, 0, 0), Array{Float64}(undef, 0, 0)))
 end
 
 """
@@ -55,7 +55,7 @@ struct SquaredExponentialArdKernel <: AbstractGPKernel
 end
 
 function SquaredExponentialArdKernel()
-    SquaredExponentialArdKernel(RbfCovarianceCache(Array{Float64}(0), Array{Float64}(0, 0), Array{Float64}(0, 0)))
+    SquaredExponentialArdKernel(RbfCovarianceCache(Array{Float64}(undef, 0), Array{Float64}(undef, 0, 0), Array{Float64}(undef, 0, 0)))
 end
 
 function get_hyperparameters_size(kernel::SquaredExponentialIsoKernel, training_data::AbstractArray{Float64, 2})

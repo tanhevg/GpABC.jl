@@ -1,4 +1,4 @@
-using Base.Test, GpABC, DifferentialEquations, Distributions, Distances
+using Test, GpABC, DifferentialEquations, Distributions, Distances, LinearAlgebra
 
 @testset "LNA Test" begin
 
@@ -24,11 +24,10 @@ using Base.Test, GpABC, DifferentialEquations, Distributions, Distances
             params[5]*x[2],
             params[3]*params[9]*x[1]*params[10]*x[2]/(1+params[9]*x[1])/(1+params[10]*x[2]),
             params[6]*x[3]]
-        return f
     end
 
     #LNA Mean Var example
-    x0 = ([3.0, 2.0, 1.0], 0.4*eye(3,3))
+    x0 = ([3.0, 2.0, 1.0], 0.4*Matrix(1.0I, 3,3))
     input = LNAInput(params, S, reaction_rate_function, volume)
     lna = compute_LNA(input, x0, Tspan, saveat)
     @test size(lna.traj_means,2) == length(lna.time_points)

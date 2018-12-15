@@ -1,5 +1,10 @@
 using RecipesBase
 
+#=
+!!!! IMPORTANT !!!!
+Each code path of the @series macro must return the data for the series.
+data = ... should be the last statement
+=#
 @recipe function abc_output_recipe(abco::ABCOutput;
       runs=nothing, params=nothing, population_colors=nothing)
       if params === nothing
@@ -22,10 +27,20 @@ using RecipesBase
                               ylabel := ""
                               yaxis := false
                               bins := 50
+                              @debug repr(population_colors)
+                              # if population_colors !== nothing
+                              #       idx = max_color_idx % length(population_colors)
+                              #       if idx == 0
+                              #             idx = length(population_colors)
+                              #       end
+                              #       seriescolor := population_colors[idx]
+                              # end
                               if isa(abco.population, Vector)
                                     data = abco.population[end][:, par1]
+                                    # max_color_idx = 1
                               else
                                     data = abco.population[:, par1]
+                                    # max_color_idx = length(abco.population)
                               end # if Vector
                         end  # @series
                   elseif j < i
@@ -41,7 +56,7 @@ using RecipesBase
                                                 if idx == 0
                                                       idx = length(population_colors)
                                                 end
-                                                color := population_colors[idx]
+                                                seriescolor := population_colors[idx]
                                           end
                                           pop = abco.population[r]
                                           data = (pop[:, par2], pop[:, par1])

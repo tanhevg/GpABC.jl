@@ -41,10 +41,10 @@ will be set to the optimised value, and there is no need to call [`set_hyperpara
 once again.
 """
 function gp_train(gpem::GPModel;
-        optimisation_solver_type::Union{Void,Type{<:Optim.AbstractOptimizer}}=nothing,
+        optimiser::Union{Nothing, TOpt}=nothing,
         hp_lower::AbstractArray{Float64, 1}=zeros(0),
         hp_upper::AbstractArray{Float64, 1}=zeros(0),
-        log_level::Int=0)
+        log_level::Int=0) where {TOpt<:Optim.AbstractOptimizer}
     check_hypers_size(gpem, hp_lower, hp_upper)
     hypers = log.(gpem.gp_hyperparameters)
     kernel_hypers = hypers[1:end-1]
@@ -54,16 +54,17 @@ function gp_train(gpem::GPModel;
     show_trace = log_level >= 2
     opt_res = nothing
     if test_grad_result === :covariance_gradient_not_implemented
-        optimizer = optimisation_solver_type === nothing ? NelderMead() :
-            optimisation_solver_type()
+        if optimiser === nothing
+            optimiser = NelderMead()
+        end
         if log_level > 0
-            println("Unbound optimisation using $(typeof(optimizer)). ",
+            println("Unbound optimisation using $(typeof(optimiser)). ",
             "No gradient provided. Start point: $(hypers).")
         end
         try
             opt_res = optimize(theta->-gp_loglikelihood_log(theta, gpem),
                 hypers,
-                optimizer)
+                optimiser)
         catch ex
             last_hypers = gpem.cache.theta
             gpem.gp_hyperparameters = exp.(last_hypers)
@@ -71,8 +72,9 @@ function gp_train(gpem::GPModel;
             rethrow(ex)
         end
     else
-        minbox = optimisation_solver_type === nothing ? Fminbox{ConjugateGradient}() :
-            Fminbox{optimisation_solver_type}()
+        if optimiser === nothing
+            optimiser = ConjugateGradient()
+        end
         expected_hypers_size = get_hyperparameters_size(gpem)
         if length(hp_lower) == 0
             hp_lower = fill(-10.0, expected_hypers_size)
@@ -90,14 +92,16 @@ function gp_train(gpem::GPModel;
             "Gradient provided. Start point: $(gpem.gp_hyperparameters); ",
             "lower bound: $(hp_lower); upper bound: $(hp_upper)")
         end
-        od = OnceDifferentiable(theta->-gp_loglikelihood_log(theta, gpem),
-            (storage, theta) -> storage[:] = -gp_loglikelihood_grad(theta, gpem),
-            hypers)
+        # od = OnceDifferentiable(theta->-gp_loglikelihood_log(theta, gpem),
+        #     (storage, theta) -> storage[:] = -gp_loglikelihood_grad(theta, gpem),
+        #     hypers)
         try
-            opt_res = optimize(od,
-                hypers, hp_lower, hp_upper,
-                minbox,
-                show_trace = show_trace)
+            opt_res = optimize(theta->-gp_loglikelihood_log(theta, gpem),
+                (storage, theta) -> storage[:] = -gp_loglikelihood_grad(theta, gpem),
+                hp_lower, hp_upper,
+                hypers,
+                Fminbox(optimiser),
+                Optim.Options(show_trace = show_trace))
         catch ex
             last_hypers = gpem.cache.theta
             gpem.gp_hyperparameters = exp.(last_hypers)

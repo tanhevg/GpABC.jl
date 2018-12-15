@@ -1,7 +1,7 @@
-using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
+using Test, GpABC, DifferentialEquations, Distances, Distributions
 
 @testset "Rejection ABC Test" begin
-    srand(2)
+    # seed!(2)
     #
     # ABC settings
     #
@@ -47,7 +47,7 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
       prob = ODEProblem(ODE_3GeneReg, x0, Tspan, params)
       Obs = solve(prob, solver, saveat=saveat)
 
-      return Obs
+      return Array{Float64, 2}(Obs)
     end
 
     reference_data = GeneReg(true_params, Tspan, x0, solver, saveat)
@@ -77,7 +77,7 @@ using Base.Test, GpABC, DifferentialEquations, Distances, Distributions
     # Test using custom summary statistic
     #
     function sum_stat(data::AbstractArray{Float64,2})
-        return std(data, 2)[:]
+        return std(data, dims=2)[:]
     end
     sim_out = SimulatedABCRejection(reference_data, simulator_function, priors, 3.0, n_particles;
         summary_statistic=sum_stat)

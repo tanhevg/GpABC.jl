@@ -1,6 +1,8 @@
-using GpABC, DifferentialEquations, Distances, Distributions
+import Pkg
+Pkg.activate("examples")
+using Revise, GpABC, DifferentialEquations, Distances, Distributions
 
-# srand(4)
+# seed!(4)
 
 #
 # ABC settings
@@ -36,9 +38,9 @@ solver = RK4()
 saveat = 0.1
 
 function ODE_3GeneReg(dx, x, pars, t)
-  @. dx[1] = pars[1]/(1+pars[7]*x[3]) - pars[4]*x[1]
-  @. dx[2] = pars[2]*pars[8]*x[1]/(1+pars[8]*x[1]) - pars[5]*x[2]
-  @. dx[3] = pars[3]*pars[9]*x[1]*pars[10]*x[2]/((1+pars[9]*x[1])*(1+pars[10]*x[2])) - pars[6]*x[3]
+  dx[1] = pars[1]/(1+pars[7]*x[3]) - pars[4]*x[1]
+  dx[2] = pars[2]*pars[8]*x[1]/(1+pars[8]*x[1]) - pars[5]*x[2]
+  dx[3] = pars[3]*pars[9]*x[1]*pars[10]*x[2]/((1+pars[9]*x[1])*(1+pars[10]*x[2])) - pars[6]*x[3]
 end
 
 #
@@ -51,7 +53,7 @@ function GeneReg(params::AbstractArray{Float64,1},
   prob = ODEProblem(ODE_3GeneReg, x0 ,Tspan, params)
   Obs = solve(prob, solver, saveat=saveat)
 
-  return Obs
+  return Array{Float64, 2}(Obs)
 end
 
 reference_data = GeneReg(true_params, Tspan, x0, solver, saveat)

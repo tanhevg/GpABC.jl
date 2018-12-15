@@ -125,8 +125,8 @@ end
 
 function matern_ard_poly_grad(nu, D)
     if nu == 1
-        ret = -1./D
-        ret[find(D .== 0.0)] = 0.0
+        ret = -1 ./ D
+        ret[findall(D .== 0.0)] .= 0.0
         ret
     elseif nu == 3
         -sqrt(3)
@@ -139,7 +139,7 @@ function matern_covariance_common(nu::Int, cache::MaternCovarianceCache, log_the
         x1::AbstractArray{Float64, 2}, x2::AbstractArray{Float64, 2})
     sigma_f = exp(log_theta[1] * 2)
     D2 = scaled_squared_distance(log_theta[2:end], x1, x2)
-    D2[find(D2 .< 0)] = 0.0  # could be negative due to numerical noise
+    D2[findall(D2 .< 0)] .= 0.0  # could be negative due to numerical noise
     D = sqrt.(D2)
     K = sigma_f .* matern_poly(nu, D, D2) .* exp.(-sqrt(nu) .* D)
 end
@@ -162,7 +162,7 @@ function matern_covariance_common_training(nu::Int, cache::MaternCovarianceCache
             size(cache.K, 1) != size(x, 1)
         sigma_f = exp(log_theta[1] * 2)
         D2 = scaled_squared_distance(log_theta[2:end], x, x)
-        D2[find(D2 .< 0)] = 0.0  # could be negative due to numerical noise
+        D2[findall(D2 .< 0)] .= 0.0  # could be negative due to numerical noise
         D = sqrt.(D2)
         K = sigma_f .* matern_poly(nu, D, D2) .* exp.(-sqrt(nu) .* D)
         cache.last_theta = copy(log_theta)
@@ -206,7 +206,7 @@ function matern_covariance_grad_common(nu::Int, cache::MaternCovarianceCache, lo
         D2 = cache.D2
     else
         D2 = scaled_squared_distance(log_theta[2:end], x, x)
-        D2[find(D2 .< 0)] = 0.0  # could be negative due to numerical noise
+        D2[findall(D2 .< 0)] .= 0.0  # could be negative due to numerical noise
         D = sqrt.(D2)
         K = sigma_f .* matern_poly(nu, D, D2) .* exp.(-sqrt(nu) .* D)
         cache.last_theta = copy(log_theta)
