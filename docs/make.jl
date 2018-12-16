@@ -2,7 +2,7 @@ using Documenter, GpABC
 
 local_build = "local" in ARGS
 
-my_makedocs() = makedocs(
+gpabc_makedocs() = makedocs(
     modules = [GpABC],
     format = Documenter.HTML(
         prettyurls = !local_build,
@@ -37,10 +37,8 @@ my_makedocs() = makedocs(
     ]
 )
 
-my_makedocs()
+gpabc_makedocs()
 
-if !local_build
-    deploydocs(
-        repo   = "github.com/tanhevg/GpABC.jl.git"
-    )
-end
+deploydocs(
+    repo = "github.com/tanhevg/GpABC.jl.git"
+)
