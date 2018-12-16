@@ -1,6 +1,14 @@
-using Documenter, GpABC
+using Documenter
 
 local_build = "local" in ARGS
+
+if !local_build
+    import Pkg
+    Pkg.develop(PackageSpec(path=pwd()))
+    Pkg.instantiate()
+end
+
+using GpABC
 
 my_makedocs() = makedocs(
     modules = [GpABC],
