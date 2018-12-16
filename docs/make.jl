@@ -1,3 +1,9 @@
+#=
+this is normally executed by Travis
+using Pkg
+Pkg.develop(PackageSpec(path=pwd()))
+local_build = true
+=#
 using Documenter, GpABC
 
 local_build = "local" in ARGS
