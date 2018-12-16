@@ -5,6 +5,7 @@ branches:
 language: julia
 julia:
   - 1.0
+codecov: true
 after_success:
-  - julia -e 'import Pkg; Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
+  - julia -e --project=docs/ 'import Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()'
   - julia --project=docs/ docs/make.jl
