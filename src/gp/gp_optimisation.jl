@@ -23,7 +23,7 @@ Find Maximum Likelihood Estimate of Gaussian Process hyperparameters by maximisi
 # Arguments
 - `gpm`: the [`GPModel`](@ref), that contains the training data (x and y),
   the kernel and the starting hyperparameters that will be used for optimisation.
-- `optimisation_solver_type::Type{<:Optim.Optimizer}` (optional): the solver to use.
+- `optimiser::Type{<:Optim.AbstractOptimizer}` (optional): the solver to use.
   If not given, then `ConjugateGradient` will be used for kernels that have gradient
   implementation, and `NelderMead` will be used for those that don't.
 - `hp_lower::AbstractArray{Float64, 1}` (optional): the lower boundary for box optimisation.
@@ -88,7 +88,7 @@ function gp_train(gpem::GPModel;
         end
 
         if log_level > 0
-            println("Bound optimisation using $(typeof(minbox)). ",
+            println("Bound optimisation using $(typeof(optimiser)). ",
             "Gradient provided. Start point: $(gpem.gp_hyperparameters); ",
             "lower bound: $(hp_lower); upper bound: $(hp_upper)")
         end
@@ -115,8 +115,5 @@ function gp_train(gpem::GPModel;
          println("Optimized hyperparameters: ", exp.(opt_res.minimizer))
     end
     gpem.gp_hyperparameters = exp.(opt_res.minimizer)
-    if opt_res.minimum < 0 && log_level > 0
-        println("Positive maximum log likelihood $(-opt_res.minimum) at $(gpem.gp_hyperparameters). ")
-    end
     return exp.(opt_res.minimizer)
 end;

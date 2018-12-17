@@ -1,7 +1,9 @@
 #=
-this is normally executed by Travis
+equivalent code would normally be executed by Travis
+make sure that this is run from pwd = GpABC.jl/docs
 using Pkg
-Pkg.develop(PackageSpec(path=pwd()))
+Pkg.develop(PackageSpec(path=".."))
+Pkg.instantiate()
 local_build = true
 =#
 using Documenter, GpABC
