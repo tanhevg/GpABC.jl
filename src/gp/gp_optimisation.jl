@@ -18,19 +18,26 @@ end
     gp_train(gpm::GPModel; <optional keyword arguments>)
 
 Find Maximum Likelihood Estimate of Gaussian Process hyperparameters by maximising
-[`gp_loglikelihood`](@ref), using [`Optim`](http://julianlsolvers.github.io/Optim.jl/stable/) package.
+[`gp_loglikelihood`](@ref), using [`Optim`](http://julianlsolvers.github.io/Optim.jl/stable/) package. The optimisation target is [`gp_loglikelihood_log`](@ref), with gradient computed by [`gp_loglikelihood_grad`](@ref). Internally, this function optimises the MLE with respect to logarithms of hyperparameters. This is done for numerical stability. Logarithmisation and exponentiation is performed by this funtion, i.e. real hyperparameters, not logarithms, are taken in and returned back.
 
-# Arguments
+By default,
+[Conjugate Gradient](http://julianlsolvers.github.io/Optim.jl/stable/algo/cg/) bounded box optimisation is used, as long as the gradient
+with respect to hyperparameters ([`covariance_grad`](@ref)) is implemented for the kernel function. If the gradient
+implementation is not provided, [Nelder Mead](http://julianlsolvers.github.io/Optim.jl/stable/algo/nelder_mead/) optimiser is used by default.
+
+# Mandatory argument
 - `gpm`: the [`GPModel`](@ref), that contains the training data (x and y),
   the kernel and the starting hyperparameters that will be used for optimisation.
-- `optimiser::Type{<:Optim.AbstractOptimizer}` (optional): the solver to use.
+
+# Optional keyword arguments
+- `optimiser::Type{<:Optim.AbstractOptimizer}`: the solver to use.
   If not given, then `ConjugateGradient` will be used for kernels that have gradient
   implementation, and `NelderMead` will be used for those that don't.
-- `hp_lower::AbstractArray{Float64, 1}` (optional): the lower boundary for box optimisation.
+- `hp_lower::AbstractArray{Float64, 1}`: the lower boundary for box optimisation.
   Defaults to ``e^{-10}`` for all hyperparameters.
-- `hp_upper::AbstractArray{Float64, 1}` (optional): the upper boundary for box optimisation.
+- `hp_upper::AbstractArray{Float64, 1}`: the upper boundary for box optimisation.
   Defaults to ``e^{10}`` for all hyperparameters.
-- `log_level::Int` (optional): log level. Default is `0`, which is no logging at all. `1`
+- `log_level::Int`: log level. Default is `0`, which is no logging at all. `1`
   makes `gp_train` print basic information to standard output. `2` switches `Optim`
   logging on, in addition to `1`.
 
@@ -92,9 +99,6 @@ function gp_train(gpem::GPModel;
             "Gradient provided. Start point: $(gpem.gp_hyperparameters); ",
             "lower bound: $(hp_lower); upper bound: $(hp_upper)")
         end
-        # od = OnceDifferentiable(theta->-gp_loglikelihood_log(theta, gpem),
-        #     (storage, theta) -> storage[:] = -gp_loglikelihood_grad(theta, gpem),
-        #     hypers)
         try
             opt_res = optimize(theta->-gp_loglikelihood_log(theta, gpem),
                 (storage, theta) -> storage[:] = -gp_loglikelihood_grad(theta, gpem),
