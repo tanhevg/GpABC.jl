@@ -16,34 +16,24 @@ export
 	get_hyperparameters_size, set_hyperparameters,
     gp_train,
 
-	ABCrejection, ABCSMC,
-	ABCRejectionInput, ABCSMCInput,
-	SimulatedABCRejectionInput, EmulatedABCRejectionInput,
-	SimulatedABCSMCInput, EmulatedABCSMCInput,
 	ABCRejectionOutput, ABCSMCOutput,
 	SimulatedABCRejection, SimulatedABCSMC,
 	EmulatedABCRejection, EmulatedABCSMC,
-	get_training_data,
 	read_rejection_output, read_smc_output,
-	LNAInput, LNA,
-	compute_LNA, sample_LNA_trajectories, get_LNA_trajectories,
 
+	LNAInput, LNA, compute_LNA, sample_LNA_trajectories, get_LNA_trajectories,
 
-	SimulatedModelSelection, EmulatedModelSelection,
-	SimulatedModelSelectionInput,
-	EmulatedModelSelectionInput,
-	ModelSelectionOutput,
+	SimulatedModelSelection, EmulatedModelSelection, ModelSelectionOutput,
+    AbstractEmulatorTraining, DefaultEmulatorTraining,
+    EmulatorTrainingInput,
+    AbstractEmulatorRetraining, NoopRetraining, IncrementalRetraining, PreviousPopulationRetraining, PreviousPopulationThresholdRetraining,
+    AbstractEmulatedParticleSelection, MeanEmulatedParticleSelection, MeanVarEmulatedParticleSelection;
 
-	RepetitiveTraining,
-
-    AbstractEmulatorTrainingSettings, DefaultEmulatorTraining, train_emulator;
-
-using Optim, Distributions, Distances, DifferentialEquations, ForwardDiff
+using Optim, Distributions, Distances, DifferentialEquations, ForwardDiff, LinearAlgebra, Logging
 
 import StatsBase
 
 import Base: write
-
 
 include("gp/kernels/scaled_squared_distance.jl")
 include("gp/kernels/abstract_kernel.jl")
@@ -51,8 +41,6 @@ include("gp/kernels/rbf_kernels.jl")
 include("gp/kernels/matern_kernels.jl")
 include("gp/gp.jl")
 include("gp/gp_optimisation.jl")
-include("util/mv_uniform.jl")
-include("util/latin_hypercube_sampler.jl")
 
 include("abc/io.jl")
 include("abc/summary_stats.jl")
@@ -65,9 +53,5 @@ include("abc/emulation.jl")
 include("abc/plot_recipe.jl")
 include("util/lna.jl")
 include("util/emulation_helpers.jl")
-
-# include("abc.jl")
-# include("multiple_training_abc.jl")
-
 
 end;

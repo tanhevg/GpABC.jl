@@ -22,22 +22,22 @@ function scaled_squared_distance(log_ell::AbstractArray{Float64, 1},
         x1::AbstractArray{Float64, 2}, x2::AbstractArray{Float64, 2})
     ell = exp.(-log_ell .* 2)
     if x1 === x2
-        mu = mean(x1, 1)
+        mu = mean(x1, dims=1)
     else
         n1 = size(x1, 1)
         n2 = size(x2, 1)
-        mu = n1 / (n1 + n2) * mean(x1, 1) + n2 / (n1 + n2) * mean(x2, 1)
+        mu = n1 / (n1 + n2) * mean(x1, dims=1) + n2 / (n1 + n2) * mean(x2, dims=1)
     end
     x1 = x1 .- mu               # subtract mean for stability, in case x1 or x2 are huge
     ax1 = x1 .* ell'            # a * x1
-    sax1 = sum(x1 .* ax1, 2)    # a * x1 ^ 2
+    sax1 = sum(x1 .* ax1, dims=2)    # a * x1 ^ 2
     if x1 === x2                # a shortcut if we need K(x, x) for log likelihood
         ax2 = ax1
         sax2 = sax1
     else                        # repeat computations for x2
         x2 = x2 .- mu
         ax2 = x2 .* ell'
-        sax2 = sum(x2 .* ax2, 2)
+        sax2 = sum(x2 .* ax2, dims=2)
     end
     D2 = sax1 .- 2 * x1 * ax2' .+ sax2'   # a((b-c)^2) = ab^2 - 2abc + ac^2
 end
@@ -68,17 +68,17 @@ function scaled_squared_distance_grad(log_ell::AbstractArray{Float64, 1},
     n1 = size(x1, 1)
     n2 = size(x2, 2)
     if x1 === x2                                        # a shortcut if x1 and x2 are the same - handy for log likelihood optimisation
-        x1 = x1 .- mean(x1, 1)                          # subtract mean for stability if x1 is huge
-        x12_2 = (sum(R, 2)' + sum(R, 1)) * (x1 .^ 2)    # R * x1 ^ 2 + R * x2 ^ 2
-        x1x2 = sum((R * x1) .* x1, 1)                   # R * x1 * x2
+        x1 = x1 .- mean(x1, dims=1)                          # subtract mean for stability if x1 is huge
+        x12_2 = (sum(R, dims=2)' + sum(R, dims=1)) * (x1 .^ 2)    # R * x1 ^ 2 + R * x2 ^ 2
+        x1x2 = sum((R * x1) .* x1, dims=1)                   # R * x1 * x2
         rk = x12_2' - 2 * x1x2'                         # R * (x1 - x2) ^ 2 = R * x1 ^ 2 - 2 * R * x1 * x2 + R * x2 ^ 2
     else
-        mu = n1 / (n1 + n2) * mean(x1, 1) + n2 / (n1 + n2) * mean(x2, 1)
+        mu = n1 / (n1 + n2) * mean(x1, dims=1) + n2 / (n1 + n2) * mean(x2, dims=1)
         x1 = x1 .- mu                                   # subtract mean for stability if x1 or x2 is huge
         x2 = x2 .- mu
-        x1_2 = sum(R, 2)' * (x1 .^ 2)                   # R * x1 ^ 2
-        x2_2 = sum(R, 1) * (x2 .^ 2)                    # R * x2 ^ 2
-        x1x2 = sum((R * x2) .* x1, 1)                   # R * x1 * x2
+        x1_2 = sum(R, dims=2)' * (x1 .^ 2)                   # R * x1 ^ 2
+        x2_2 = sum(R, dims=1) * (x2 .^ 2)                    # R * x2 ^ 2
+        x1x2 = sum((R * x2) .* x1, dims=1)                   # R * x1 * x2
         rk = x1_2' - 2 * x1x2' + x2_2'                  # R * (x1 - x2) ^ 2 = R * x1 ^ 2 - 2 * R * x1 * x2 + R * x2 ^ 2
     end
     ell = exp.(-2 * log_ell)

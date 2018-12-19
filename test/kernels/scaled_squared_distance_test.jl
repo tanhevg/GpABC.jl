@@ -1,4 +1,4 @@
-using GpABC, Base.Test
+using GpABC, Test
 import GpABC.scaled_squared_distance, GpABC.scaled_squared_distance_grad
 
 @testset "Scaled Squared Distance Tests" begin
