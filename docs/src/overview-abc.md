@@ -118,3 +118,7 @@ The pseudocode for emulation-based ABC-SMC in `GpABC` looks as follows:
       - *Advanced:* details of the acceptance strategy can be tweaked. See [`GpABC.abc_select_emulated_particles`](@ref)
 
 This algorithm is implemented by Julia function [`EmulatedABCSMC`](@ref).
+
+### References
+
+- Toni, T., Welch, D., Strelkowa, N., Ipsen, A., & Stumpf, M. P. H. (2009). Approximate Bayesian computation scheme for parameter inference and model selection in dynamical systems. *Interface*, (July 2008), 187–202. [https://doi.org/10.1098/rsif.2008.0172](https://doi.org/10.1098/rsif.2008.0172)

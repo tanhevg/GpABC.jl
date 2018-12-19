@@ -9,6 +9,16 @@
 
 Stochastic models, that don't conform to Gaussian Process Prior assumption, are supported via [Linear Noise Approximation](@ref lna-overview) (**LNA**).
 
+
+## Installation
+
+`GpABC` can be installed using the Julia package manager.
+From the Julia REPL, type `]` to enter the Pkg REPL mode and run
+
+```
+pkg> add GpABC
+```
+
 ## Examples
 - [ABC parameter estimation example](https://github.com/tanhevg/GpABC.jl/blob/master/examples/abc-example.ipynb)
 - [ABC model selection example](https://github.com/tanhevg/GpABC.jl/blob/master/examples/model-selection-example.ipynb)
@@ -23,4 +33,9 @@ Stochastic models, that don't conform to Gaussian Process Prior assumption, are 
 - [`ForwardDiff`](https://github.com/JuliaDiff/ForwardDiff.jl) - automatic differentiation is also used by LNA
 
 ## References
-**TODO** papers
+
+- Toni, T., Welch, D., Strelkowa, N., Ipsen, A., & Stumpf, M. P. H. (2009). Approximate Bayesian computation scheme for parameter inference and model selection in dynamical systems. *Interface*, (July 2008), 187–202. [https://doi.org/10.1098/rsif.2008.0172](https://doi.org/10.1098/rsif.2008.0172)
+- Filippi, S., Barnes, C. P., Cornebise, J., & Stumpf, M. P. H. (2013). On optimality of kernels for approximate Bayesian computation using sequential Monte Carlo. *Statistical Applications in Genetics and Molecular Biology*, 12(1), 87–107. [https://doi.org/10.1515/sagmb-2012-0069](https://doi.org/10.1515/sagmb-2012-0069)
+- Rasmussen, C. E., & Williams, C. K. I. (2006). Gaussian Processes for Machine Learning. MIT Press. ISBN 0-262-18253-X. [http://www.gaussianprocess.org/gpml](http://www.gaussianprocess.org/gpml)
+- Schnoerr, D., Sanguinetti, G., & Grima, R. (2017). Approximation and inference methods for stochastic biochemical kinetics—a tutorial review. *Journal of Physics A: Mathematical and Theoretical*, 50(9), 093001. [https://doi.org/10.1088/1751-8121/aa54d9](https://doi.org/10.1088/1751-8121/aa54d9)
+- Karlebach, G., & Shamir, R. (2008). Modelling and analysis of gene regulatory networks. *Nature Reviews Molecular Cell Biology*, 9(10), 770–780. [https://doi.org/10.1038/nrm2503](https://doi.org/10.1038/nrm2503)

@@ -1,6 +1,10 @@
 # [Gaussian Processes Regression Overview](@id gp-overview)
 
-**TODO** paper1
+An excellent introduction to Gaussian Processes is available in the book by (Rasmussen and Williams, 2006).
+
+```@contents
+Pages = ["overview-gp.md"]
+```
 
 ## Gaussian Process, Prior and Posterior
 
@@ -104,3 +108,7 @@ Note that hyperparameters that do not affect the kernel (e.g. ``\sigma_n`` ) are
 `log_theta`.
 
 Custom kernels functions can be implemented  by adding more types that inherit from [`AbstractGPKernel`](@ref).
+
+## References
+
+- Rasmussen, C. E., & Williams, C. K. I. (2006). Gaussian Processes for Machine Learning. MIT Press. ISBN 0-262-18253-X. [http://www.gaussianprocess.org/gpml](http://www.gaussianprocess.org/gpml)
