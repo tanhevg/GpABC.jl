@@ -17,6 +17,14 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "#Installation-1",
+    "page": "Home",
+    "title": "Installation",
+    "category": "section",
+    "text": "GpABC can be installed using the Julia package manager. From the Julia REPL, type ] to enter the Pkg REPL mode and runpkg> add GpABC"
+},
+
+{
     "location": "#Examples-1",
     "page": "Home",
     "title": "Examples",
@@ -37,7 +45,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "References",
     "category": "section",
-    "text": "TODO papers"
+    "text": "Toni, T., Welch, D., Strelkowa, N., Ipsen, A., & Stumpf, M. P. H. (2009). Approximate Bayesian computation scheme for parameter inference and model selection in dynamical systems. Interface, (July 2008), 187–202. https://doi.org/10.1098/rsif.2008.0172\nFilippi, S., Barnes, C. P., Cornebise, J., & Stumpf, M. P. H. (2013). On optimality of kernels for approximate Bayesian computation using sequential Monte Carlo. Statistical Applications in Genetics and Molecular Biology, 12(1), 87–107. https://doi.org/10.1515/sagmb-2012-0069\nRasmussen, C. E., & Williams, C. K. I. (2006). Gaussian Processes for Machine Learning. MIT Press. ISBN 0-262-18253-X. http://www.gaussianprocess.org/gpml\nSchnoerr, D., Sanguinetti, G., & Grima, R. (2017). Approximation and inference methods for stochastic biochemical kinetics—a tutorial review. Journal of Physics A: Mathematical and Theoretical, 50(9), 093001. https://doi.org/10.1088/1751-8121/aa54d9\nKarlebach, G., & Shamir, R. (2008). Modelling and analysis of gene regulatory networks. Nature Reviews Molecular Cell Biology, 9(10), 770–780. https://doi.org/10.1038/nrm2503"
 },
 
 {
@@ -105,6 +113,14 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "overview-abc/#References-1",
+    "page": "ABC Parameter Inference",
+    "title": "References",
+    "category": "section",
+    "text": "Toni, T., Welch, D., Strelkowa, N., Ipsen, A., & Stumpf, M. P. H. (2009). Approximate Bayesian computation scheme for parameter inference and model selection in dynamical systems. Interface, (July 2008), 187–202. https://doi.org/10.1098/rsif.2008.0172"
+},
+
+{
     "location": "overview-ms/#",
     "page": "ABC Model Selection",
     "title": "ABC Model Selection",
@@ -121,6 +137,14 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "overview-ms/#References-1",
+    "page": "ABC Model Selection",
+    "title": "References",
+    "category": "section",
+    "text": "Toni, T., Welch, D., Strelkowa, N., Ipsen, A., & Stumpf, M. P. H. (2009). Approximate Bayesian computation scheme for parameter inference and model selection in dynamical systems. Interface, (July 2008), 187–202. https://doi.org/10.1098/rsif.2008.0172"
+},
+
+{
     "location": "overview-lna/#",
     "page": "LNA",
     "title": "LNA",
@@ -133,7 +157,15 @@ var documenterSearchIndex = {"docs": [
     "page": "LNA",
     "title": "LNA Overview",
     "category": "section",
-    "text": "The LNA approximates the Chemical Master Equation (CME) by decomposing the stochastic process into two ordinary differential equations (ODEs); one describing the evolution of the mean of the trajectories and the other describing the evolution of the covaraince of the trajectories.In other words the LNA approximates the stochastic process by looking at the mean and the covariance of the trajectories textbfx(t), whose evolution is described by a system of ODEs which can be seen below:beginalign\nfracdvarphidt=mathcalStextbff(boldsymbolvarphi) labelmean \nfracdSigmadt=mathcalA  Sigma + Sigma  mathcalA^T + frac1sqrtOmega  mathcalS  textdiag(textbff(boldsymbolvarphi))  mathcalS^T labelcovar\nendalignHere mathcalS is the stoichometry matrix of the system, textbff is the reaction rates.The matrix mathcalA(t) = mathcalSmathcalD and mathcalD is the Jacobian of the reaction rates: mathcalD _ik = fracpartial f_i(boldsymbolvarphi)partial phi_kThese can be solved by numerical methods to describe how boldsymbolvarphi (the mean) and Sigma (the covariance) evolve with time."
+    "text": "The LNA approximates the Chemical Master Equation (CME) by decomposing the stochastic process into two ordinary differential equations (ODEs); one describing the evolution of the mean of the trajectories and the other describing the evolution of the covaraince of the trajectories.In other words the LNA approximates the stochastic process by looking at the mean and the covariance of the trajectories textbfx(t), whose evolution is described by a system of ODEs which can be seen below:beginalign*\nfracdvarphidt=mathcalStextbff(boldsymbolvarphi) labelmean \nfracdSigmadt=mathcalA  Sigma + Sigma  mathcalA^T + frac1sqrtOmega  mathcalS  textdiag(textbff(boldsymbolvarphi))  mathcalS^T labelcovar\nendalign*Here mathcalS is the stoichometry matrix of the system, textbff is the reaction rates.The matrix mathcalA(t) = mathcalSmathcalD and mathcalD is the Jacobian of the reaction rates: mathcalD _ik = fracpartial f_i(boldsymbolvarphi)partial phi_kThese can be solved by numerical methods to describe how boldsymbolvarphi (the mean) and Sigma (the covariance) evolve with time."
+},
+
+{
+    "location": "overview-lna/#References-1",
+    "page": "LNA",
+    "title": "References",
+    "category": "section",
+    "text": "Schnoerr, D., Sanguinetti, G., & Grima, R. (2017). Approximation and inference methods for stochastic biochemical kinetics—a tutorial review. Journal of Physics A: Mathematical and Theoretical, 50(9), 093001. https://doi.org/10.1088/1751-8121/aa54d9"
 },
 
 {
@@ -147,9 +179,41 @@ var documenterSearchIndex = {"docs": [
 {
     "location": "overview-gp/#gp-overview-1",
     "page": "Gaussian Process Regression",
-    "title": "Gaussian Processes Overview",
+    "title": "Gaussian Processes Regression Overview",
     "category": "section",
-    "text": ""
+    "text": "An excellent introduction to Gaussian Processes is available in the book by (Rasmussen and Williams, 2006).Pages = [\"overview-gp.md\"]"
+},
+
+{
+    "location": "overview-gp/#Gaussian-Process,-Prior-and-Posterior-1",
+    "page": "Gaussian Process Regression",
+    "title": "Gaussian Process, Prior and Posterior",
+    "category": "section",
+    "text": "A Gaussian Process (GP) is a collection of random variables, any finite number of which have a joint Gaussian distribution. This assumption is often referred to as the GP prior. In a regression setting, we are going to use GPs to approximate an unknown function f(x), x being a d-dimensional feature vector, x in mathbbR^d. We assume that our training data set contains of n points in mathbbR^d, and the test set - of m points in mathbbR^d. We denote the training data set as mathbfx mathbfx in mathbbR^n times d and the test data set as mathbfx^* mathbfx^* in mathbbR^m times d. Function values on training and test data sets are denoted as mathbfy = mathbff(x), and mathbfy^* = mathbff(x^*), respectively (in vectorised form). We also assume that the mean of the prior Gaussian distribution is zero, and its covariance matrix is known. Furthermore, we split the covariance matrix into the following regions:K: the covariance matrix computed on the training data, K in mathbbR^n times n\nK^**: the covariance matrix computed on the test data, K^** in mathbbR^m times m\nK^*: the covariance matrix between the training and test data, K^* in mathbbR^n times mIn this notation, the GP prior can be written asleft beginmatrix\nmathbfy\nmathbfy^*\nendmatrix right\nsim mathcalN left( 0\nleft beginmatrix\nK  K^*\nK^*top  K^**\nendmatrix right right)The desired approximation of f in mathbfx^* is the conditional distribution of mathbfy^*, given mathbfx, mathbfy and mathbfx^*. This distrubution, referred to as GP posterior, can be derived from the GP prior and the properties of a multivariate Normal distribution:beginalign*\nmathbfy^*  x y x^*  sim mathcalN(mathbftildey tildeK) \nmathbftildey  = K^*top K^-1 mathbfy \ntildeK  = K^** - K^*top K^-1 K^*\nendalign*mathbftildey and mathbftildeK are, respectively, the mean vector and the covariance matrix of the GP posterior. Often, we are not interested in non-diagonal elements of mathbftildeK. In such cases just the vector of diagonal elements is reported."
+},
+
+{
+    "location": "overview-gp/#Kernels-and-Hyperparameters-1",
+    "page": "Gaussian Process Regression",
+    "title": "Kernels and Hyperparameters",
+    "category": "section",
+    "text": "We assume that the covariance between any two points x and x^ is given by a kernel function k(x x^), or in matrix notation, K_ij = k(mathbfx_i mathbfx_j). This kernel function is parameterised by a vector of hyperparameters mathbfeta = eta_1 ldots eta_p. The covariance matrix is thus also dependent on mathbfeta: K = K(mathbfeta).The optimal values of hyperparameters hateta can be obtained by finding the maximum value of log likelihood of the GP prior:beginalign*\nlog p(mathbfyeta) = -frac12mathbfy^top K^-1 mathbfy - frac12K - fracn2log(2pi) \nhateta = undersetmathbfetatextargmax(log p(mathbfymathbfeta))\nendalign*In GpABC this optimisation is performed using Optim package. By default, Conjugate Gradient bounded box optimisation is used, as long as the gradient with respect to hyperparameters is implemented for the kernel function. If the gradient implementation is not provided, Nelder Mead optimiser is used by default.The starting point of the optimisation can be specified by calling set_hyperparameters. If the starting point has not been provided, optimisation will start from all hyperparameters set to 1. Default upper and lower bounds are set to e^10 and e^10 , respectively, for each hyperparameter.For numerical stability the package uses logarithms of hyperparameters internally, when calling the log likelihood and kernel functions. Logarithmisation and exponentiation back takes place in gp_train function.The log likelihood function with log hyperparameters is implemented by gp_loglikelihood_log. This is the target function of the optimisation procedure in gp_train. There is also a version of log likelihood with actual (non-log) hyperparameters: gp_loglikelihood. The gradient of the log likelihood function with respect to logged hyperparameters is implemented by gp_loglikelihood_grad.Depending on the kernel, it is not uncommon for the log likelihood function to have multiple local optima. If a trained GP produces an unsatisfactory data fit, one possible workaround is trying to run gp_train several times with random starting points.Optim has a built in constraint of running no more than 1000 iterations of any optimisation algorithm. GpABC relies on this feature to ensure that the training procedure does not get stuck forever. As a consequence, the optimizer might exit prematurely, before reaching the local optimum. Setting log_level argument of gp_train to a value greater than zero will make it log its actions to standard output, including whether the local minimum has been reached or not.It is often convenient to model the measurement noise in the training data separately. This amounts to a normally distributed random variable being added to mathbfy. Denoting the variance of this random noise as sigma_n, this is equivalent to altering the covariance matrix to K_y = K + sigma_n I, where I is the identity matrix. Noise variance sigma_n is also a hyperparameter, that must be optimised with the rest of kernel hyperparameters. GpABC uses a joint hyperparameter vector, where sigma_n is always the last element."
+},
+
+{
+    "location": "overview-gp/#Custom-Kernels-1",
+    "page": "Gaussian Process Regression",
+    "title": "Custom Kernels",
+    "category": "section",
+    "text": "GpABC ships with an extensible library of kernel functions. Each kernel is represented with a type that derives from AbstractGPKernel:SquaredExponentialIsoKernel\nSquaredExponentialArdKernel\nMaternIsoKernel\nMaternArdKernel\nExponentialIsoKernel\nExponentialArdKernelThese kernels rely on matrix of scaled squared distances between training/test inputs r_ij, which is computed by scaled_squared_distance function. The gradient vector of scaled squared distance derivatives with respect to length scale hyperparameter(s) is returned by scaled_squared_distance_grad function.The kernel covariance matrix is returned by function covariance. Optional speedups of this function covariance_diagonal and covariance_training are implemented for the pre-shipped kernels. The gradient with respect to log hyperparameters is computed by covariance_grad. The log_theta argument refers to the logarithms of kernel hyperparameters. Note that hyperparameters that do not affect the kernel (e.g. sigma_n ) are not included in log_theta.Custom kernels functions can be implemented  by adding more types that inherit from AbstractGPKernel."
+},
+
+{
+    "location": "overview-gp/#References-1",
+    "page": "Gaussian Process Regression",
+    "title": "References",
+    "category": "section",
+    "text": "Rasmussen, C. E., & Williams, C. K. I. (2006). Gaussian Processes for Machine Learning. MIT Press. ISBN 0-262-18253-X. http://www.gaussianprocess.org/gpml"
 },
 
 {
@@ -181,7 +245,7 @@ var documenterSearchIndex = {"docs": [
     "page": "ABC Parameter Inference",
     "title": "ABC Example",
     "category": "section",
-    "text": "Click here to open the ABC example notebook"
+    "text": "<a href=\"https://github.com/tanhevg/GpABC.jl/blob/master/examples/abc-example.ipynb\" target=\"_blank\">Click here to open the ABC example notebook</a>"
 },
 
 {
@@ -189,7 +253,15 @@ var documenterSearchIndex = {"docs": [
     "page": "ABC Model Selection",
     "title": "ABC Model Selection",
     "category": "page",
-    "text": "Click here to open the model selection example notebook"
+    "text": ""
+},
+
+{
+    "location": "example-ms/#Model-Selection-Example-1",
+    "page": "ABC Model Selection",
+    "title": "Model Selection Example",
+    "category": "section",
+    "text": "<a href=\"https://github.com/tanhevg/GpABC.jl/blob/master/examples/model-selection-example.ipynb\" target=\"_blank\">Click here to open the Model Selection example notebook</a>"
 },
 
 {
@@ -197,7 +269,15 @@ var documenterSearchIndex = {"docs": [
     "page": "LNA",
     "title": "LNA",
     "category": "page",
-    "text": "Click here to open the LNA example notebook"
+    "text": ""
+},
+
+{
+    "location": "example-lna/#LNA-Example-1",
+    "page": "LNA",
+    "title": "LNA Example",
+    "category": "section",
+    "text": "<a href=\"https://github.com/tanhevg/GpABC.jl/blob/master/examples/lna-example.ipynb\" target=\"_blank\">Click here to open the LNA example notebook</a>"
 },
 
 {
@@ -213,39 +293,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Gaussian Processes",
     "title": "Gaussian Processes Examples",
     "category": "section",
-    "text": "Basic Gaussian Process Regression\nOptimising Hyperparameters for GP Regression\nAdvanced Usage of gp_train\nUsing a Custom Kernel"
-},
-
-{
-    "location": "example-gp/#example-1-1",
-    "page": "Gaussian Processes",
-    "title": "Basic Gaussian Process Regression",
-    "category": "section",
-    "text": "using GpABC, Distributions, PyPlot\n\n# prepare the data\nn = 30\nf(x) = x.ˆ2 + 10 * sin.(x) # the latent function\n\ntraining_x = sort(rand(Uniform(-10, 10), n))\ntraining_y = f(training_x)\ntraining_y += 20 * (rand(n) - 0.5) # add some noise\ntest_x = collect(linspace(min(training_x...), max(training_x...), 1000))\n\n # SquaredExponentialIsoKernel is used by default\ngpm = GPModel(training_x, training_y)\n\n# pretend we know the hyperparameters in advance\n# σ_f = 37.08; l = 1.0; σ_n = 6.58. See SquaredExponentialIsoKernel documentation for details\nset_hyperparameters(gpm, [37.08, 1.0, 6.58])\n(test_y, test_var) = gp_regression(test_x, gpm)\n\nplot(test_x, [test_y f(test)]) # ... and more sophisticated plotting"
-},
-
-{
-    "location": "example-gp/#example-2-1",
-    "page": "Gaussian Processes",
-    "title": "Optimising Hyperparameters for GP Regression",
-    "category": "section",
-    "text": "Based on Basic Gaussian Process Regression, but with added optimisation of hyperparameters:using GpABC\n\n# prepare the data ...\n\ngpm = GPModel(training_x, training_y)\n\n # by default, the optimiser will start with all hyperparameters set to 1,\n # constrained between exp(-10) and exp(10)\ntheta_mle = gp_train(gpm)\n\n# optimised hyperparameters are stored in gpm, so no need to pass them again\n(test_y, test_var) = gp_regression(test_x, gpm)"
-},
-
-{
-    "location": "example-gp/#example-3-1",
-    "page": "Gaussian Processes",
-    "title": "Advanced Usage of gp_train",
-    "category": "section",
-    "text": "using GpABC, Optim, Distributions\n\nfunction gp_train_advanced(gpm::GPModel, attempts::Int)\n    # Initialise the bounds, with special treatment for the second hyperparameter\n    p = get_hyperparameters_size(gpm)\n    bound_template = ones(p)\n    upper_bound = bound_template * 10\n    upper_bound[2] = 2\n    lower_bound = bound_template * -10\n    lower_bound[2] = -1\n\n    # Starting point will be sampled from a Multivariate Uniform distribution\n    start_point_distr = MvUniform(lower_bound, upper_bound)\n\n    # Run several attempts of training and store the\n    # minimiser hyperparameters and the value of log likelihood function\n    hypers = Array{Float64}(attempts, p)\n    likelihood_values = Array{Float64}(attempts)\n    for i=1:attempts\n        set_hyperparameters(gpm, exp.(rand(start_point_distr)))\n        hypers[i, :] = gp_train(gpm,\n            optimisation_solver_type=SimulatedAnnealing, # note the solver type\n            hp_lower=lower_bound, hp_upper=upper_bound, log_level=1)\n        likelihood_values[i] = gp_loglikelihood(gpm)\n    end\n    # Retain the hyperparameters where the maximum log likelihood function is attained\n    gpm.gp_hyperparameters = hypers[indmax(likelihood_values), :]\nend"
-},
-
-{
-    "location": "example-gp/#example-4-1",
-    "page": "Gaussian Processes",
-    "title": "Using a Custom Kernel",
-    "category": "section",
-    "text": "The methods below should be implemented for the custom kernel, unless indicated as optional. Please see reference documentation for detailed description of each method and parameter.using GpABC\nimport GpABC.covariance, GpABC.get_hyperparameters_size, GpABC.covariance_diagonal,\n    GpABC.covariance_training, GpABC.covariance_grad\n\n\"\"\"\n   This is the new kernel that we are adding\n\"\"\"\ntype MyCustomkernel <: AbstractGPKernel\n\n    # optional cache of matrices that could be re-used between calls to\n    # covariance_training and covariance_grad, keyed by hyperparameters\n    cache::MyCustomCache\nend\n\n\"\"\"\n    Report the number of hyperparameters required by the new kernel\n\"\"\"\nfunction get_hyperparameters_size(ker::MyCustomkernel, training_data::AbstractArray{Float64, 2})\n    # ...\nend\n\n\"\"\"\n    Covariance function of the new kernel.\n\n    Return the covariance matrix. Assuming x is an n by d matrix, and z is an m by d matrix,\n    this should return an n by m matrix. Use `scaled_squared_distance` helper function here.\n\"\"\"\nfunction covariance(ker::MyCustomkernel, log_theta::AbstractArray{Float64, 1},\n    x::AbstractArray{Float64, 2}, z::AbstractArray{Float64, 2})\n    # ...\nend\n\n\"\"\"\n    Optional speedup of `covariance` function, that is invoked when the calling code is\n    only interested in variance (i.e. diagonal elements of the covariance) of the kernel.\n\"\"\"\nfunction covariance_diagonal(ker::MyCustomkernel, log_theta::AbstractArray{Float64, 1},\n    x::AbstractArray{Float64, 2})\n    # ...\nend\n\n\"\"\"\n   Optional speedup of `covariance` function that is invoked during training of the GP.\n   Intermediate matrices that are re-used between this function and `covariance_grad` could\n   be cached in `ker.cache`\n\"\"\"\nfunction covariance_training(ker::MyCustomkernel, log_theta::AbstractArray{Float64, 1},\n    training_x::AbstractArray{Float64, 2})\n    # ...\nend\n\n\"\"\"\n    Optional gradient of `covariance` function with respect to hyperparameters, required\n    for optimising with `ConjugateGradient` method. If not provided, `NelderMead` optimiser\n    will be used.\n\n    Use `scaled_squared_distance_grad` helper function here.\n\"\"\"\nfunction covariance_grad(ker::MyCustomkernel, log_theta::AbstractArray{Float64, 1},\n    x::AbstractArray{Float64, 2}, R::AbstractArray{Float64, 2})\n    # ...\nend\n\ngpm = GPModel(training_x, training_y, MyCustomkernel())\ntheta = gp_train(gpm)\n(test_y, test_var) = gp_regression(test_x, gpm)"
+    "text": "<a href=\"https://github.com/tanhevg/GpABC.jl/blob/master/examples/gp-example.ipynb\" target=\"_blank\">Click here to open the GP Regression example notebook</a>"
 },
 
 {
@@ -629,7 +677,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Gaussian Processes",
     "title": "GpABC.GPModel",
     "category": "type",
-    "text": "GPModel(training_x::Union{AbstractArray{Float64, 2}, AbstractArray{Float64, 1}},\n        training_y::Union{AbstractArray{Float64, 2}, AbstractArray{Float64, 1}},\n        kernel::AbstractGPKernel\n        [,test_x::Union{AbstractArray{Float64, 2}, AbstractArray{Float64, 1}}=zeros(0,0)])\n\nConstructor of GPModel that allows the kernel to be specified. Arguments that are passed as 1-d vectors will be reshaped into 2-d.\n\n\n\n\n\n"
+    "text": "GPModel(training_x::Union{AbstractArray{Float64, 2}, AbstractArray{Float64, 1}},\n        training_y::Union{AbstractArray{Float64, 2}, AbstractArray{Float64, 1}}\n        [,test_x::Union{AbstractArray{Float64, 2}, AbstractArray{Float64, 1}}=zeros(0,0)])\n\nDefault constructor of GPModel, that will use SquaredExponentialIsoKernel. Arguments that are passed as 1-d vectors will be reshaped into 2-d.\n\n\n\n\n\n"
 },
 
 {
@@ -637,7 +685,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Gaussian Processes",
     "title": "GpABC.GPModel",
     "category": "type",
-    "text": "GPModel(training_x::Union{AbstractArray{Float64, 2}, AbstractArray{Float64, 1}},\n        training_y::Union{AbstractArray{Float64, 2}, AbstractArray{Float64, 1}}\n        [,test_x::Union{AbstractArray{Float64, 2}, AbstractArray{Float64, 1}}=zeros(0,0)])\n\nDefault constructor of GPModel, that will use SquaredExponentialIsoKernel. Arguments that are passed as 1-d vectors will be reshaped into 2-d.\n\n\n\n\n\n"
+    "text": "GPModel(training_x::Union{AbstractArray{Float64, 2}, AbstractArray{Float64, 1}},\n        training_y::Union{AbstractArray{Float64, 2}, AbstractArray{Float64, 1}},\n        kernel::AbstractGPKernel\n        [,test_x::Union{AbstractArray{Float64, 2}, AbstractArray{Float64, 1}}=zeros(0,0)])\n\nConstructor of GPModel that allows the kernel to be specified. Arguments that are passed as 1-d vectors will be reshaped into 2-d.\n\n\n\n\n\n"
 },
 
 {
@@ -717,7 +765,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Gaussian Processes",
     "title": "GpABC.gp_train",
     "category": "method",
-    "text": "gp_train(gpm::GPModel; <optional keyword arguments>)\n\nFind Maximum Likelihood Estimate of Gaussian Process hyperparameters by maximising gp_loglikelihood, using Optim package.\n\nArguments\n\ngpm: the GPModel, that contains the training data (x and y), the kernel and the starting hyperparameters that will be used for optimisation.\noptimisation_solver_type::Type{<:Optim.Optimizer} (optional): the solver to use. If not given, then ConjugateGradient will be used for kernels that have gradient implementation, and NelderMead will be used for those that don\'t.\nhp_lower::AbstractArray{Float64, 1} (optional): the lower boundary for box optimisation. Defaults to e^-10 for all hyperparameters.\nhp_upper::AbstractArray{Float64, 1} (optional): the upper boundary for box optimisation. Defaults to e^10 for all hyperparameters.\nlog_level::Int (optional): log level. Default is 0, which is no logging at all. 1 makes gp_train print basic information to standard output. 2 switches Optim logging on, in addition to 1.\n\nReturn\n\nThe list of all hyperparameters, including the standard deviation of the measurement noise sigma_n. Note that after this function returns, the hyperparameters of gpm will be set to the optimised value, and there is no need to call set_hyperparameters once again.\n\n\n\n\n\n"
+    "text": "gp_train(gpm::GPModel; <optional keyword arguments>)\n\nFind Maximum Likelihood Estimate of Gaussian Process hyperparameters by maximising gp_loglikelihood, using Optim package. The optimisation target is gp_loglikelihood_log, with gradient computed by gp_loglikelihood_grad. Internally, this function optimises the MLE with respect to logarithms of hyperparameters. This is done for numerical stability. Logarithmisation and exponentiation is performed by this funtion, i.e. real hyperparameters, not logarithms, are taken in and returned back.\n\nBy default, Conjugate Gradient bounded box optimisation is used, as long as the gradient with respect to hyperparameters (covariance_grad) is implemented for the kernel function. If the gradient implementation is not provided, Nelder Mead optimiser is used by default.\n\nMandatory argument\n\ngpm: the GPModel, that contains the training data (x and y), the kernel and the starting hyperparameters that will be used for optimisation.\n\nOptional keyword arguments\n\noptimiser::Type{<:Optim.AbstractOptimizer}: the solver to use. If not given, then ConjugateGradient will be used for kernels that have gradient implementation, and NelderMead will be used for those that don\'t.\nhp_lower::AbstractArray{Float64, 1}: the lower boundary for box optimisation. Defaults to e^-10 for all hyperparameters.\nhp_upper::AbstractArray{Float64, 1}: the upper boundary for box optimisation. Defaults to e^10 for all hyperparameters.\nlog_level::Int: log level. Default is 0, which is no logging at all. 1 makes gp_train print basic information to standard output. 2 switches Optim logging on, in addition to 1.\n\nReturn\n\nThe list of all hyperparameters, including the standard deviation of the measurement noise sigma_n. Note that after this function returns, the hyperparameters of gpm will be set to the optimised value, and there is no need to call set_hyperparameters once again.\n\n\n\n\n\n"
 },
 
 {
