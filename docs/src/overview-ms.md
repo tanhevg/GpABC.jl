@@ -33,3 +33,7 @@ The pseudocode of the model selection algorithm is
 
 
 Note that for model selection the number of accepted particles applies across all the models, with the model accepting the maximum number of particles in the final population being the one that is best supported by the data.
+
+### References
+
+- Toni, T., Welch, D., Strelkowa, N., Ipsen, A., & Stumpf, M. P. H. (2009). Approximate Bayesian computation scheme for parameter inference and model selection in dynamical systems. *Interface*, (July 2008), 187–202. [https://doi.org/10.1098/rsif.2008.0172](https://doi.org/10.1098/rsif.2008.0172)
