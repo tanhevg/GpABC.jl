@@ -46,15 +46,15 @@ User-defined inputs for this algorithm are very similar to those for [Simulation
 
 The pseudocode for emulation-based Rejection ABC in `GpABC` looks as follows:
 
-- Sample ``n`` design particles from ``\pi``: ``\theta_1, ..., \theta_n``
-- Simulate the model for the design particles: ``x_1, ..., x_n = \textbf{f}(\theta_1), ..., \textbf{f}(\theta_n)``
-- Compute distances to the reference data: ``y_1, ..., y_n = \textbf{d}(\textbf{s}(x_1), \textbf{s}(\mathcal{D})), ..., \textbf{d}(\textbf{s}(x_n), \textbf{s}(\mathcal{D}))``
-- Use ``\theta_1, ..., \theta_n`` and ``y_1, ..., y_n`` to train the emulator ``\textbf{gpr}``
+- Sample ``n`` design particles from ``\pi``: ``\theta_1, \ldots, \theta_n``
+- Simulate the model for the design particles: ``x_1, \ldots, x_n = \textbf{f}(\theta_1), \ldots, \textbf{f}(\theta_n)``
+- Compute distances to the reference data: ``y_1, \ldots, y_n = \textbf{d}(\textbf{s}(x_1), \textbf{s}(\mathcal{D})), \ldots, \textbf{d}(\textbf{s}(x_n), \textbf{s}(\mathcal{D}))``
+- Use ``\theta_1, \ldots, \theta_n`` and ``y_1, \ldots, y_n`` to train the emulator ``\textbf{gpr}``
   - *Advanced:* details of training procedure can be tweaked. See [`GpABC.train_emulator`](@ref).
 - While the posterior sample is not full, and maximum number of regressions has not been reached:
-  - Sample ``m`` particles from ``\pi``: ``\theta_1, ..., \theta_m``
-  - Compute the approximate distances by running the emulator regression: ``y_1, ..., y_m = \textbf{gpr}(\theta_1), ..., \textbf{gpr}(\theta_m)``
-  - For all ``j = 1 ... m``, if ``y_j \leq \varepsilon``, then accept ``\theta_j`` in the posterior sample
+  - Sample ``m`` particles from ``\pi``: ``\theta_1, \ldots, \theta_m``
+  - Compute the approximate distances by running the emulator regression: ``y_1, \ldots, y_m = \textbf{gpr}(\theta_1), \ldots, \textbf{gpr}(\theta_m)``
+  - For all ``j = 1 \ldots m``, if ``y_j \leq \varepsilon``, then accept ``\theta_j`` in the posterior sample
     - *Advanced:* details of the acceptance strategy can be tweaked. See [`GpABC.abc_select_emulated_particles`](@ref)
 
 This algorithm is implemented by Julia function [`EmulatedABCRejection`](@ref).
@@ -68,19 +68,21 @@ The user-defined inputs to this algorithm are similar to those of [Simulation ba
 - The prior distribution ``\pi``, defined over model parameter space ``\Theta``
 - The model simulation function ``\textbf{f}``
 - Reference data ``\mathcal{D}``
-- A schedule of thresholds ``\varepsilon_1, ..., \varepsilon_T``
+- A schedule of thresholds ``\varepsilon_1, \ldots, \varepsilon_T``
 - [Summary statistic](@ref summary_stats) ``\textbf{s}`` and distance function ``\textbf{d}``
 - Desired size of the posterior sample and maximum number of simulations to perform
 
 The pseudocode for simulation-based ABC-SMC in `GpABC` looks as follows:
 
-- For ``t`` in ``1 ... T``
+- For ``t`` in ``1 \ldots T``
   - While the posterior sample is not full, and maximum number of simulations has not been reached:
     - if ``t = 1``
       - Sample the particle ``\theta`` from ``\pi``
+      - Use pdf of ``\pi`` at each sampled particle as its weight ``w``
     - else
-      - Sample the particle ``\theta`` from the posterior distribution of iteration ``t-1``
+      - Sample the particle ``\theta`` from the posterior distribution of iteration ``t-1`` with weights ``w``
       - Perturb ``\theta`` using a perturbation kernel
+      - Recompute the weights ``w`` (see (Toni *et al*, 2009) for details)
     - Simulate data ``x = \textbf{f}(\theta)``
     - Compute the distance between the summary statistic of the simulated data and that of the reference data `` y = \textbf{d}(\textbf{s}(x), \textbf{s}(\mathcal{D}))``
     - If ``y \leq \varepsilon``, then accept ``\theta`` in the posterior sample
@@ -96,7 +98,7 @@ The user-defined inputs to this algorithm are similar to those of [Emulation bas
 - The prior distribution ``\pi``, defined over model parameter space ``\Theta``
 - The model simulation function ``\textbf{f}``
 - Reference data ``\mathcal{D}``
-- A schedule of thresholds ``\varepsilon_1, ..., \varepsilon_T``
+- A schedule of thresholds ``\varepsilon_1, \ldots, \varepsilon_T``
 - [Summary statistic](@ref summary_stats) ``\textbf{s}`` and distance function ``\textbf{d}``
 - Number of design particles to sample: ``n``
 - Batch size to use for regression: ``m``
@@ -104,17 +106,24 @@ The user-defined inputs to this algorithm are similar to those of [Emulation bas
 
 The pseudocode for emulation-based ABC-SMC in `GpABC` looks as follows:
 
-- Sample ``n`` design particles from ``\pi``: ``\theta_1, ..., \theta_n``
-- Simulate the model for the design particles: ``x_1, ..., x_n = \textbf{f}(\theta_1), ..., \textbf{f}(\theta_n)``
-- Compute distances to the reference data: ``y_1, ..., y_n = \textbf{d}(\textbf{s}(x_1), \textbf{s}(\mathcal{D})), ..., \textbf{d}(\textbf{s}(x_n), \textbf{s}(\mathcal{D}))``
-- Use ``\theta_1, ..., \theta_n`` and ``y_1, ..., y_n`` to train the emulator ``\textbf{gpr}``
+- Sample ``n`` design particles from ``\pi``: ``\theta_1, \ldots, \theta_n``
+- Simulate the model for the design particles: ``x_1, \ldots, x_n = \textbf{f}(\theta_1), \ldots, \textbf{f}(\theta_n)``
+- Compute distances to the reference data: ``y_1, \ldots, y_n = \textbf{d}(\textbf{s}(x_1), \textbf{s}(\mathcal{D})), \ldots, \textbf{d}(\textbf{s}(x_n), \textbf{s}(\mathcal{D}))``
+- Use ``\theta_1, \ldots, \theta_n`` and ``y_1, \ldots, y_n`` to train the emulator ``\textbf{gpr}``
   - *Advanced:* details of training procedure can be tweaked. See [`GpABC.train_emulator`](@ref).
-- For ``t`` in ``1 ... T``
+- For ``t`` in ``1 \ldots T``
   - *Advanced*: optionally, if ``t > 1``, re-traing the emulator. See [`GpABC.abc_retrain_emulator`](@ref).
   - While the posterior sample is not full, and maximum number of regressions has not been reached:
-    - Sample ``m`` particles from ``\pi``: ``\theta_1, ..., \theta_m``
-    - Compute the approximate distances by running the emulator regression: ``y_1, ..., y_m = \textbf{gpr}(\theta_1), ..., \textbf{gpr}(\theta_m)``
-    - For all ``j = 1 ... m``, if ``y_j \leq \varepsilon``, then accept ``\theta_j`` in the posterior sample
+    - if ``t = 1``
+      - Sample ``m`` particles from ``\pi``: ``\theta_1, \ldots, \theta_m``
+      - Use pdf of ``\pi`` at each sampled particle as its weight ``w``
+    - else
+      - Sample ``m`` particles ``\theta_1, \ldots, \theta_m`` from the posterior distribution of iteration ``t-1`` with weights ``w``
+      - Perturb ``\theta`` using a perturbation kernel
+      - Recompute the weights ``w`` (see (Toni *et al*, 2009) for details)
+    - Sample ``m`` particles from ``\pi``: ``\theta_1, \ldots, \theta_m``
+    - Compute the approximate distances by running the emulator regression: ``y_1, \ldots, y_m = \textbf{gpr}(\theta_1), \ldots, \textbf{gpr}(\theta_m)``
+    - For all ``j = 1 \ldots m``, if ``y_j \leq \varepsilon``, then accept ``\theta_j`` in the posterior sample
       - *Advanced:* details of the acceptance strategy can be tweaked. See [`GpABC.abc_select_emulated_particles`](@ref)
 
 This algorithm is implemented by Julia function [`EmulatedABCSMC`](@ref).
