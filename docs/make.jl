@@ -20,7 +20,6 @@ gpabc_makedocs() = makedocs(
     authors = "Tara Abdul Hameed, Fei He, Jonathan Ish-Horowitz, Istvan Klein, Michael Stumpf, Evgeny Tankhilevich",
     pages = [
         "Home" => "index.md",
-        "Notation" => "notation.md",
         "Package Overview" => [
             "ABC Parameter Inference" => "overview-abc.md",
             "ABC Model Selection" => "overview-ms.md",
