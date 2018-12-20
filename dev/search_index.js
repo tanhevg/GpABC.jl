@@ -25,11 +25,19 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "#Notation-1",
+    "page": "Home",
+    "title": "Notation",
+    "category": "section",
+    "text": "In parts of this manual that deal with Gaussian Processes and kernels, we denote the number of training points as n, and the number of test points as m. The number of dimensions is denoted as d.In the context of ABC, vectors in parameter space (theta) are referred to as particles. Particles that are used for training the emulator (training_x) are called design points. To generate the distances for training the emulator (training_y), the model must be simulated for the design points."
+},
+
+{
     "location": "#Examples-1",
     "page": "Home",
     "title": "Examples",
     "category": "section",
-    "text": "ABC parameter estimation example\nABC model selection example\nLNA example\nGaussian Process regression example"
+    "text": "ABC parameter estimation example\nABC model selection example\nStochastic Inference (LNA) example\nGaussian Process regression example"
 },
 
 {
@@ -46,22 +54,6 @@ var documenterSearchIndex = {"docs": [
     "title": "References",
     "category": "section",
     "text": "Toni, T., Welch, D., Strelkowa, N., Ipsen, A., & Stumpf, M. P. H. (2009). Approximate Bayesian computation scheme for parameter inference and model selection in dynamical systems. Interface, (July 2008), 187–202. https://doi.org/10.1098/rsif.2008.0172\nFilippi, S., Barnes, C. P., Cornebise, J., & Stumpf, M. P. H. (2013). On optimality of kernels for approximate Bayesian computation using sequential Monte Carlo. Statistical Applications in Genetics and Molecular Biology, 12(1), 87–107. https://doi.org/10.1515/sagmb-2012-0069\nRasmussen, C. E., & Williams, C. K. I. (2006). Gaussian Processes for Machine Learning. MIT Press. ISBN 0-262-18253-X. http://www.gaussianprocess.org/gpml\nSchnoerr, D., Sanguinetti, G., & Grima, R. (2017). Approximation and inference methods for stochastic biochemical kinetics—a tutorial review. Journal of Physics A: Mathematical and Theoretical, 50(9), 093001. https://doi.org/10.1088/1751-8121/aa54d9\nKarlebach, G., & Shamir, R. (2008). Modelling and analysis of gene regulatory networks. Nature Reviews Molecular Cell Biology, 9(10), 770–780. https://doi.org/10.1038/nrm2503"
-},
-
-{
-    "location": "notation/#",
-    "page": "Notation",
-    "title": "Notation",
-    "category": "page",
-    "text": ""
-},
-
-{
-    "location": "notation/#Notation-1",
-    "page": "Notation",
-    "title": "Notation",
-    "category": "section",
-    "text": "In parts of this manual that deal with Gaussian Processes and kernels, we denote the number of training points as n, and the number of test points as m. The number of dimensions is denoted as d.In the context of ABC, vectors in parameter space (theta) are referred to as particles. Particles that are used for training the emulator (training_x) are called design points. To generate the distances for training the emulator (training_y), the model must be simulated for the design points."
 },
 
 {
@@ -155,7 +147,7 @@ var documenterSearchIndex = {"docs": [
 {
     "location": "overview-lna/#lna-overview-1",
     "page": "LNA",
-    "title": "LNA Overview",
+    "title": "Stochastic Inference (LNA) Overview",
     "category": "section",
     "text": "The LNA approximates the Chemical Master Equation (CME) by decomposing the stochastic process into two ordinary differential equations (ODEs); one describing the evolution of the mean of the trajectories and the other describing the evolution of the covaraince of the trajectories.In other words the LNA approximates the stochastic process by looking at the mean and the covariance of the trajectories textbfx(t), whose evolution is described by a system of ODEs which can be seen below:beginalign*\nfracdvarphidt=mathcalStextbff(boldsymbolvarphi) labelmean \nfracdSigmadt=mathcalA  Sigma + Sigma  mathcalA^T + frac1sqrtOmega  mathcalS  textdiag(textbff(boldsymbolvarphi))  mathcalS^T labelcovar\nendalign*Here mathcalS is the stoichometry matrix of the system, textbff is the reaction rates.The matrix mathcalA(t) = mathcalSmathcalD and mathcalD is the Jacobian of the reaction rates: mathcalD _ik = fracpartial f_i(boldsymbolvarphi)partial phi_kThese can be solved by numerical methods to describe how boldsymbolvarphi (the mean) and Sigma (the covariance) evolve with time."
 },
@@ -266,16 +258,16 @@ var documenterSearchIndex = {"docs": [
 
 {
     "location": "example-lna/#",
-    "page": "LNA",
-    "title": "LNA",
+    "page": "Stochastic inference (LNA)",
+    "title": "Stochastic inference (LNA)",
     "category": "page",
     "text": ""
 },
 
 {
-    "location": "example-lna/#LNA-Example-1",
-    "page": "LNA",
-    "title": "LNA Example",
+    "location": "example-lna/#Stochastic-Inference-(LNA)-Example-1",
+    "page": "Stochastic inference (LNA)",
+    "title": "Stochastic Inference (LNA) Example",
     "category": "section",
     "text": "<a href=\"https://github.com/tanhevg/GpABC.jl/blob/master/examples/lna-example.ipynb\" target=\"_blank\">Click here to open the LNA example notebook</a>"
 },
@@ -514,15 +506,15 @@ var documenterSearchIndex = {"docs": [
 
 {
     "location": "ref-lna/#",
-    "page": "LNA",
-    "title": "LNA",
+    "page": "Stochastic inference (LNA)",
+    "title": "Stochastic inference (LNA)",
     "category": "page",
     "text": ""
 },
 
 {
     "location": "ref-lna/#LNA-Reference-1",
-    "page": "LNA",
+    "page": "Stochastic inference (LNA)",
     "title": "LNA Reference",
     "category": "section",
     "text": "GpABC functions for Linear Noise Approximation."
@@ -530,7 +522,7 @@ var documenterSearchIndex = {"docs": [
 
 {
     "location": "ref-lna/#Index-1",
-    "page": "LNA",
+    "page": "Stochastic inference (LNA)",
     "title": "Index",
     "category": "section",
     "text": "Pages = [\"ref-lna.md\"]"
@@ -538,7 +530,7 @@ var documenterSearchIndex = {"docs": [
 
 {
     "location": "ref-lna/#GpABC.LNA",
-    "page": "LNA",
+    "page": "Stochastic inference (LNA)",
     "title": "GpABC.LNA",
     "category": "type",
     "text": "LNA\n\nThis is a structure which will hold the LNA: the mean of the trajectories and the covariance between the species.\n\nArguments\n\ntraj_means: A (number of species) x (number of time points) array which holds the mean trajectory for each species on each row of the array.\ntraj_covars: An array which holds the covariance matrix of the species at each time point.\ntime_points: The timepoints the system was solved for.\n\n\n\n\n\n"
@@ -546,7 +538,7 @@ var documenterSearchIndex = {"docs": [
 
 {
     "location": "ref-lna/#GpABC.LNAInput",
-    "page": "LNA",
+    "page": "Stochastic inference (LNA)",
     "title": "GpABC.LNAInput",
     "category": "type",
     "text": "LNAInput\n\nThis is a structure which holds the inputs needed for computing the Linear Noise Approximation (LNA). This structure will hold the stochastic system as provided by the user; uniquely defined through kinetic parameters, the rates of the system and the stoichiometry matrix.\n\nArguments\n\nparams::AbstractArray{Float64,1}: The rate parameters of the stochastic model.\nS::AbstractArray{Float64,2}: the stochiometry matrix of the system. Size: number of reactions x number of species.\nreaction_rate_function::Function,: This is a function f(x, parameters) which should return an array of the reaction rates of the system, i.e. S*f would describe the ODE representation of the system.\nvolume::Float64: The volume of the reactants of the system.\n\n\n\n\n\n"
@@ -554,7 +546,7 @@ var documenterSearchIndex = {"docs": [
 
 {
     "location": "ref-lna/#GpABC.compute_LNA",
-    "page": "LNA",
+    "page": "Stochastic inference (LNA)",
     "title": "GpABC.compute_LNA",
     "category": "function",
     "text": "compute_LNA(input::LNAInput,\n    x0::Tuple{AbstractArray{Float64,1},AbstractArray{Float64,2}},\n    Tspan::Tuple{Float64,Float64},\n    saveat::Float64,\n    solver::OrdinaryDiffEq.OrdinaryDiffEqAlgorithm=RK4();\n    kwargs...)\n\nThe function computes the linear noise approximation to system through construction of two ODEs: one describing the trajectories of the mean of the LNA and the other describing the change the covariance between the variables. These outputs are held in a LNA structure.\n\nArguments\n\nx0::Tuple{AbstractArray{Float64,2},AbstractArray{Float64,2}}: The initial conditions of the system. In the form of (the initial conditions of the species, the initial covariance matrix of the system).\nTspan::Tuple{Float64,Float64}: The start and end times of the simulation.\nsaveat::Float64: The number of time points the use wishes to solve the system for.\nsolver::DEAlgorithm: The ODE solver the user wishes to use, for example DifferentialEquations.RK4().\n\n#Returns\n\nLNA\n\n\n\n\n\n"
@@ -562,7 +554,7 @@ var documenterSearchIndex = {"docs": [
 
 {
     "location": "ref-lna/#GpABC.get_LNA_trajectories",
-    "page": "LNA",
+    "page": "Stochastic inference (LNA)",
     "title": "GpABC.get_LNA_trajectories",
     "category": "function",
     "text": "get_LNA_trajectories(input::LNAInput, n_samples::Int64,\n    x0::Tuple{AbstractArray{Float64,1},AbstractArray{Float64,2}},\n    Tspan::Tuple{Float64,Float64},\n    saveat::Float64,\n    solver::OrdinaryDiffEq.OrdinaryDiffEqAlgorithm=RK4();\n    kwargs...)\n\nA function which computes the LNA and then samples from the it to output sampled trajectories. The user can also sample more than one trajectory; which are then averaged.\n\nArguments\n\ninput::LNAInput: LNAInput stucture.\nn_samples::Int64: The number of sampled tracjectories to be sampled and then averaged.\nx0::Tuple{AbstractArray{Float64,2},AbstractArray{Float64,2}}: The initial conditions of the system. In the form of (the initial conditions of the species, the initial covariance matrix of the system).\nTspan::Tuple{Float64,Float64}: The start and end times of the simulation.\nsaveat::Float64: The number of time points the use wishes to solve the system for.\nsolver::DEAlgorithm: The ODE solver the user wishes to use, for example DifferentialEquations.RK4() .\n\n#Returns\n\nA (number of species) x (number of time points) array which holds the averaged trajectory for each species on each row of the array.\n\n\n\n\n\n"
@@ -570,7 +562,7 @@ var documenterSearchIndex = {"docs": [
 
 {
     "location": "ref-lna/#GpABC.sample_LNA_trajectories-Tuple{LNA,Int64}",
-    "page": "LNA",
+    "page": "Stochastic inference (LNA)",
     "title": "GpABC.sample_LNA_trajectories",
     "category": "method",
     "text": "sample_LNA_trajectories(lna::LNA, n_samples::Int64)\n\nA function which samples from the LNA to output sampled trajectories. The LNA gives the mean of the tracjectories and the covariance between them; hence a single trajectory can be sampled from a Multivariate Normal distribution. The user can also sample more than one trajectory; which are then averaged.\n\nArguments\n\nlna::LNA: LNA stucture.\nn_samples::Int64: The number of sampled tracjectories to be sampled and then averaged.\n\n#Returns\n\nA (number of species) x (number of time points) array which holds the averaged trajectory for each species on each row of the array.\n\n\n\n\n\n"
@@ -578,7 +570,7 @@ var documenterSearchIndex = {"docs": [
 
 {
     "location": "ref-lna/#Types-and-Functions-1",
-    "page": "LNA",
+    "page": "Stochastic inference (LNA)",
     "title": "Types and Functions",
     "category": "section",
     "text": "Modules = [GpABC]\nPages = [\"lna.jl\"]"
