@@ -28,7 +28,7 @@ pkg> add GpABC
 ## Examples
 - [ABC parameter estimation example](https://github.com/tanhevg/GpABC.jl/blob/master/examples/abc-example.ipynb)
 - [ABC model selection example](https://github.com/tanhevg/GpABC.jl/blob/master/examples/model-selection-example.ipynb)
-- [LNA example](https://github.com/tanhevg/GpABC.jl/blob/master/examples/lna-example.ipynb)
+- [Stochastic inference (LNA) example](https://github.com/tanhevg/GpABC.jl/blob/master/examples/lna-example.ipynb)
 - [Gaussian Process regression example](https://github.com/tanhevg/GpABC.jl/blob/master/examples/gp-example.ipynb)
 
 ## Dependencies
