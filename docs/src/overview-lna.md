@@ -1,4 +1,4 @@
-# [LNA Overview](@id lna-overview)
+# [Stochastic Inference (LNA) Overview](@id lna-overview)
 
 The LNA approximates the Chemical Master Equation (CME) by decomposing the stochastic process into two ordinary differential equations (ODEs); one describing the evolution of the mean of the trajectories and the other describing the evolution of the covaraince of the trajectories.
 
