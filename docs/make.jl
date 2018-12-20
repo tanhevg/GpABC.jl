@@ -31,13 +31,13 @@ gpabc_makedocs() = makedocs(
         "Examples" => [
             "ABC Parameter Inference" => "example-abc.md",
             "ABC Model Selection" => "example-ms.md",
-            "LNA" => "example-lna.md",
+            "Stochastic inference (LNA)" => "example-lna.md",
             "Gaussian Processes" => "example-gp.md",
         ],
         "Reference" => [
             "ABC Basic" => "ref-abc.md",
             "ABC Advanced" => "ref-abc-advanced.md",
-            "LNA" => "ref-lna.md",
+            "Stochastic inference (LNA)" => "ref-lna.md",
             "Model Selection" => "ref-ms.md",
             "Gaussian Processes" => "ref-gp.md",
             "Kernels" => "ref-kernels.md"
