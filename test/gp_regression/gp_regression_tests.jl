@@ -1,12 +1,12 @@
-using Base.Test, GpAbc
-import GpAbc.covariance, GpAbc.get_hyperparameters_size
+using Test, GpABC, DelimitedFiles
+import GpABC.covariance, GpABC.get_hyperparameters_size
 
 struct NoGradKernel <: AbstractGPKernel
-    rbf_iso_kernel::GpAbc.SquaredExponentialIsoKernel
+    rbf_iso_kernel::GpABC.SquaredExponentialIsoKernel
 end
 
 function NoGradKernel()
-    NoGradKernel(GpAbc.SquaredExponentialIsoKernel())
+    NoGradKernel(GpABC.SquaredExponentialIsoKernel())
 end
 
 function get_hyperparameters_size(ker::NoGradKernel, x::AbstractArray{Float64, 2})
@@ -20,9 +20,9 @@ end
 
 
 @testset "GP Reression Tests" begin
-    training_x = readcsv("$(@__DIR__)/training_x1.csv")
-    training_y = readcsv("$(@__DIR__)/training_y1.csv")
-    test_x = readcsv("$(@__DIR__)/test_x1.csv")
+    training_x = readdlm("$(@__DIR__)/training_x1.csv")
+    training_y = readdlm("$(@__DIR__)/training_y1.csv")
+    test_x = readdlm("$(@__DIR__)/test_x1.csv")
 
     gpem = GPModel(training_x, training_y, test_x)
 
@@ -32,15 +32,15 @@ end
     test_grad = gp_loglikelihood_grad(log.(gpem.gp_hyperparameters), gpem)
     @test all(abs.(test_grad - [46540815059614715e-22, 6451822871511581e-22, 20565826801544063e-22]) .< 1e-5)
 
-    regression_mean = readcsv("$(@__DIR__)/test_y1_mean.csv")
-    regression_var = readcsv("$(@__DIR__)/test_y1_var.csv")
+    regression_mean = readdlm("$(@__DIR__)/test_y1_mean.csv")
+    regression_var = readdlm("$(@__DIR__)/test_y1_var.csv")
     (r_mean, r_var) = gp_regression(gpem, batch_size=10)
     @test r_mean ≈ regression_mean
-    @test r_var ≈ regression_var
+    @test r_var ≈ regression_var rtol=1e-3
 
-    regression_cov = readcsv("$(@__DIR__)/test_y1_cov.csv")
+    regression_cov = readdlm("$(@__DIR__)/test_y1_cov.csv", ',')
     (r_mean, r_cov) = gp_regression(gpem, batch_size=10, full_covariance_matrix=true)
-    @test r_cov ≈ regression_cov
+    @test r_cov ≈ regression_cov rtol=1e-3
 
     gpem = GPModel(training_x, training_y, NoGradKernel())
     theta_mle = gp_train(gpem)

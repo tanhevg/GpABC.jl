@@ -1,4 +1,4 @@
-using Base.Test, GpAbc
+using Test, GpABC
 
 @testset "RBF Kernel Tests" begin
     @test 2 == get_hyperparameters_size(SquaredExponentialIsoKernel(), zeros(0, 0))

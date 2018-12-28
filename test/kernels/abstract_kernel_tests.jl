@@ -1,4 +1,4 @@
-using Base.Test, GpAbc
+using Test, GpABC
 
 struct UnitTestKernel <: AbstractGPKernel end;
 
