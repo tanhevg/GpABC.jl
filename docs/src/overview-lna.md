@@ -1,8 +1,6 @@
 # [Stochastic Inference (LNA) Overview](@id lna-overview)
 
-The LNA approximates the Chemical Master Equation (CME) by decomposing the stochastic process into two ordinary differential equations (ODEs); one describing the evolution of the mean of the trajectories and the other describing the evolution of the covaraince of the trajectories.
-
-In other words the LNA approximates the stochastic process by looking at the mean and the covariance of the trajectories $\textbf{x}(t)$, whose evolution is described by a system of ODEs which can be seen below:
+Biochemical reactions are stochastic in nature, and the distribution of stochastic simulation trajectories is generally non-Gaussian. To meet the Gaussian noise assumption of a GP and to consider computational efficiency, we employ the linear noise approximation (LNA), a first-order expansion of the Chemical Master Equation (CME) by decomposing the stochastic process into two ordinary differential equations (ODEs); one describing the evolution of the mean and the other describing the evolution of the covaraince of the trajectories $\textbf{x}(t)$ (i.e. $\mathbf{x}(t)\sim \mathcal{N}(\phi(t),\Sigma(t))$):
 
 ```math
 \begin{align*}
