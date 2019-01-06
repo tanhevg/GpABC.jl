@@ -11,18 +11,18 @@ Pages = ["overview-abc.md"]
 The most basic variant of ABC is referred to as Rejection ABC. The user-defined inputs to this algorithm include:
 
 - The prior distribution ``\pi``, defined over model parameter space ``\Theta``
-- The model simulation function ``\textbf{f}``
+- The model simulation function ``f``
 - Reference data ``\mathcal{D}``
 - Acceptance threshold ``\varepsilon``
-- [Summary statistic](@ref summary_stats) ``\textbf{s}`` and distance function ``\textbf{d}``
+- [Summary statistic](@ref summary_stats) ``S`` and distance function ``d``
 - Desired size of the posterior sample and maximum number of simulations to perform
 
 The pseudocode for simulation-based Rejection ABC in `GpABC` looks as follows:
 
 - While the posterior sample is not full, and maximum number of simulations has not been reached:
   - Sample parameter vector (particle) ``\theta`` from ``\pi``
-  - Simulate data ``x = \textbf{f}(\theta)``
-  - Compute the distance between the summary statistic of the simulated data and that of the reference data `` y = \textbf{d}(\textbf{s}(x), \textbf{s}(\mathcal{D}))``
+  - Simulate data ``x = f(\theta)``
+  - Compute the distance between the summary statistic of the simulated data and that of the reference data `` y = d(S(x), S(\mathcal{D}))``
   - If ``y \leq \varepsilon``, then accept ``\theta`` in the posterior sample
 
 This algorithm is implemented by Julia function [`SimulatedABCRejection`](@ref).
@@ -36,10 +36,10 @@ To work around this issue, `GpABC` provides emulation based Rejection ABC. Rathe
 User-defined inputs for this algorithm are very similar to those for [Simulation based Rejection ABC](@ref):
 
 - The prior distribution ``\pi``, defined over model parameter space ``\Theta``
-- The model simulation function ``\textbf{f}``
+- The model simulation function ``f``
 - Reference data ``\mathcal{D}``
 - Acceptance threshold ``\varepsilon``
-- [Summary statistic](@ref summary_stats) ``\textbf{s}`` and distance function ``\textbf{d}``
+- [Summary statistic](@ref summary_stats) ``S`` and distance function ``d``
 - Number of design particles to sample: ``n``
 - Batch size to use for regression: ``m``
 - Desired size of the posterior sample and maximum number of regressions to perform
@@ -47,8 +47,8 @@ User-defined inputs for this algorithm are very similar to those for [Simulation
 The pseudocode for emulation-based Rejection ABC in `GpABC` looks as follows:
 
 - Sample ``n`` design particles from ``\pi``: ``\theta_1, \ldots, \theta_n``
-- Simulate the model for the design particles: ``x_1, \ldots, x_n = \textbf{f}(\theta_1), \ldots, \textbf{f}(\theta_n)``
-- Compute distances to the reference data: ``y_1, \ldots, y_n = \textbf{d}(\textbf{s}(x_1), \textbf{s}(\mathcal{D})), \ldots, \textbf{d}(\textbf{s}(x_n), \textbf{s}(\mathcal{D}))``
+- Simulate the model for the design particles: ``x_1, \ldots, x_n = f(\theta_1), \ldots, f(\theta_n)``
+- Compute distances to the reference data: ``y_1, \ldots, y_n = d(S(x_1), S(\mathcal{D})), \ldots, d(S(x_n), S(\mathcal{D}))``
 - Use ``\theta_1, \ldots, \theta_n`` and ``y_1, \ldots, y_n`` to train the emulator ``\textbf{gpr}``
   - *Advanced:* details of training procedure can be tweaked. See [`GpABC.train_emulator`](@ref).
 - While the posterior sample is not full, and maximum number of regressions has not been reached:
@@ -66,10 +66,10 @@ This sophisticated version of ABC allows to specify a schedule of thresholds, as
 The user-defined inputs to this algorithm are similar to those of [Simulation based Rejection ABC](@ref):
 
 - The prior distribution ``\pi``, defined over model parameter space ``\Theta``
-- The model simulation function ``\textbf{f}``
+- The model simulation function ``f``
 - Reference data ``\mathcal{D}``
 - A schedule of thresholds ``\varepsilon_1, \ldots, \varepsilon_T``
-- [Summary statistic](@ref summary_stats) ``\textbf{s}`` and distance function ``\textbf{d}``
+- [Summary statistic](@ref summary_stats) ``S`` and distance function ``d``
 - Desired size of the posterior sample and maximum number of simulations to perform
 
 The pseudocode for simulation-based ABC-SMC in `GpABC` looks as follows:
@@ -96,10 +96,10 @@ Similarly to [Simulation based ABC - SMC](@ref), [Emulation based Rejection ABC]
 The user-defined inputs to this algorithm are similar to those of [Emulation based Rejection ABC](@ref):
 
 - The prior distribution ``\pi``, defined over model parameter space ``\Theta``
-- The model simulation function ``\textbf{f}``
+- The model simulation function ``f``
 - Reference data ``\mathcal{D}``
 - A schedule of thresholds ``\varepsilon_1, \ldots, \varepsilon_T``
-- [Summary statistic](@ref summary_stats) ``\textbf{s}`` and distance function ``\textbf{d}``
+- [Summary statistic](@ref summary_stats) ``S`` and distance function ``d``
 - Number of design particles to sample: ``n``
 - Batch size to use for regression: ``m``
 - Desired size of the posterior sample and maximum number of regressions to perform
@@ -107,8 +107,8 @@ The user-defined inputs to this algorithm are similar to those of [Emulation bas
 The pseudocode for emulation-based ABC-SMC in `GpABC` looks as follows:
 
 - Sample ``n`` design particles from ``\pi``: ``\theta_1, \ldots, \theta_n``
-- Simulate the model for the design particles: ``x_1, \ldots, x_n = \textbf{f}(\theta_1), \ldots, \textbf{f}(\theta_n)``
-- Compute distances to the reference data: ``y_1, \ldots, y_n = \textbf{d}(\textbf{s}(x_1), \textbf{s}(\mathcal{D})), \ldots, \textbf{d}(\textbf{s}(x_n), \textbf{s}(\mathcal{D}))``
+- Simulate the model for the design particles: ``x_1, \ldots, x_n = f(\theta_1), \ldots, f(\theta_n)``
+- Compute distances to the reference data: ``y_1, \ldots, y_n = d(S(x_1), S(\mathcal{D})), \ldots, d(S(x_n), S(\mathcal{D}))``
 - Use ``\theta_1, \ldots, \theta_n`` and ``y_1, \ldots, y_n`` to train the emulator ``\textbf{gpr}``
   - *Advanced:* details of training procedure can be tweaked. See [`GpABC.train_emulator`](@ref).
 - For ``t`` in ``1 \ldots T``
