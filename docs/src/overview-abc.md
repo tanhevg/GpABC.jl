@@ -83,8 +83,8 @@ The pseudocode for simulation-based ABC-SMC in `GpABC` looks as follows:
       - Sample the particle ``\theta`` from the posterior distribution of iteration ``t-1`` with weights ``w``
       - Perturb ``\theta`` using a perturbation kernel
       - Recompute the weights ``w`` (see (Toni *et al*, 2009) for details)
-    - Simulate data ``x = \textbf{f}(\theta)``
-    - Compute the distance between the summary statistic of the simulated data and that of the reference data `` y = \textbf{d}(\textbf{s}(x), \textbf{s}(\mathcal{D}))``
+    - Simulate data ``x = f(\theta)``
+    - Compute the distance between the summary statistic of the simulated data and that of the reference data `` y = d(S(x), S(\mathcal{D}))``
     - If ``y \leq \varepsilon``, then accept ``\theta`` in the posterior sample
 
 This algorithm is implemented by Julia function [`SimulatedABCSMC`](@ref).
