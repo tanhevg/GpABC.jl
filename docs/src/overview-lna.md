@@ -10,15 +10,13 @@ Biochemical reactions are stochastic in nature, and the distribution of stochast
 \end{align*}
 ```
 
-Here $S$ is the stoichometry matrix of the system, $\textbf{a}$ is the reaction propensity vector.
+Here $S$ is the stoichometry matrix of the system, $\textbf{a}$ is the reaction propensity vector. The $J(t)_{jk}=\partial a_j/\partial \phi_k$ is the Jacobian of the $j^{th}$ reaction with respect to the $k^{th}$ variable.
 
-The $J(t)_{jk}=\partial a_j/\partial \phi_k$ is the Jacobian of the $j^{th}$ reaction with respect to the $k^{th}$ variable.
+These can be solved by numerical methods to describe how $\phi(t)$ (the mean) and $\Sigma(t)$ (the covariance) evolve with time. We can then draw samples from the above (time-dependent) multivariate Gaussian distribution and obtain realizations of stochastic simulation trajectories. Those trajectories can therefore be used for stochastic simulaiton based ABC. Please see Examples Section for more details.
 
-These can be solved by numerical methods to describe how $phi(t)$ (the mean) and $\Sigma(t)$ (the covariance) evolve with time.
 
 ### References
 
-- Komorowski, M., Finkenstädt, B., Harper, C.V., and Rand, D.A. (2009). Bayesian inference of biochemical kinetic parameters using the
-linear noise approximation. *BMC Bioinformatics*, 10:343.
+- Komorowski, M., Finkenstädt, B., Harper, C.V., and Rand, D.A. (2009). Bayesian inference of biochemical kinetic parameters using the linear noise approximation. *BMC Bioinformatics*, 10:343.
 
 - Schnoerr, D., Sanguinetti, G., and Grima, R. (2017). Approximation and inference methods for stochastic biochemical kinetics—a tutorial review. *Journal of Physics A: Mathematical and Theoretical*, 50(9), 093001.
