@@ -5,7 +5,11 @@ branches:
 language: julia
 julia:
   - 1.0
-codecov: false
+codecov: true
+before_script:
+  - julia -e 'using Pkg;
+    Pkg.add(PackageSpec(name="MbedTLS", version="0.6.6"));
+    Pkg.pin(PackageSpec(name="MbedTLS", version="0.6.6"));'
 after_success:
   - julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()'
   - julia --project=docs/ docs/make.jl
