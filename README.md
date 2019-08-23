@@ -22,7 +22,7 @@ Stochastic models, that don't conform to Gaussian Process Prior assumption, are 
 From the Julia REPL, type `]` to enter the Pkg REPL mode and run
 
 ```
-pkg> add GpABC
+pkg> add https://github.com/tanhevg/GpABC.jl
 ```
 
 ## Examples
