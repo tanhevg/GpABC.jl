@@ -54,7 +54,7 @@ end
 
 #
 # Built-in summary statistics. Data should be in the format returned by
-# DifferentialEquations.solve i.e. an array with size (n_trajectories, n_time_points)
+# OrdinaryDiffEq.solve i.e. an array with size (n_trajectories, n_time_points)
 #
 
 # Mean of each trajectory

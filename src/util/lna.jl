@@ -47,7 +47,7 @@ The function computes the linear noise approximation to system through construct
 - `x0::Tuple{AbstractArray{Float64,2},AbstractArray{Float64,2}}`: The initial conditions of the system. In the form of (the initial conditions of the species, the initial covariance matrix of the system).
 - `Tspan::Tuple{Float64,Float64}`: The start and end times of the simulation.
 - `saveat::Float64`: The number of time points the use wishes to solve the system for.
-- `solver::DEAlgorithm`: The ODE solver the user wishes to use, for example `DifferentialEquations.RK4()`.
+- `solver::DEAlgorithm`: The ODE solver the user wishes to use, for example `OrdinaryDiffEq.RK4()`.
 
 #Returns
 - LNA
@@ -131,7 +131,7 @@ A function which computes the LNA and then samples from the it to output sampled
 - `x0::Tuple{AbstractArray{Float64,2},AbstractArray{Float64,2}}`: The initial conditions of the system. In the form of (the initial conditions of the species, the initial covariance matrix of the system).
 - `Tspan::Tuple{Float64,Float64}`: The start and end times of the simulation.
 - `saveat::Float64`: The number of time points the use wishes to solve the system for.
-- `solver::DEAlgorithm`: The ODE solver the user wishes to use, for example DifferentialEquations.RK4() .
+- `solver::DEAlgorithm`: The ODE solver the user wishes to use, for example OrdinaryDiffEq.RK4() .
 
 #Returns
 -  A (number of species) x (number of time points) array which holds the averaged trajectory for each species on each row of the array.

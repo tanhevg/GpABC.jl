@@ -40,7 +40,7 @@ To generate the distances for training the emulator (`training_y`), the model mu
 -  [`Optim`](https://github.com/JuliaNLSolvers/Optim.jl) - for training Gaussian Process hyperparameters.
 - [`Distributions`](https://github.com/JuliaStats/Distributions.jl) - probability distributions.
 - [`Distances`](https://github.com/JuliaStats/Distances.jl) - distance functions
-- [`DifferentialEquations`](https://github.com/JuliaDiffEq/DifferentialEquations.jl) - for solving ODEs for LNA, and also used throughout the examples for model simulation (ODEs and SDEs)
+- [`OrdinaryDiffEq`](https://github.com/JuliaDiffEq/OrdinaryDiffEq.jl) - for solving ODEs for LNA, and also used throughout the examples for model simulation (ODEs and SDEs)
 - [`ForwardDiff`](https://github.com/JuliaDiff/ForwardDiff.jl) - automatic differentiation is also used by LNA
 
 ## References

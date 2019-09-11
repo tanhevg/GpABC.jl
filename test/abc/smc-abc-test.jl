@@ -1,4 +1,4 @@
-using Test, GpABC, DifferentialEquations, Distances, Distributions
+using Test, GpABC, OrdinaryDiffEq, Distances, Distributions
 
 @testset "SMC ABC Test" begin
     #
@@ -28,7 +28,7 @@ using Test, GpABC, DifferentialEquations, Distances, Distributions
     saveat = 0.1
 
     #
-    # Returns the solution to the toy model as solved by DifferentialEquations
+    # Returns the solution to the toy model as solved by OrdinaryDiffEq
     #
     GeneReg = function(params::AbstractArray{Float64,1},
         Tspan::Tuple{Float64,Float64}, x0::AbstractArray{Float64,1},
