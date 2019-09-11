@@ -1,5 +1,8 @@
 # Stochastic Inference (LNA) Example
 
 ```@raw html
-<a href="https://github.com/tanhevg/GpABC.jl/blob/master/examples/lna-example.ipynb" target="_blank">Click here to open the LNA example notebook</a>
+LNA example notebook
+<a href="https://github.com/tanhevg/GpABC.jl/blob/master/examples/lna-example.ipynb" target="_blank">GitHub</a>
+<a href="https://nbviewer.jupyter.org/github/tanhevg/GpABC.jl/blob/master/examples/lna-example.ipynb" target="_blank">NBViewer</a>
+
 ```
