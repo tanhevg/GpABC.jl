@@ -237,7 +237,7 @@ var documenterSearchIndex = {"docs": [
     "page": "ABC Parameter Inference",
     "title": "ABC Example",
     "category": "section",
-    "text": "<a href=\"https://github.com/tanhevg/GpABC.jl/blob/master/examples/abc-example.ipynb\" target=\"_blank\">Click here to open the ABC example notebook</a>"
+    "text": "ABC example notebook:\n<a href=\"https://github.com/tanhevg/GpABC.jl/blob/master/examples/abc-example.ipynb\" target=\"_blank\">GitHub</a>&nbsp;\n<a href=\"https://nbviewer.jupyter.org/github/tanhevg/GpABC.jl/blob/master/examples/abc-example.ipynb\">NBViewer</a>"
 },
 
 {
@@ -253,7 +253,7 @@ var documenterSearchIndex = {"docs": [
     "page": "ABC Model Selection",
     "title": "Model Selection Example",
     "category": "section",
-    "text": "<a href=\"https://github.com/tanhevg/GpABC.jl/blob/master/examples/model-selection-example.ipynb\" target=\"_blank\">Click here to open the Model Selection example notebook</a>"
+    "text": "Model Selection example notebook:\n<a href=\"https://github.com/tanhevg/GpABC.jl/blob/master/examples/model-selection-example.ipynb\" target=\"_blank\">GitHub</a>\n<a href=\"https://nbviewer.jupyter.org/github/tanhevg/GpABC.jl/blob/master/examples/model-selection-example.ipynb\" target=\"_blank\">NBViewer</a>"
 },
 
 {
@@ -269,7 +269,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Stochastic inference (LNA)",
     "title": "Stochastic Inference (LNA) Example",
     "category": "section",
-    "text": "<a href=\"https://github.com/tanhevg/GpABC.jl/blob/master/examples/lna-example.ipynb\" target=\"_blank\">Click here to open the LNA example notebook</a>"
+    "text": "LNA example notebook\n<a href=\"https://github.com/tanhevg/GpABC.jl/blob/master/examples/lna-example.ipynb\" target=\"_blank\">GitHub</a>\n<a href=\"https://nbviewer.jupyter.org/github/tanhevg/GpABC.jl/blob/master/examples/lna-example.ipynb\" target=\"_blank\">NBViewer</a>\n"
 },
 
 {
@@ -285,7 +285,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Gaussian Processes",
     "title": "Gaussian Processes Examples",
     "category": "section",
-    "text": "<a href=\"https://github.com/tanhevg/GpABC.jl/blob/master/examples/gp-example.ipynb\" target=\"_blank\">Click here to open the GP Regression example notebook</a>"
+    "text": "GP Regression example notebook:\n<a href=\"https://github.com/tanhevg/GpABC.jl/blob/master/examples/gp-example.ipynb\" target=\"_blank\">GitHub</a>&nbsp;\n<a href=\"https://nbviewer.jupyter.org/github/tanhevg/GpABC.jl/blob/master/examples/gp-example.ipynb\">NBViewer</a>"
 },
 
 {
