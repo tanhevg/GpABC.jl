@@ -24,6 +24,27 @@ From the Julia REPL, type `]` to enter the Pkg REPL mode and run
 ```
 pkg> add https://github.com/tanhevg/GpABC.jl
 ```
+## Paper
+
+If you are using GpABC in research, please cite our paper (currently under review):
+
+GpABC: a Julia package for approximate Bayesian computation with Gaussian process emulation
+
+Evgeny Tankhilevich, Jonathan Ish-Horowicz, Tara Hameed, Elisabeth Roesch, Istvan Kleijn, Michael PH Stumpf, Fei He
+
+doi: https://doi.org/10.1101/769299
+
+https://www.biorxiv.org/content/10.1101/769299v1
+
+```
+@article{gpabc:2019,
+  author    = {Evgeny Tankhilevich, Jonathan Ish-Horowicz, Tara Hameed, Elisabeth Roesch, Istvan Kleijn, Michael PH Stumpf, Fei He},
+  title     = {GpABC: a Julia package for approximate Bayesian computation with Gaussian process emulation},
+  journal   = {BioRxiv},
+  year      = {2019},
+  doi       = {10.1101/769299},
+}
+```
 
 ## Examples
 - [ABC parameter estimation example](https://github.com/tanhevg/GpABC.jl/blob/master/examples/abc-example.ipynb)
