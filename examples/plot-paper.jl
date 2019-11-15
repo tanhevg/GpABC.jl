@@ -7,6 +7,7 @@ import Random.randperm
 @pyimport matplotlib.legend_handler as lh
 @pyimport matplotlib.lines as lines
 
+PyPlot.pygui(true)
 
 function scale_outer_intervals(intervals, scale=1.0)
     int_min = min([int[1] for int in intervals]...)

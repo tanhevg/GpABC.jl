@@ -68,7 +68,7 @@ end
 """
 	NoopRetraining <: AbstractEmulatorRetraining
 
-A sentinel retraining strategy that does not do anything. When used, the emulator is trained only once before
+A sentinel retraining strategy that does not do anything. When used, the emulator is trained only once at the start of the process.
 """
 struct NoopRetraining <: AbstractEmulatorRetraining end
 

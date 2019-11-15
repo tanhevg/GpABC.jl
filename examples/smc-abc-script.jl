@@ -1,6 +1,6 @@
-import Pkg
-Pkg.activate("examples")
-using Revise, GpABC, DifferentialEquations, Distances, Distributions
+# import Pkg
+# Pkg.activate("examples")
+using GpABC, OrdinaryDiffEq, Distances, Distributions, Dates, Logging
 
 # seed!(4)
 
@@ -9,7 +9,6 @@ using Revise, GpABC, DifferentialEquations, Distances, Distributions
 #
 
 n_particles = 1000
-threshold_schedule = [3.0, 2.0, 1.0, 0.5, 0.2]
 progress_every = 1000
 
 #
@@ -35,7 +34,10 @@ n_var_params = length(param_indices)
 Tspan = (0.0, 10.0)
 x0 = [0.0, 0.0, 0.0]
 solver = RK4()
-saveat = 0.1
+# saveat = 0.1
+# threshold_schedule = [3.0, 2.0, 1.0, 0.5, 0.2]
+saveat = 0.001
+threshold_schedule = [3.0, 2.0, 1.0, 0.5, 0.2] .* 5
 
 function ODE_3GeneReg(dx, x, pars, t)
   dx[1] = pars[1]/(1+pars[7]*x[3]) - pars[4]*x[1]
@@ -44,7 +46,7 @@ function ODE_3GeneReg(dx, x, pars, t)
 end
 
 #
-# Returns the solution to the toy model as solved by DifferentialEquations
+# Returns the solution to the toy model as solved by OrdinaryDiffEq
 #
 function GeneReg(params::AbstractArray{Float64,1},
     Tspan::Tuple{Float64,Float64}, x0::AbstractArray{Float64,1},
@@ -93,21 +95,39 @@ function simulate_distance(var_param_indices::AbstractArray{Int, 1}, var_params:
         summary_stats(simulator_function(var_param_indices, var_params)))
 end
 
-println("EMULATION")
-emu_out = EmulatedABCSMC(reference_data,
-    simulator_function,
-    priors[param_indices],
-    threshold_schedule,
-    n_particles,
-    n_design_points;
-    batch_size=1000,
-    emulator_retraining = PreviousPopulationThresholdRetraining(n_design_points, min(100, n_design_points/2), 10),
-    emulated_particle_selection = MeanVarEmulatedParticleSelection()
-    )
+function run_emulation()
+    @info("EMULATION")
+    start_ts = now()
+    emu_out = EmulatedABCSMC(reference_data,
+        simulator_function,
+        priors[param_indices],
+        threshold_schedule,
+        n_particles,
+        n_design_points;
+        batch_size=1000,
+        emulator_retraining = PreviousPopulationThresholdRetraining(n_design_points, min(100, n_design_points/2), 10),
+        emulated_particle_selection = MeanVarEmulatedParticleSelection(),
+        # write_progress=true
+        )
+    elapsed_msg = canonicalize(Dates.CompoundPeriod(now() - start_ts))
+    @info "Emulation took $(elapsed_msg)"
+    emu_out
+end
 
-println("SIMULATION")
-sim_out = SimulatedABCSMC(reference_data,
-    simulator_function,
-    priors[param_indices],
-    threshold_schedule,
-    n_particles)
+function run_simulation()
+    println("SIMULATION")
+    start_ts = now()
+    sim_out = SimulatedABCSMC(reference_data,
+        simulator_function,
+        priors[param_indices],
+        threshold_schedule,
+        n_particles,
+        # write_progress=true
+        )
+    elapsed_msg = canonicalize(Dates.CompoundPeriod(now() - start_ts))
+    @info "Simulation took $(elapsed_msg)"
+    sim_out
+end
+
+emu_out = run_emulation()
+sim_out = run_simulation()

@@ -216,7 +216,7 @@ function iterateABCSMC!(tracker::SimulatedABCSMCTracker,
                 # This prevents the whole code from failing if there is a problem
                 # solving the differential equation(s). The exception is thrown by the
                 # distance function
-                @warn "The summarised simulated data does not have the same size as the summarised reference data. If this is not happening at every iteration it may be due to the behaviour of DifferentialEquations::solve - please check for related warnings. Continuing to the next iteration."
+                @warn "The summarised simulated data does not have the same size as the summarised reference data. If this is not happening at every iteration it may be due to the behaviour of OrdinaryDiffEq::solve - please check for related warnings. Continuing to the next iteration."
                 n_tries += 1
                 continue
             else

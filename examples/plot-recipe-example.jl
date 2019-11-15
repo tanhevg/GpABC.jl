@@ -1,6 +1,6 @@
 import Pkg
 Pkg.activate("examples")
-using Revise, GpABC, DifferentialEquations, Distances, Distributions, Plots
+using Revise, GpABC, OrdinaryDiffEq, Distances, Distributions, Plots
 import RecipesBase
 RecipesBase.debug()
 import Logging
@@ -48,7 +48,7 @@ function ODE_3GeneReg(dx, x, pars, t)
 end
 
 #
-# Returns the solution to the toy model as solved by DifferentialEquations
+# Returns the solution to the toy model as solved by OrdinaryDiffEq
 #
 function GeneReg(params::AbstractArray{Float64,1},
     Tspan::Tuple{Float64,Float64}, x0::AbstractArray{Float64,1},

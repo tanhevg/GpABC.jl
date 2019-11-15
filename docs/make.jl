@@ -44,8 +44,10 @@ gpabc_makedocs() = makedocs(
     ]
 )
 
-gpabc_makedocs()
+if VERSION == v"1.2.0"
+    gpabc_makedocs()
 
-deploydocs(
-    repo = "github.com/tanhevg/GpABC.jl.git"
-)
+    deploydocs(
+        repo = "github.com/tanhevg/GpABC.jl.git"
+    )
+end

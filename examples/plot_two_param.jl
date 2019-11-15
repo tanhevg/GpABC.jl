@@ -1,4 +1,4 @@
-using Distributions, DifferentialEquations, GpABC, Distances, PyPlot
+using Distributions, OrdinaryDiffEq, GpABC, Distances, PyPlot
 
 # GaussianProcesses/Bioinformatics paper/l2_norm_two_params/...
 

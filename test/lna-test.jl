@@ -1,4 +1,4 @@
-using Test, GpABC, DifferentialEquations, Distributions, Distances, LinearAlgebra
+using Test, GpABC, OrdinaryDiffEq, Distributions, Distances, LinearAlgebra
 
 @testset "LNA Test" begin
 

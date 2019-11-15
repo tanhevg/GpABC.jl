@@ -1,4 +1,4 @@
-using Test, GpABC, DifferentialEquations, Distances, Distributions
+using Test, GpABC, OrdinaryDiffEq, Distances, Distributions
 import Random
 
 @testset "Model selection test" begin
@@ -71,12 +71,12 @@ import Random
 	# Define simulator functions for each model
 
 	simulator1(params) = Array{Float64,2}(
-	    solve(ODEProblem(model1, ics[1], (times[1], times[end]), params), saveat=times, force_dtmin=true))
+	    solve(ODEProblem(model1, ics[1], (times[1], times[end]), params), RK4(); saveat=times, force_dtmin=true))
 
 	# Model2 contains the species L, which is not measured - we remove it from the returned ODE solution
 	# so that it can be compared to the reference data "data", which only contains S, I and R
 	simulator2(params) = Array{Float64,2}(
-	    solve(ODEProblem(model2, ics[2], (times[1], times[end]), params), saveat=times, force_dtmin=true))[[1,3,4],:]
+	    solve(ODEProblem(model2, ics[2], (times[1], times[end]), params), RK4(); saveat=times, force_dtmin=true))[[1,3,4],:]
 
 	# Model to test dead behaviour
 	simulator3(params) = rand(Float64, size(data))
