@@ -297,7 +297,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "ref-abc/#ABC-Basic-Reference-1",
+    "location": "ref-abc/#abc_ref-1",
     "page": "ABC Basic",
     "title": "ABC Basic Reference",
     "category": "section",
@@ -910,6 +910,54 @@ var documenterSearchIndex = {"docs": [
     "title": "Types and Functions",
     "category": "section",
     "text": "Modules = [GpABC]\nPages = [\"_kernel.jl\", \"_kernels.jl\", \"scaled_squared_distance.jl\"]"
+},
+
+{
+    "location": "faq/#",
+    "page": "FAQ",
+    "title": "FAQ",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "faq/#Frequently-Asked-Questions-1",
+    "page": "FAQ",
+    "title": "Frequently Asked Questions",
+    "category": "section",
+    "text": ""
+},
+
+{
+    "location": "faq/#Q:-My-computation-terminates-before-sampling-sufficient-number-of-particles.-How-do-I-make-it-run-longer?-1",
+    "page": "FAQ",
+    "title": "Q: My computation terminates before sampling sufficient number of particles. How do I make it run longer?",
+    "category": "section",
+    "text": "A: All parameter inference functions accept an optional parameter max_iter, which specifies the number of iterations to run. See ABC Reference for more details."
+},
+
+{
+    "location": "faq/#Q:-When-running-the-example-on-my-machine,-emulation-provides-no-performance-benefit-or-even-takes-longer-than-emulation.-How-do-I-speed-up-emulation?-1",
+    "page": "FAQ",
+    "title": "Q: When running the example on my machine, emulation provides no performance benefit or even takes longer than emulation. How do I speed up emulation?",
+    "category": "section",
+    "text": "A: The best way to reduce the time it takes to run the emulation is to decrease the batch_size parameter. Please refer to docs for EmulatedABCRejection end EmulatedABCSMC. Machines with larger amount of RAM would be able to handle larger batches without performance degradation."
+},
+
+{
+    "location": "faq/#Q:-How-do-I-generate-a-plot-that-is-similar-to-the-one-in-the-paper?-1",
+    "page": "FAQ",
+    "title": "Q: How do I generate a plot that is similar to the one in the paper?",
+    "category": "section",
+    "text": "A: You will need to run parameter estimation using both emulation and simulation for the same problem. Then, assuming you have Plots package installed, just runjulia> plot(emu_out, sim_out, true_params)Use pyplot() backend for best results."
+},
+
+{
+    "location": "faq/#Q:-How-do-I-run-the-example-notebooks-locally?-1",
+    "page": "FAQ",
+    "title": "Q: How do I run the example notebooks locally?",
+    "category": "section",
+    "text": "A:Make sure that Jupyter is installed, along with Julia and its Jupyter Kernel.\nClone or download GpABC.jl to your machine.\nRun jupyter from the examples directory of the local copy of GpABC.jl:$ cd GpABC.jl/examples\n$ jupyter notebookThe first line of the first cell, that contains something likeimport Pkg; Pkg.activate(\".\"); Pkg.resolve();\nusing ...will download all the dependencies."
 },
 
 ]}
