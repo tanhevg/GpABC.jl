@@ -27,10 +27,8 @@ data = ... should be the last statement
                   if i == j
                         @series begin
                               seriestype := :histogram
-                              xlabel --> "Parameter $(par1)"
-                              ylabel := ""
-                              yaxis := false
-                              bins := 50
+                              ylabel := "Accepted"
+                              bins --> 50
                               @debug repr(population_colors)
                               # if population_colors !== nothing
                               #       idx = max_color_idx % length(population_colors)
@@ -110,8 +108,8 @@ my_linspace(bounds::Tuple{Float64, Float64}, length::Int64) = range(bounds[1], s
       params = 1:emu_out.n_params
       legend --> false
       layout := length(params) ^ 2
-      for (i, par1) in enumerate(params)
-            for (j, par2) in enumerate(params)
+      for i in params
+            for j in params
                   subplot := (i - 1) * length(params) + j
                   if j < i
                         x_data_emu = emu_out.population[pop_idx][:,j]

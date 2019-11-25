@@ -131,7 +131,11 @@ emu_out = run_emulation()
 sim_out = run_simulation()
 tparams = true_params[param_indices]
 
+#=
 import Pkg; Pkg.activate("plots", shared=true)
 using Plots
 pyplot()
 plot(emu_out, sim_out, tparams)
+plot(emu_out)
+plot(sim_out)
+=#
