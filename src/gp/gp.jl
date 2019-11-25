@@ -342,7 +342,7 @@ function gp_regression_sample(test_x::Union{AbstractArray{Float64, 1}, AbstractA
     mu, Sigma = gp_regression(test_x, gpem, full_covariance_matrix=true)
     post_samples = rand(MvNormal(mu, Sigma), n_samples)
     if n_samples==1
-        post_samples = squeeze(post_samples, 2)
+        post_samples = dropdims(post_samples, 2)
     end
     return post_samples
 end
