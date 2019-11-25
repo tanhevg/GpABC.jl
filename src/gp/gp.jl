@@ -334,15 +334,25 @@ function update_cache!(kernel::AbstractGPKernel, cache::HPOptimisationCache,
 end
 
 """
-    gp_regression_sample(params::Union{AbstractArray{Float64, 1}, AbstractArray{Float64, 2}}, gpem::GPModel)
+    gp_regression_sample(test_x::Union{AbstractArray{Float64, 1}, AbstractArray{Float64, 2}}, n_samples::Int64, gpem::GPModel)
 
-Return a random sample from a multivariate Gaussian distrubution, obtained by calling [`gp_regression`](@ref)
+Return `n_samples` random samples from the Gaussian process posterior, evaluated at `test_x`. [`gp_regression`](@ref).
+
+# Arguments
+- `test_x`: if specified, overrides the test x in `gpm`. Size ``m \\times d``.
+- `n_samples`: integer specifying the number of posterior samples.
+- `gpm`: the [`GPModel`](@ref), that contains the training data (x and y),
+  the kernel, the hyperparameters and the test data for running the regression.
+
+# Return
+An array of posterior samples with shape ``m \\times`` `n_samples` if `n_samples`>1 and ``m`` otherwise.
+
 """
 function gp_regression_sample(test_x::Union{AbstractArray{Float64, 1}, AbstractArray{Float64, 2}}, n_samples::Int64, gpem::GPModel)
     mu, Sigma = gp_regression(test_x, gpem, full_covariance_matrix=true)
     post_samples = rand(MvNormal(mu, Sigma), n_samples)
     if n_samples==1
-        post_samples = dropdims(post_samples, 2)
+        post_samples = dropdims(post_samples, dims=2)
     end
     return post_samples
 end

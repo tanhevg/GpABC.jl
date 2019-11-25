@@ -165,6 +165,13 @@ end
 
 Compute the approximate distances by running the regression-based `emulator` on the provided `particles`, and return the accepted particles. Acceptance strategy is determined by `selection` - subtype of [`AbstractEmulatedParticleSelection`](@ref).
 
+# Arguments
+- `gpm`: the [`GPModel`](@ref), that contains the training data (x and y),
+  the kernel, the hyperparameters and the test data for running the regression.
+- `parameters`: array of parameters to test (the particles).
+- `threshold`: if the distance for a particle is below `threshold` then it is accepted as a posterior sample.
+- `selection`: the acceptance strategy (a subtype of [`AbstractEmulatedParticleSelection`](@ref)). This determines the method by which an emulated distance is accepted.
+
 # Return
 A tuple of accepted distances, and indices of the accepted particles in the supplied `particles` array.
 """
