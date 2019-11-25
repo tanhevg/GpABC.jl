@@ -27,7 +27,7 @@ export
     AbstractEmulatorTraining, DefaultEmulatorTraining,
     EmulatorTrainingInput,
     AbstractEmulatorRetraining, NoopRetraining, IncrementalRetraining, PreviousPopulationRetraining, PreviousPopulationThresholdRetraining,
-    AbstractEmulatedParticleSelection, MeanEmulatedParticleSelection, MeanVarEmulatedParticleSelection;
+    AbstractEmulatedParticleSelection, MeanEmulatedParticleSelection, MeanVarEmulatedParticleSelection, PosteriorSampledEmulatedParticleSelection;
 
 using Optim, Distributions, Distances, OrdinaryDiffEq, ForwardDiff, LinearAlgebra, Logging
 

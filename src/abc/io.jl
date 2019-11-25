@@ -115,9 +115,10 @@ EmulatorTrainingInput(n_design_points, reference_summary_statistic, simulator_fu
 Subtypes of this type control the criteria that determine what particles are included in the posterior for emulation-based ABC. Custom strategies
 can be implemented by creating new subtypes of this type and overriding [`abc_select_emulated_particles`](@ref) for them.
 
-Two implementations are shipped:
+Three implementations are shipped:
 - [`MeanEmulatedParticleSelection`](@ref)
 - [`MeanVarEmulatedParticleSelection`](@ref)
+- [`PosteriorSampledEmulatedParticleSelection`](@ref)
 """
 abstract type AbstractEmulatedParticleSelection end
 
@@ -144,6 +145,14 @@ struct MeanVarEmulatedParticleSelection <: AbstractEmulatedParticleSelection
     variance_threshold_factor::Float64
 end
 MeanVarEmulatedParticleSelection() = MeanVarEmulatedParticleSelection(1.0)
+
+"""
+   PosteriorSampledEmulatedParticleSelection <: AbstractEmulatedParticleSelection
+
+When this strategy is used, the distance is sampled from the GP posterior of the [`gp_regression`](@ref)
+object. If the sampled distance is below the threshold the particle is accepted.
+"""
+struct PosteriorSampledEmulatedParticleSelection <: AbstractEmulatedParticleSelection end
 
 struct SimulatedABCRejectionInput <: ABCRejectionInput
     n_params::Int64

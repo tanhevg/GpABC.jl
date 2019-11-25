@@ -183,3 +183,10 @@ function abc_select_emulated_particles(gpm::GPModel, parameters::AbstractArray{T
     accepted_indices = findall((distances .<= threshold) .& (sqrt.(vars) .<= selection.variance_threshold_factor * threshold))
     distances[accepted_indices], accepted_indices
 end
+
+function abc_select_emulated_particles(gpm::GPModel, parameters::AbstractArray{T, 2},
+        threshold::T, selection::PosteriorSampledEmulatedParticleSelection) where {T<:Real}
+    distances = gp_regression_sample(parameters, gpm)
+    accepted_indices = findall(distances .<= threshold)
+    distances[accepted_indices], accepted_indices
+end

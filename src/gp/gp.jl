@@ -338,8 +338,8 @@ end
 
 Return a random sample from a multivariate Gaussian distrubution, obtained by calling [`gp_regression`](@ref)
 """
-function gp_regression_sample(params::Union{AbstractArray{Float64, 1}, AbstractArray{Float64, 2}}, gpem::GPModel)
-    mu, sigma = gp_regression(params, gpem)
-    distr = MvNormal(mu, sigma)
+function gp_regression_sample(test_x::Union{AbstractArray{Float64, 1}, AbstractArray{Float64, 2}}, gpem::GPModel)
+    mu, Sigma = gp_regression(test_x, gpem, full_covariance_matrix=True)
+    distr = MvNormal(mu, Sigma)
     return rand(distr)
 end
