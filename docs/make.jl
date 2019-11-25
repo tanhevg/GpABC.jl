@@ -1,7 +1,7 @@
 #=
 equivalent code would normally be executed by Travis
 make sure that this is run from pwd = GpABC.jl/docs
-using Pkg
+import  Pkg
 Pkg.develop(PackageSpec(path=".."))
 Pkg.instantiate()
 local_build = true
@@ -40,7 +40,8 @@ gpabc_makedocs() = makedocs(
             "Model Selection" => "ref-ms.md",
             "Gaussian Processes" => "ref-gp.md",
             "Kernels" => "ref-kernels.md"
-        ]
+        ],
+        "FAQ" => "faq.md"
     ]
 )
 
