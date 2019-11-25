@@ -12,3 +12,19 @@
 julia> plot(emu_out, sim_out, true_params)
 ```
 Use `pyplot()` [backend](https://docs.juliaplots.org/latest/backends/) for best results.
+
+#### Q: How do I run the example notebooks locally?
+**A:**
+* Make sure that [Jupyter](https://jupyter.org/) is installed, along with [Julia](https://www.julialang.org/) and its [Jupyter Kernel](https://github.com/JuliaLang/IJulia.jl).
+* Clone or download [GpABC.jl](https://github.com/tanhevg/GpABC.jl) to your machine.
+* Run `jupyter` from the `examples` directory of the local copy of `GpABC.jl`:
+```bash
+$ cd GpABC.jl/examples
+$ jupyter notebook
+```
+* The first line of the first cell, that contains something like
+```julia
+import Pkg; Pkg.activate("."); Pkg.resolve();
+using ...
+```
+will download all the dependencies.
