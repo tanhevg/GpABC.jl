@@ -222,7 +222,7 @@ mutable struct SimulatedABCSMCTracker <: ABCSMCTracker
     weights::AbstractArray{StatsBase.Weights,1}
     priors::AbstractArray{ContinuousUnivariateDistribution,1}
     distance_simulation_input::DistanceSimulationInput
-    max_iter::Int
+    max_iter::Int64
 end
 
 mutable struct EmulatedABCSMCTracker{CUD<:ContinuousUnivariateDistribution, ET,

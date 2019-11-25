@@ -186,7 +186,7 @@ end
 
 function abc_select_emulated_particles(gpm::GPModel, parameters::AbstractArray{T, 2},
         threshold::T, selection::PosteriorSampledEmulatedParticleSelection) where {T<:Real}
-    distances = gp_regression_sample(parameters, gpm)
+    distances = gp_regression_sample(parameters, 1, gpm)
     accepted_indices = findall(distances .<= threshold)
     distances[accepted_indices], accepted_indices
 end
