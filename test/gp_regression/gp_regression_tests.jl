@@ -1,4 +1,4 @@
-using Test, GpABC, DelimitedFiles
+using Test, GpABC, DelimitedFiles, Statistics, LinearAlgebra
 import GpABC.covariance, GpABC.get_hyperparameters_size
 
 struct NoGradKernel <: AbstractGPKernel
@@ -66,13 +66,32 @@ end
     gp_mean, gp_var = gp_regression(gpem)
     posterior_samples = gp_regression_sample(test_x, n_samples, gpem)
 
+    # Check shapes
     @test size(posterior_samples,1)==size(test_x,1)
     @test size(posterior_samples,2)==n_samples  
 
-    @test isapprox(gp_mean, mean(posterior_samples, dims=2), rtol=1e-2)
-    @test isapprox(gp_var, var(posterior_samples, dims=2), rtol=1e-2)
-
     posterior_sample = gp_regression_sample(test_x, 1, gpem)
     @test size(posterior_sample)==(size(test_x,1),)
+
+    # Check empirical mean/variance from samples approaches
+    # gp_regression result
+    n_repeats = 5
+	n_samples_seq = [1000, 3000, 10000, 30000, 100000, 300000]
+
+	norm_mean_diff = zeros(size(n_samples_seq,1), n_repeats)
+	norm_var_diff = zeros(size(n_samples_seq,1), n_repeats)
+
+	for (i, n_samples) in enumerate(n_samples_seq)
+	    for j in 1:n_repeats
+	        posterior_samples = gp_regression_sample(test_x, n_samples, gpem)
+	        norm_mean_diff[i,j] = norm(gp_mean-mean(posterior_samples, dims=2))
+	        norm_var_diff[i,j] = norm(gp_var-var(posterior_samples, dims=2))
+	    end
+	end
+
+	# The norm between the empirical results and gp_regression result
+	# should decrease monotonically as the number of samples increases
+	@test issorted(mean(norm_mean_diff, dims=2), rev=true)
+	@test issorted(mean(norm_var_diff, dims=2), rev=true)
 
 end
