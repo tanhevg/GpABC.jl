@@ -421,7 +421,7 @@ var documenterSearchIndex = {"docs": [
     "page": "ABC Advanced",
     "title": "GpABC.MeanVarEmulatedParticleSelection",
     "category": "type",
-    "text": "MeanVarEmulatedParticleSelection <: AbstractEmulatedParticleSelection\n\nWhen this strategy is used, the particles for which both mean and standard deviation returned by gp_regression is below the ABC threshold are included in the posterior.\n\nFields\n\nvariance_threshold_factor: scaling factor, by which the ABC threshold is multiplied\n\nbefore checking the standard deviation. Defaults to 1.0.\n\n\n\n\n\n"
+    "text": "MeanVarEmulatedParticleSelection <: AbstractEmulatedParticleSelection\n\nWhen this strategy is used, the particles for which both mean and standard deviation returned by gp_regression is below the ABC threshold are included in the posterior. In pseudocode:\n\nmeans, vars = gp_regression(parameters, gpm)\naccepted_indices = findall((means .<= threshold) .& (sqrt.(vars) .<= threshold))\n\nThe rationale behind using this selection strategy is to take into account the \"level of uncertainty\" about the regression predition that is provided by the Gaussian Process in form of standard deviation. So, even if the mean of the GP is below the threshold, but the GP is \"uncertain\" about it (i.e. the variance is high), this particle will not be included in the posterior distribution of ABC. It is a more stringent acceptance criteria than MeanEmulatedParticleSelection.\n\nFields\n\nvariance_threshold_factor: scaling factor, by which the ABC threshold is multiplied\n\nbefore checking the standard deviation. Defaults to 1.0.\n\n\n\n\n\n"
 },
 
 {
@@ -949,7 +949,7 @@ var documenterSearchIndex = {"docs": [
     "page": "FAQ",
     "title": "Q: How do I generate a plot that is similar to the one in the paper?",
     "category": "section",
-    "text": "A: You will need to run parameter estimation using both emulation and simulation for the same problem. Then, assuming you have Plots package installed, just runjulia> plot(emu_out, sim_out, true_params)Use pyplot() backend for best results."
+    "text": "A: You will need to run ABC-SMC parameter estimation using both emulation and simulation for the same problem. Then, assuming you have Plots package installed, just runjulia> plot(emu_out, sim_out, true_params)Use pyplot() backend for best results."
 },
 
 {
