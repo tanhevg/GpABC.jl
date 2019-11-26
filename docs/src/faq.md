@@ -7,7 +7,7 @@
 **A:** The best way to reduce the time it takes to run the emulation is to decrease the `batch_size` parameter. Please refer to docs for [`EmulatedABCRejection`](@ref) end [`EmulatedABCSMC`](@ref). Machines with larger amount of RAM would be able to handle larger batches without performance degradation.
 
 #### Q: How do I generate a plot that is similar to the one in the paper?
-**A:** You will need to run parameter estimation using both emulation and simulation for the same problem. Then, assuming you have [`Plots`](https://github.com/JuliaPlots/Plots.jl/) package installed, just run
+**A:** You will need to run ABC-SMC parameter estimation using both emulation and simulation for the same problem. Then, assuming you have [`Plots`](https://github.com/JuliaPlots/Plots.jl/) package installed, just run
 ```julia
 julia> plot(emu_out, sim_out, true_params)
 ```
