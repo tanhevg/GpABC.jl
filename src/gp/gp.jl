@@ -286,7 +286,7 @@ function gp_regression_log(theta::AbstractArray{Float64, 1},
         batch_mean = K_s * cache.alpha
         batch_mean = reshape(batch_mean, length(batch_mean))
         if multiple_batches || !full_covariance_matrix
-            K_ss = covariance_diagonal  (gpem.kernel, theta_kernel, batch)
+            K_ss = covariance_diagonal(gpem.kernel, theta_kernel, batch)
             if observation_noise
                 K_ss += ones(size(batch, 1), 1) * exp(2 * theta[end])
             end

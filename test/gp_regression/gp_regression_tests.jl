@@ -59,7 +59,7 @@ end
     training_x = readdlm("$(@__DIR__)/training_x1.csv")
     training_y = readdlm("$(@__DIR__)/training_y1.csv")
     test_x = readdlm("$(@__DIR__)/test_x1.csv")
-    n_samples = 1000000
+    n_samples = 10000
 
     gpem = GPModel(training_x, training_y, test_x)
 
