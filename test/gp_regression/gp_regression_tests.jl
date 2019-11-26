@@ -53,3 +53,26 @@ end
     theta_mle = gp_train(gpem)
 
 end
+
+@testset "GP Regression Sampler Tests" begin
+
+    training_x = readdlm("$(@__DIR__)/training_x1.csv")
+    training_y = readdlm("$(@__DIR__)/training_y1.csv")
+    test_x = readdlm("$(@__DIR__)/test_x1.csv")
+    n_samples = 1000000
+
+    gpem = GPModel(training_x, training_y, test_x)
+
+    gp_mean, gp_var = gp_regression(gpem)
+    posterior_samples = gp_regression_sample(test_x, n_samples, gpem)
+
+    @test size(posterior_samples,1)==size(test_x,1)
+    @test size(posterior_samples,2)==n_samples  
+
+    @test isapprox(gp_mean, mean(posterior_samples, dims=2), rtol=1e-2)
+    @test isapprox(gp_var, var(posterior_samples, dims=2), rtol=1e-2)
+
+    posterior_sample = gp_regression_sample(test_x, 1, gpem)
+    @test size(posterior_sample)==(size(test_x,1),)
+
+end
