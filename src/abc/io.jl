@@ -141,7 +141,7 @@ accepted_indices = findall((means .<= threshold) .& (sqrt.(vars) .<= threshold))
 ```
 
 The rationale behind using this selection strategy is to take into account the "level of uncertainty"
-about the regression predition that is provided by the Gaussian Process in form of standard deviation.
+about the regression prediction that is provided by the Gaussian Process in form of standard deviation.
 So, even if the mean of the GP is below the threshold, but the GP is "uncertain" about it
 (i.e. the variance is high), this particle will not be included in the posterior distribution of ABC.
 It is a more stringent acceptance criteria than `MeanEmulatedParticleSelection`.
