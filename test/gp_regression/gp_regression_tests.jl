@@ -91,8 +91,9 @@ end
 
     posterior_sample = gp_regression_sample(test_x, 1, gpem)
     @test size(posterior_sample)==(size(test_x,1),)
-	
-	# Check empirical mean/variance from samples converges
+
+    # Check empirical mean/variance from samples approaches gp_regression result
+
 	n_samples_seq = [1000, 3000, 10000, 30000, 100000, 300000]
 	@test posterior_test(gp_mean, gp_var, test_x, gpem, n_samples_seq)
 

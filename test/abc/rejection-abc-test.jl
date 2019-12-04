@@ -97,5 +97,24 @@ using Test, GpABC, OrdinaryDiffEq, Distances, Distributions
         write_progress=false)
     @test size(emu_out.population, 1) > 0
 
+    #
+    # Test all the different particle selection methods
+    #
+    for selection in [
+        MeanEmulatedParticleSelection(),
+        MeanVarEmulatedParticleSelection(),
+        MeanVarEmulatedParticleSelection(2.0),
+        PosteriorSampledEmulatedParticleSelection(),
+        PosteriorSampledEmulatedParticleSelection(true)]
+
+        emu_out = EmulatedABCRejection(reference_data, simulator_function, priors, 1.0, n_particles, n_design_points;
+            batch_size=500,
+            max_iter=3,
+            emulator_training = DefaultEmulatorTraining(SquaredExponentialIsoKernel()),
+            emulated_particle_selection=selection,
+            write_progress=false)
+        @test size(emu_out.population, 1) > 0
+
+    end
 
 end

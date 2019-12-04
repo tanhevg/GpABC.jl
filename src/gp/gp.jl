@@ -344,7 +344,7 @@ Return `n_samples` random samples from the Gaussian process posterior, evaluated
 - `n_samples`: integer specifying the number of posterior samples.
 - `gpm`: the [`GPModel`](@ref), that contains the training data (x and y),
   the kernel, the hyperparameters and the test data for running the regression.
-
+- `full_cov_matrix`: whether to use the full covariance matrix or just its diagonal elements (default `true`).
 # Return
 An array of posterior samples with shape ``m \\times`` `n_samples` if `n_samples`>1 and ``m`` otherwise.
 """
