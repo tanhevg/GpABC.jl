@@ -115,9 +115,10 @@ EmulatorTrainingInput(n_design_points, reference_summary_statistic, simulator_fu
 Subtypes of this type control the criteria that determine what particles are included in the posterior for emulation-based ABC. Custom strategies
 can be implemented by creating new subtypes of this type and overriding [`abc_select_emulated_particles`](@ref) for them.
 
-Two implementations are shipped:
+Three implementations are shipped:
 - [`MeanEmulatedParticleSelection`](@ref)
 - [`MeanVarEmulatedParticleSelection`](@ref)
+- [`PosteriorSampledEmulatedParticleSelection`](@ref)
 """
 abstract type AbstractEmulatedParticleSelection end
 
@@ -154,6 +155,21 @@ struct MeanVarEmulatedParticleSelection <: AbstractEmulatedParticleSelection
     variance_threshold_factor::Float64
 end
 MeanVarEmulatedParticleSelection() = MeanVarEmulatedParticleSelection(1.0)
+
+"""
+   PosteriorSampledEmulatedParticleSelection <: AbstractEmulatedParticleSelection
+
+When this strategy is used, the distance is sampled from the GP posterior of the [`gp_regression`](@ref)
+object. If the sampled distance is below the threshold the particle is accepted.
+
+# Fields
+- `use_diagonal_covariance`: if `true`, the GP posterior covariance will be approximated by its
+diagonal elements only. Defaults to `false`.
+"""
+struct PosteriorSampledEmulatedParticleSelection <: AbstractEmulatedParticleSelection
+    use_diagonal_covariance::Bool
+end
+PosteriorSampledEmulatedParticleSelection() = PosteriorSampledEmulatedParticleSelection(false)
 
 struct SimulatedABCRejectionInput <: ABCRejectionInput
     n_params::Int64
@@ -223,7 +239,7 @@ mutable struct SimulatedABCSMCTracker <: ABCSMCTracker
     weights::AbstractArray{StatsBase.Weights,1}
     priors::AbstractArray{ContinuousUnivariateDistribution,1}
     distance_simulation_input::DistanceSimulationInput
-    max_iter::Int
+    max_iter::Int64
 end
 
 mutable struct EmulatedABCSMCTracker{CUD<:ContinuousUnivariateDistribution, ET,
@@ -322,169 +338,6 @@ struct EmulatedABCSMCOutput <: ABCSMCOutput
     distances::AbstractArray{AbstractArray{Float64,1},1}
     weights::AbstractArray{StatsBase.Weights,1}
     emulators::AbstractArray{GPModel,1}
-end
-
-
-#
-# Read/write functions
-#
-function write_scalar(
-        stream::IO,
-        x::Real;
-        separator="\n",
-        )
-    write(stream, string(x), separator)
-end
-
-
-function write_vector(
-        stream::IO,
-        vector::Vector{R};
-        separator=" ",
-        finalcharacter="\n"
-        ) where {
-        R<:Real,
-        }
-    n = length(vector)
-    for i in 1:(n - 1)
-        write_scalar(stream, vector[i]; separator=separator)
-    end
-    write_scalar(stream, vector[n]; separator=finalcharacter)
-end
-
-
-function write_matrix(
-        stream::IO,
-        matrix::Matrix{R};
-        separator=" ",
-        newline=true,
-        ) where {
-        R<:Real,
-        }
-    n = size(matrix, 2)
-    for i in 1:(n - 1)
-        write_vector(stream, matrix[:, i]; separator=separator, finalcharacter="\n")
-    end
-    finalcharacter = newline ? "\n" : ""
-    write_vector(stream, matrix[:, n]; separator=separator, finalcharacter=finalcharacter)
-end
-
-
-function Base.write(stream::IO, output::ABCRejectionOutput)
-    write_scalar(stream, output.n_params)
-    write_scalar(stream, output.n_accepted)
-    write_scalar(stream, output.n_tries)
-    write_scalar(stream, output.threshold)
-    write_matrix(stream, output.population)
-    write_vector(stream, output.distances)
-    write_vector(stream, output.weights.values)
-
-    flush(stream)
-end
-
-
-function Base.write(stream::IO, output::Union{ABCSMCOutput, ABCSMCTracker})
-    write_scalar(stream, output.n_params)
-    write_vector(stream, output.n_accepted)
-    write_vector(stream, output.n_tries)
-    write_vector(stream, output.threshold_schedule)
-    for i in 1:length(output.threshold_schedule)
-        write(stream, "-----\n")
-        write_scalar(stream, output.n_accepted[i])
-        write_scalar(stream, output.n_tries[i])
-        write_scalar(stream, output.threshold_schedule[i])
-        write_matrix(stream, output.population[i])
-        write_vector(stream, output.distances[i])
-        write_vector(stream, output.weights[i].values)
-    end
-
-    flush(stream)
-end
-
-
-function write(stream::IO, output::Union{ABCOutput, ABCSMCTracker})
-    return Base.write(stream, output)
-end
-
-
-function read_rejection_output(filepath::AbstractString)
-    input_file = open(filepath, "r")
-
-    try
-        n_params = parse(Int64, readline(input_file))
-        n_accepted = parse(Int64, readline(input_file))
-        n_tries = parse(Int64, readline(input_file))
-        threshold = parse(Float64, readline(input_file))
-
-        population = zeros(n_params, n_accepted)
-        for i in 1:n_accepted
-            population[:, i] = parse.(Float64, split(readline(input_file)))
-        end
-
-        distances = parse.(Float64, split(readline(input_file)))
-
-        wts = parse.(Float64, split(readline(input_file)))
-        weights = StatsBase.Weights(wts)
-
-        return ABCRejectionOutput(n_params,
-                                  n_accepted,
-                                  n_tries,
-                                  threshold,
-                                  population,
-                                  distances,
-                                  weights,
-                                  )
-    finally
-        close(input_file)
-    end
-end
-
-
-function read_smc_output(filepath::AbstractString)
-    input_file = open(filepath, "r")
-
-    try
-        n_params = parse(Int64, readline(input_file))
-        n_accepted = parse.(Int64, split(readline(input_file)))
-        n_tries = parse.(Int64, split(readline(input_file)))
-        threshold_schedule = parse.(Float64, split(readline(input_file)))
-
-        @assert length(n_accepted) == length(n_tries) == length(threshold_schedule)
-
-        population = Matrix{Float64}[]
-        distances = Vector{Float64}[]
-        weights = StatsBase.Weights[]
-
-        for i in 1:length(threshold_schedule)
-            separator = readline(input_file)
-
-            @assert parse(Int64, readline(input_file)) == n_accepted[i]
-            @assert parse(Int64, readline(input_file)) == n_tries[i]
-            @assert parse(Float64, readline(input_file)) == threshold_schedule[i]
-
-            push!(population, zeros(n_params, n_accepted[i]))
-            for j in 1:n_accepted[i]
-                particle = parse.(Float64, split(readline(input_file)))
-                population[i][:, j] = particle
-            end
-
-            push!(distances, parse.(Float64, split(readline(input_file))))
-
-            wts = parse.(Float64, split(readline(input_file)))
-            push!(weights, StatsBase.Weights(wts))
-        end
-
-        return ABCSMCOutput(n_params,
-                            n_accepted,
-                            n_tries,
-                            threshold_schedule,
-                            population,
-                            distances,
-                            weights,
-                            )
-    finally
-        close(input_file)
-    end
 end
 
 function checkABCInput(input::ABCInput)

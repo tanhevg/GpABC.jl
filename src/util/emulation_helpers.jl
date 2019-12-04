@@ -165,6 +165,13 @@ end
 
 Compute the approximate distances by running the regression-based `emulator` on the provided `particles`, and return the accepted particles. Acceptance strategy is determined by `selection` - subtype of [`AbstractEmulatedParticleSelection`](@ref).
 
+# Arguments
+- `gpm`: the [`GPModel`](@ref), that contains the training data (x and y),
+  the kernel, the hyperparameters and the test data for running the regression.
+- `parameters`: array of parameters to test (the particles).
+- `threshold`: if the distance for a particle is below `threshold` then it is accepted as a posterior sample.
+- `selection`: the acceptance strategy (a subtype of [`AbstractEmulatedParticleSelection`](@ref)). This determines the method by which an emulated distance is accepted.
+
 # Return
 A tuple of accepted distances, and indices of the accepted particles in the supplied `particles` array.
 """
@@ -182,4 +189,11 @@ function abc_select_emulated_particles(gpm::GPModel, parameters::AbstractArray{T
     distances, vars = gp_regression(parameters, gpm)
     accepted_indices = findall((distances .<= threshold) .& (sqrt.(vars) .<= selection.variance_threshold_factor * threshold))
     distances[accepted_indices], accepted_indices
+end
+
+function abc_select_emulated_particles(gpm::GPModel, parameters::AbstractArray{T, 2},
+        threshold::T, selection::PosteriorSampledEmulatedParticleSelection) where {T<:Real}
+    distances = gp_regression_sample(parameters, 1, gpm, selection.use_diagonal_covariance)
+    accepted_indices = findall(distances .<= threshold)
+    return distances[accepted_indices], accepted_indices
 end
