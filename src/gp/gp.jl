@@ -298,6 +298,7 @@ function gp_regression_log(theta::AbstractArray{Float64, 1},
                 K_ss += I * exp(2 * theta[end])
             end
             batch_var = K_ss - v' * v
+            batch_var = 0.5 * (batch_var' + batch_var)
         end
 
         if multiple_batches
@@ -343,13 +344,13 @@ Return `n_samples` random samples from the Gaussian process posterior, evaluated
 - `n_samples`: integer specifying the number of posterior samples.
 - `gpm`: the [`GPModel`](@ref), that contains the training data (x and y),
   the kernel, the hyperparameters and the test data for running the regression.
-
+- `full_cov_matrix`: whether to use the full covariance matrix or just its diagonal elements (default `true`).
 # Return
 An array of posterior samples with shape ``m \\times`` `n_samples` if `n_samples`>1 and ``m`` otherwise.
 """
-function gp_regression_sample(test_x::Union{AbstractArray{Float64, 1}, AbstractArray{Float64, 2}}, n_samples::Int64, gpem::GPModel)
-    mu, Sigma = gp_regression(test_x, gpem, full_covariance_matrix=true)
-    post_samples = rand(MvNormal(mu, 0.5*(transpose(Sigma)+Sigma)), n_samples)
+function gp_regression_sample(test_x::Union{AbstractArray{Float64, 1}, AbstractArray{Float64, 2}}, n_samples::Int64, gpem::GPModel, full_cov_matrix=true)
+    mu, sigma = gp_regression(test_x, gpem, full_covariance_matrix=full_cov_matrix)
+    post_samples = rand(MvNormal(mu, sigma), n_samples)
     if n_samples==1
         post_samples = dropdims(post_samples, dims=2)
     end
