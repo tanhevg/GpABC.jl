@@ -224,8 +224,10 @@ uuid = "4d00f742-c7ba-57c2-abde-4428a4b178cb"
 version = "0.7.6"
 
 [[GpABC]]
-deps = ["Colors", "Distances", "Distributions", "ForwardDiff", "KernelDensity", "LinearAlgebra", "Logging", "Optim", "OrdinaryDiffEq", "PlotUtils", "Random", "RecipesBase", "StatsBase"]
-path = "/bmm/home/et517/gaussian_processes/GpABC.jl"
+deps = ["Distances", "Distributions", "ForwardDiff", "LinearAlgebra", "Logging", "Optim", "OrdinaryDiffEq", "RecipesBase", "StatsBase"]
+git-tree-sha1 = "55b378eeb2628fcaa1fd508b922f95f503b2687e"
+repo-rev = "master"
+repo-url = "https://github.com/tanhevg/GpABC.jl"
 uuid = "e850a1a4-d859-11e8-3d54-a195e6d045d3"
 version = "0.0.1"
 
