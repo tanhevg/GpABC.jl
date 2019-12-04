@@ -135,7 +135,17 @@ struct MeanEmulatedParticleSelection <: AbstractEmulatedParticleSelection end
    MeanVarEmulatedParticleSelection <: AbstractEmulatedParticleSelection
 
 When this strategy is used, the particles for which both *mean and standard deviation* returned by
-[`gp_regression`](@ref) is below the ABC threshold are included in the posterior.
+[`gp_regression`](@ref) is below the ABC threshold are included in the posterior. In pseudocode:
+```julia
+means, vars = gp_regression(parameters, gpm)
+accepted_indices = findall((means .<= threshold) .& (sqrt.(vars) .<= threshold))
+```
+
+The rationale behind using this selection strategy is to take into account the "level of uncertainty"
+about the regression prediction that is provided by the Gaussian Process in form of standard deviation.
+So, even if the mean of the GP is below the threshold, but the GP is "uncertain" about it
+(i.e. the variance is high), this particle will not be included in the posterior distribution of ABC.
+It is a more stringent acceptance criteria than `MeanEmulatedParticleSelection`.
 
 # Fields
 - `variance_threshold_factor`: scaling factor, by which the ABC threshold is multiplied

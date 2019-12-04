@@ -28,21 +28,12 @@ data = ... should be the last statement
                         @series begin
                               seriestype := :histogram
                               ylabel := "Accepted"
+                              xlabel := "Parameter $(par1)"
                               bins --> 50
-                              @debug repr(population_colors)
-                              # if population_colors !== nothing
-                              #       idx = max_color_idx % length(population_colors)
-                              #       if idx == 0
-                              #             idx = length(population_colors)
-                              #       end
-                              #       seriescolor := population_colors[idx]
-                              # end
                               if isa(abco.population, Vector)
                                     data = abco.population[end][:, par1]
-                                    # max_color_idx = 1
                               else
                                     data = abco.population[:, par1]
-                                    # max_color_idx = length(abco.population)
                               end # if Vector
                         end  # @series
                   elseif j < i
@@ -152,7 +143,7 @@ my_linspace(bounds::Tuple{Float64, Float64}, length::Int64) = range(bounds[1], s
                               color := :black
                               markershape := :none
                               @series begin
-                                    ([true_params[j], true_params[j], minimum(contour_x)], 
+                                    ([true_params[j], true_params[j], minimum(contour_x)],
                                     [minimum(contour_y), true_params[i], true_params[i]])
                               end
                         end
@@ -174,7 +165,7 @@ my_linspace(bounds::Tuple{Float64, Float64}, length::Int64) = range(bounds[1], s
                               color := :black
                               markershape := :none
                               @series begin
-                                    ([true_params[j], true_params[j], minimum(emu_out.population[1][:,j])], 
+                                    ([true_params[j], true_params[j], minimum(emu_out.population[1][:,j])],
                                     [minimum(emu_out.population[1][:,i]), true_params[i], true_params[i]])
                               end
                         end

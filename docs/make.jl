@@ -1,10 +1,8 @@
 #=
-equivalent code would normally be executed by Travis
-make sure that this is run from pwd = GpABC.jl/docs
-import  Pkg
-Pkg.develop(PackageSpec(path=".."))
-Pkg.instantiate()
-local_build = true
+To build documentation locally, run this from GpABC.jl checkout directory
+```
+$ julia docs/make.jl local
+```
 =#
 using Documenter, GpABC
 

@@ -135,7 +135,7 @@ tparams = true_params[param_indices]
 import Pkg; Pkg.activate("plots", shared=true)
 using Plots
 pyplot()
-plot(emu_out, sim_out, tparams)
+plot(emu_out, sim_out)
 plot(emu_out)
 plot(sim_out)
 =#
