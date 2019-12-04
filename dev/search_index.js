@@ -413,7 +413,7 @@ var documenterSearchIndex = {"docs": [
     "page": "ABC Advanced",
     "title": "GpABC.AbstractEmulatedParticleSelection",
     "category": "type",
-    "text": "AbstractEmulatedParticleSelection\n\nSubtypes of this type control the criteria that determine what particles are included in the posterior for emulation-based ABC. Custom strategies can be implemented by creating new subtypes of this type and overriding abc_select_emulated_particles for them.\n\nTwo implementations are shipped:\n\nMeanEmulatedParticleSelection\nMeanVarEmulatedParticleSelection\n\n\n\n\n\n"
+    "text": "AbstractEmulatedParticleSelection\n\nSubtypes of this type control the criteria that determine what particles are included in the posterior for emulation-based ABC. Custom strategies can be implemented by creating new subtypes of this type and overriding abc_select_emulated_particles for them.\n\nThree implementations are shipped:\n\nMeanEmulatedParticleSelection\nMeanVarEmulatedParticleSelection\nPosteriorSampledEmulatedParticleSelection\n\n\n\n\n\n"
 },
 
 {
@@ -493,7 +493,7 @@ var documenterSearchIndex = {"docs": [
     "page": "ABC Advanced",
     "title": "GpABC.abc_select_emulated_particles",
     "category": "function",
-    "text": "abc_select_emulated_particles(emulator, particles, threshold, selection<:AbstractEmulatedParticleSelection)\n\nCompute the approximate distances by running the regression-based emulator on the provided particles, and return the accepted particles. Acceptance strategy is determined by selection - subtype of AbstractEmulatedParticleSelection.\n\nReturn\n\nA tuple of accepted distances, and indices of the accepted particles in the supplied particles array.\n\n\n\n\n\n"
+    "text": "abc_select_emulated_particles(emulator, particles, threshold, selection<:AbstractEmulatedParticleSelection)\n\nCompute the approximate distances by running the regression-based emulator on the provided particles, and return the accepted particles. Acceptance strategy is determined by selection - subtype of AbstractEmulatedParticleSelection.\n\nArguments\n\ngpm: the GPModel, that contains the training data (x and y), the kernel, the hyperparameters and the test data for running the regression.\nparameters: array of parameters to test (the particles).\nthreshold: if the distance for a particle is below threshold then it is accepted as a posterior sample.\nselection: the acceptance strategy (a subtype of AbstractEmulatedParticleSelection). This determines the method by which an emulated distance is accepted.\n\nReturn\n\nA tuple of accepted distances, and indices of the accepted particles in the supplied particles array.\n\n\n\n\n\n"
 },
 
 {
@@ -737,11 +737,11 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "ref-gp/#GpABC.gp_regression_sample-Tuple{Union{AbstractArray{Float64,1}, AbstractArray{Float64,2}},GPModel}",
+    "location": "ref-gp/#GpABC.gp_regression_sample",
     "page": "Gaussian Processes",
     "title": "GpABC.gp_regression_sample",
-    "category": "method",
-    "text": "gp_regression_sample(params::Union{AbstractArray{Float64, 1}, AbstractArray{Float64, 2}}, gpem::GPModel)\n\nReturn a random sample from a multivariate Gaussian distrubution, obtained by calling gp_regression\n\n\n\n\n\n"
+    "category": "function",
+    "text": "gp_regression_sample(test_x::Union{AbstractArray{Float64, 1}, AbstractArray{Float64, 2}}, n_samples::Int64, gpem::GPModel)\n\nReturn n_samples random samples from the Gaussian process posterior, evaluated at test_x. gp_regression.\n\nArguments\n\ntest_x: if specified, overrides the test x in gpm. Size m times d.\nn_samples: integer specifying the number of posterior samples.\ngpm: the GPModel, that contains the training data (x and y), the kernel, the hyperparameters and the test data for running the regression.\nfull_cov_matrix: whether to use the full covariance matrix or just its diagonal elements (default true).\n\nReturn\n\nAn array of posterior samples with shape m times n_samples if n_samples>1 and m otherwise.\n\n\n\n\n\n"
 },
 
 {
