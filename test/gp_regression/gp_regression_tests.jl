@@ -54,8 +54,6 @@ end
 
 end
 
-<<<<<<< HEAD
-=======
 function posterior_test(gp_mean, gp_var, test_x, gpem, n_samples_seq, full_cov_matrix=true, n_repeats = 5)	
 
 	norm_mean_diff = zeros(size(n_samples_seq,1), n_repeats)
@@ -75,7 +73,6 @@ function posterior_test(gp_mean, gp_var, test_x, gpem, n_samples_seq, full_cov_m
 		# && issorted(mean(norm_var_diff, dims=2), rev=true) NB this is not true in the general case
 end
 
->>>>>>> 1ece7cfdcfb2b4cc2570f97789e248bd5eadde3d
 @testset "GP Regression Sampler Tests" begin
 
     training_x = readdlm("$(@__DIR__)/training_x1.csv")
@@ -94,36 +91,15 @@ end
 
     posterior_sample = gp_regression_sample(test_x, 1, gpem)
     @test size(posterior_sample)==(size(test_x,1),)
-<<<<<<< HEAD
 
     # Check empirical mean/variance from samples approaches
     # gp_regression result
-    n_repeats = 5
-	n_samples_seq = [1000, 3000, 10000, 30000, 100000, 300000]
 
-	norm_mean_diff = zeros(size(n_samples_seq,1), n_repeats)
-	norm_var_diff = zeros(size(n_samples_seq,1), n_repeats)
-
-	for (i, n_samples) in enumerate(n_samples_seq)
-	    for j in 1:n_repeats
-	        posterior_samples = gp_regression_sample(test_x, n_samples, gpem)
-	        norm_mean_diff[i,j] = norm(gp_mean-mean(posterior_samples, dims=2))
-	        norm_var_diff[i,j] = norm(gp_var-var(posterior_samples, dims=2))
-	    end
-	end
-
-	# The norm between the empirical results and gp_regression result
-	# should decrease monotonically as the number of samples increases
-	@test issorted(mean(norm_mean_diff, dims=2), rev=true)
-	@test issorted(mean(norm_var_diff, dims=2), rev=true)
-=======
-	
 	# Check empirical mean/variance from samples converges
 	n_samples_seq = [1000, 3000, 10000, 30000, 100000, 300000]
 	@test posterior_test(gp_mean, gp_var, test_x, gpem, n_samples_seq)
 
 	# test without full covariance matrix
 	@test posterior_test(gp_mean, gp_var, test_x, gpem, n_samples_seq, false)
->>>>>>> 1ece7cfdcfb2b4cc2570f97789e248bd5eadde3d
 
 end

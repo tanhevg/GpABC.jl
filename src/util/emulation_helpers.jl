@@ -193,7 +193,7 @@ end
 
 function abc_select_emulated_particles(gpm::GPModel, parameters::AbstractArray{T, 2},
         threshold::T, selection::PosteriorSampledEmulatedParticleSelection) where {T<:Real}
-    distances = gp_regression_sample(parameters, 1, gpm, !PosteriorSampledEmulatedParticleSelection.use_diagonal_covariance)
+    distances = gp_regression_sample(parameters, 1, gpm, !selection.use_diagonal_covariance)
     accepted_indices = findall(distances .<= threshold)
     return distances[accepted_indices], accepted_indices
 end
