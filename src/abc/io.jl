@@ -155,7 +155,6 @@ struct MeanVarEmulatedParticleSelection <: AbstractEmulatedParticleSelection
     variance_threshold_factor::Float64
 end
 MeanVarEmulatedParticleSelection() = MeanVarEmulatedParticleSelection(1.0)
-MeanVarEmulatedParticleSelection(variance_threshold_factor::Float64) = MeanVarEmulatedParticleSelection(variance_threshold_factor)
 
 """
    PosteriorSampledEmulatedParticleSelection <: AbstractEmulatedParticleSelection
@@ -171,7 +170,6 @@ struct PosteriorSampledEmulatedParticleSelection <: AbstractEmulatedParticleSele
     use_diagonal_covariance::Bool
 end
 PosteriorSampledEmulatedParticleSelection() = PosteriorSampledEmulatedParticleSelection(false)
-PosteriorSampledEmulatedParticleSelection(use_diagonal_covariance::Bool) = PosteriorSampledEmulatedParticleSelection(use_diagonal_covariance)
 
 struct SimulatedABCRejectionInput <: ABCRejectionInput
     n_params::Int64
