@@ -237,7 +237,7 @@ var documenterSearchIndex = {"docs": [
     "page": "ABC Parameter Inference",
     "title": "ABC Example",
     "category": "section",
-    "text": "ABC example notebook:\n<a href=\"https://github.com/tanhevg/GpABC.jl/blob/master/examples/abc-example.ipynb\" target=\"_blank\">GitHub</a>&nbsp;\n<a href=\"https://nbviewer.jupyter.org/github/tanhevg/GpABC.jl/blob/master/examples/abc-example.ipynb\">NBViewer</a>"
+    "text": "(Image: Binder) (Image: NBViewer)"
 },
 
 {
@@ -253,7 +253,7 @@ var documenterSearchIndex = {"docs": [
     "page": "ABC Model Selection",
     "title": "Model Selection Example",
     "category": "section",
-    "text": "Model Selection example notebook:\n<a href=\"https://github.com/tanhevg/GpABC.jl/blob/master/examples/model-selection-example.ipynb\" target=\"_blank\">GitHub</a>\n<a href=\"https://nbviewer.jupyter.org/github/tanhevg/GpABC.jl/blob/master/examples/model-selection-example.ipynb\" target=\"_blank\">NBViewer</a>"
+    "text": "(Image: Binder) (Image: NBViewer)"
 },
 
 {
@@ -269,7 +269,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Stochastic inference (LNA)",
     "title": "Stochastic Inference (LNA) Example",
     "category": "section",
-    "text": "LNA example notebook\n<a href=\"https://github.com/tanhevg/GpABC.jl/blob/master/examples/lna-example.ipynb\" target=\"_blank\">GitHub</a>\n<a href=\"https://nbviewer.jupyter.org/github/tanhevg/GpABC.jl/blob/master/examples/lna-example.ipynb\" target=\"_blank\">NBViewer</a>\n"
+    "text": "(Image: Binder) (Image: NBViewer)"
 },
 
 {
@@ -285,7 +285,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Gaussian Processes",
     "title": "Gaussian Processes Examples",
     "category": "section",
-    "text": "GP Regression example notebook:\n<a href=\"https://github.com/tanhevg/GpABC.jl/blob/master/examples/gp-example.ipynb\" target=\"_blank\">GitHub</a>&nbsp;\n<a href=\"https://nbviewer.jupyter.org/github/tanhevg/GpABC.jl/blob/master/examples/gp-example.ipynb\">NBViewer</a>"
+    "text": "(Image: Binder) (Image: NBViewer)"
 },
 
 {
@@ -433,6 +433,14 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "ref-abc-advanced/#GpABC.PosteriorSampledEmulatedParticleSelection",
+    "page": "ABC Advanced",
+    "title": "GpABC.PosteriorSampledEmulatedParticleSelection",
+    "category": "type",
+    "text": "PosteriorSampledEmulatedParticleSelection <: AbstractEmulatedParticleSelection\n\nWhen this strategy is used, the distance is sampled from the GP posterior of the gp_regression object. If the sampled distance is below the threshold the particle is accepted.\n\nFields\n\nuse_diagonal_covariance: if true, the GP posterior covariance will be approximated by its\n\ndiagonal elements only. Defaults to false.\n\n\n\n\n\n"
+},
+
+{
     "location": "ref-abc-advanced/#GpABC.AbstractEmulatorRetraining",
     "page": "ABC Advanced",
     "title": "GpABC.AbstractEmulatorRetraining",
@@ -501,7 +509,7 @@ var documenterSearchIndex = {"docs": [
     "page": "ABC Advanced",
     "title": "Types and Functions",
     "category": "section",
-    "text": "AbstractEmulatorTraining\nDefaultEmulatorTraining\nAbstractEmulatedParticleSelection\nMeanVarEmulatedParticleSelection\nMeanEmulatedParticleSelection\nAbstractEmulatorRetraining\nIncrementalRetraining\nPreviousPopulationRetraining\nPreviousPopulationThresholdRetraining\nNoopRetraining\nGpABC.train_emulator\nGpABC.abc_retrain_emulator\nGpABC.abc_select_emulated_particles"
+    "text": "AbstractEmulatorTraining\nDefaultEmulatorTraining\nAbstractEmulatedParticleSelection\nMeanVarEmulatedParticleSelection\nMeanEmulatedParticleSelection\nPosteriorSampledEmulatedParticleSelection\nAbstractEmulatorRetraining\nIncrementalRetraining\nPreviousPopulationRetraining\nPreviousPopulationThresholdRetraining\nNoopRetraining\nGpABC.train_emulator\nGpABC.abc_retrain_emulator\nGpABC.abc_select_emulated_particles"
 },
 
 {
@@ -957,7 +965,7 @@ var documenterSearchIndex = {"docs": [
     "page": "FAQ",
     "title": "Q: How do I run the example notebooks locally?",
     "category": "section",
-    "text": "A:Make sure that Jupyter is installed, along with Julia and its Jupyter Kernel.\nClone or download GpABC.jl to your machine.\nRun jupyter from the examples directory of the local copy of GpABC.jl:$ cd GpABC.jl/examples\n$ jupyter notebookThe first line of the first cell, that contains something likeimport Pkg; Pkg.activate(\".\"); Pkg.resolve();\nusing ...will download all the dependencies."
+    "text": "A:Make sure that Jupyter is installed, along with Julia and its Jupyter Kernel.\nClone or download GpABC.jl to your machine.\nRun jupyter from the examples directory of the local copy of GpABC.jl:$ cd GpABC.jl/examples\n$ jupyter notebookThe first line of the first cell, that contains something likeimport Pkg; Pkg.activate(\".\"); Pkg.resolve();\nusing ...will download all the dependencies.All notebooks were tested under Julia 1.2"
 },
 
 ]}
