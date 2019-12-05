@@ -211,6 +211,6 @@ end
     seriestype := :line
     xlabel --> "Population"
     ylabel --> "Number of accepted particles"
-    labels --> [string("Model ", m) for m in 1:mso.M]
+    labels --> reshape([string("Model ", m) for m in 1:mso.M], 1, :)
     data = [[mso.n_accepted[i][j] for i in 1:size(mso.n_accepted,1)] for j in 1:mso.M]
 end
