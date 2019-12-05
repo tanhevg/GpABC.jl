@@ -24,6 +24,16 @@ From the Julia REPL, type `]` to enter the Pkg REPL mode and run
 ```
 pkg> add https://github.com/tanhevg/GpABC.jl
 ```
+## Examples
+### ABC Parameter Inference
+  [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/tanhevg/GpABC.jl/master?filepath=examples%2Fabc-example.ipynb) [![NBViewer](https://img.shields.io/badge/render-nbviewer-orange.svg)](https://nbviewer.jupyter.org/github/tanhevg/GpABC.jl/blob/master/examples/abc-example.ipynb)
+### Gaussian Process Regression
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/tanhevg/GpABC.jl/master?filepath=examples%2Fgp-example.ipynb) [![NBViewer](https://img.shields.io/badge/render-nbviewer-orange.svg)](https://nbviewer.jupyter.org/github/tanhevg/GpABC.jl/blob/master/examples/gp-example.ipynb)
+### Stochastic Inference (LNA)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/tanhevg/GpABC.jl/master?filepath=examples%2Flna-example.ipynb) [![NBViewer](https://img.shields.io/badge/render-nbviewer-orange.svg)](https://nbviewer.jupyter.org/github/tanhevg/GpABC.jl/blob/master/examples/lna-example.ipynb)
+### Model Selection
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/tanhevg/GpABC.jl/master?filepath=examples%2Fmodel-selection-example.ipynb) [![NBViewer](https://img.shields.io/badge/render-nbviewer-orange.svg)](https://nbviewer.jupyter.org/github/tanhevg/GpABC.jl/blob/master/examples/model-selection-example.ipynb)
+
 ## Paper
 
 If you are using GpABC in research, please cite our paper (currently under review):
