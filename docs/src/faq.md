@@ -28,3 +28,5 @@ import Pkg; Pkg.activate("."); Pkg.resolve();
 using ...
 ```
 will download all the dependencies.
+
+All notebooks were tested under Julia 1.2

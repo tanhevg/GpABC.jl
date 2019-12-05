@@ -14,6 +14,7 @@ DefaultEmulatorTraining
 AbstractEmulatedParticleSelection
 MeanVarEmulatedParticleSelection
 MeanEmulatedParticleSelection
+PosteriorSampledEmulatedParticleSelection
 AbstractEmulatorRetraining
 IncrementalRetraining
 PreviousPopulationRetraining
