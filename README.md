@@ -24,21 +24,11 @@ From the Julia REPL, type `]` to enter the Pkg REPL mode and run
 ```
 pkg> add https://github.com/tanhevg/GpABC.jl
 ```
-## Examples
-### ABC Parameter Inference
-  [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/tanhevg/GpABC.jl/master?filepath=examples%2Fabc-example.ipynb) [![NBViewer](https://img.shields.io/badge/render-nbviewer-orange.svg)](https://nbviewer.jupyter.org/github/tanhevg/GpABC.jl/blob/master/examples/abc-example.ipynb)
-### Gaussian Process Regression
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/tanhevg/GpABC.jl/master?filepath=examples%2Fgp-example.ipynb) [![NBViewer](https://img.shields.io/badge/render-nbviewer-orange.svg)](https://nbviewer.jupyter.org/github/tanhevg/GpABC.jl/blob/master/examples/gp-example.ipynb)
-### Stochastic Inference (LNA)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/tanhevg/GpABC.jl/master?filepath=examples%2Flna-example.ipynb) [![NBViewer](https://img.shields.io/badge/render-nbviewer-orange.svg)](https://nbviewer.jupyter.org/github/tanhevg/GpABC.jl/blob/master/examples/lna-example.ipynb)
-### Model Selection
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/tanhevg/GpABC.jl/master?filepath=examples%2Fmodel-selection-example.ipynb) [![NBViewer](https://img.shields.io/badge/render-nbviewer-orange.svg)](https://nbviewer.jupyter.org/github/tanhevg/GpABC.jl/blob/master/examples/model-selection-example.ipynb)
-
 ## Paper
 
 If you are using GpABC in research, please cite our paper (currently under review):
 
-GpABC: a Julia package for approximate Bayesian computation with Gaussian process emulation
+**GpABC: a Julia package for approximate Bayesian computation with Gaussian process emulation**
 
 Evgeny Tankhilevich, Jonathan Ish-Horowicz, Tara Hameed, Elisabeth Roesch, Istvan Kleijn, Michael PH Stumpf, Fei He
 
@@ -57,10 +47,14 @@ https://www.biorxiv.org/content/10.1101/769299v1
 ```
 
 ## Examples
-- [ABC parameter estimation example](https://github.com/tanhevg/GpABC.jl/blob/master/examples/abc-example.ipynb)
-- [ABC model selection example](https://github.com/tanhevg/GpABC.jl/blob/master/examples/model-selection-example.ipynb)
-- [Stochastic inference (LNA) example](https://github.com/tanhevg/GpABC.jl/blob/master/examples/lna-example.ipynb)
-- [Gaussian Process regression example](https://github.com/tanhevg/GpABC.jl/blob/master/examples/gp-example.ipynb)
+### ABC Parameter Inference
+  [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/tanhevg/GpABC.jl/master?filepath=examples%2Fabc-example.ipynb) [![NBViewer](https://img.shields.io/badge/render-nbviewer-orange.svg)](https://nbviewer.jupyter.org/github/tanhevg/GpABC.jl/blob/master/examples/abc-example.ipynb)
+### Gaussian Process Regression
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/tanhevg/GpABC.jl/master?filepath=examples%2Fgp-example.ipynb) [![NBViewer](https://img.shields.io/badge/render-nbviewer-orange.svg)](https://nbviewer.jupyter.org/github/tanhevg/GpABC.jl/blob/master/examples/gp-example.ipynb)
+### Stochastic Inference (LNA)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/tanhevg/GpABC.jl/master?filepath=examples%2Flna-example.ipynb) [![NBViewer](https://img.shields.io/badge/render-nbviewer-orange.svg)](https://nbviewer.jupyter.org/github/tanhevg/GpABC.jl/blob/master/examples/lna-example.ipynb)
+### Model Selection
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/tanhevg/GpABC.jl/master?filepath=examples%2Fmodel-selection-example.ipynb) [![NBViewer](https://img.shields.io/badge/render-nbviewer-orange.svg)](https://nbviewer.jupyter.org/github/tanhevg/GpABC.jl/blob/master/examples/model-selection-example.ipynb)
 
 ## Dependencies
 -  [`Optim`](https://github.com/JuliaNLSolvers/Optim.jl) - for training Gaussian Process hyperparameters.
@@ -68,6 +62,7 @@ https://www.biorxiv.org/content/10.1101/769299v1
 - [`Distances`](https://github.com/JuliaStats/Distances.jl) - distance functions
 - [`OrdinaryDiffEq`](https://github.com/JuliaDiffEq/OrdinaryDiffEq.jl) - for solving ODEs for LNA, and also used throughout the examples for model simulation (ODEs and SDEs)
 - [`ForwardDiff`](https://github.com/JuliaDiff/ForwardDiff.jl) - automatic differentiation is also used by LNA
+- `PlotUtils`, `RecipesBase`, `Colors`, `KernelDensity` - for plotting figures
 
 ## References
 
