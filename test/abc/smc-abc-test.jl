@@ -95,4 +95,20 @@ using Test, GpABC, OrdinaryDiffEq, Distances, Distributions
         emulated_particle_selection=MeanVarEmulatedParticleSelection(2.0))
     @test size(emu_out.population, 1) > 0
 
+    for selection in [
+        MeanEmulatedParticleSelection(),
+        MeanVarEmulatedParticleSelection(),
+        MeanVarEmulatedParticleSelection(2.0),
+        PosteriorSampledEmulatedParticleSelection(),
+        PosteriorSampledEmulatedParticleSelection(true)]
+
+        emu_out = EmulatedABCSMC(reference_data, simulator_function, priors, 3.0 * threshold_schedule, n_particles, n_design_points;
+            summary_statistic=sum_stat,
+            emulator_training=DefaultEmulatorTraining(SquaredExponentialIsoKernel()),
+            emulator_retraining=IncrementalRetraining(10, 100),
+            emulated_particle_selection=selection)
+        @test size(emu_out.population, 1) > 0
+
+    end
+
 end

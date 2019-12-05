@@ -1,4 +1,4 @@
-# ABC Basic Reference
+# [ABC Basic Reference](@id abc_ref)
 
 `GpABC` functions for parameter estimation with Approximate Bayesian Computation. See also [ABC Example](@ref).
 
