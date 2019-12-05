@@ -157,7 +157,7 @@ end
 MeanVarEmulatedParticleSelection() = MeanVarEmulatedParticleSelection(1.0)
 
 """
-   PosteriorSampledEmulatedParticleSelection <: AbstractEmulatedParticleSelection
+	PosteriorSampledEmulatedParticleSelection <: AbstractEmulatedParticleSelection
 
 When this strategy is used, the distance is sampled from the GP posterior of the [`gp_regression`](@ref)
 object. If the sampled distance is below the threshold the particle is accepted.
