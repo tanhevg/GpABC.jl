@@ -21,6 +21,7 @@ data = ... should be the last statement
       end
       legend --> false
       layout := length(params) ^ 2
+      link := :x
       for (i, par1) in enumerate(params)
             for (j, par2) in enumerate(params)
                   subplot := (i - 1) * length(params) + j
@@ -99,6 +100,7 @@ my_linspace(bounds::Tuple{Float64, Float64}, length::Int64) = range(bounds[1], s
       params = 1:emu_out.n_params
       legend --> false
       layout := length(params) ^ 2
+      link := :x
       for i in params
             for j in params
                   subplot := (i - 1) * length(params) + j
