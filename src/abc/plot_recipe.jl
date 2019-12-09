@@ -10,7 +10,7 @@ Each code path of the @series macro must return the data for the series.
 data = ... should be the last statement
 =#
 @recipe function abc_output_recipe(abco::ABCOutput;
-      runs=nothing, params=nothing, population_colors=nothing)
+      runs=nothing, params=nothing, population_colors=nothing, link_xaxes=false)
       if params === nothing
             params = [i for i in 1:abco.n_params]
       end
@@ -21,7 +21,9 @@ data = ... should be the last statement
       end
       legend --> false
       layout := length(params) ^ 2
-      link := :x
+      if link_xaxes
+            link := :x
+      end
       for (i, par1) in enumerate(params)
             for (j, par2) in enumerate(params)
                   subplot := (i - 1) * length(params) + j
@@ -90,7 +92,8 @@ my_linspace(bounds::Tuple{Float64, Float64}, length::Int64) = range(bounds[1], s
             pop_color = "#007731",
             simulation_color = "#08519c",
             emulation_color = "#800013",
-            contour_levels=8)
+            contour_levels=8,
+            link_xaxes=false)
       if pop_idx == 0
             pop_idx = min(length(sim_out.population), length(emu_out.population))
       end
@@ -100,7 +103,9 @@ my_linspace(bounds::Tuple{Float64, Float64}, length::Int64) = range(bounds[1], s
       params = 1:emu_out.n_params
       legend --> false
       layout := length(params) ^ 2
-      link := :x
+      if link_xaxes
+            link := :x
+      end
       for i in params
             for j in params
                   subplot := (i - 1) * length(params) + j
