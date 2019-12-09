@@ -24,7 +24,7 @@ $ jupyter notebook
 ```
 * The first line of the first cell, that contains something like
 ```julia
-import Pkg; Pkg.activate("."); Pkg.resolve();
+import Pkg; Pkg.activate("."); Pkg.instantiate();
 using ...
 ```
 will download all the dependencies.

@@ -6,7 +6,3 @@ docs/build/
 docs/site/
 .ipynb_checkpoints
 .tags*
-Manifest.toml
-Project.toml
-examples/Manifest.toml
-examples/Project.toml
