@@ -965,7 +965,7 @@ var documenterSearchIndex = {"docs": [
     "page": "FAQ",
     "title": "Q: How do I run the example notebooks locally?",
     "category": "section",
-    "text": "A:Make sure that Jupyter is installed, along with Julia and its Jupyter Kernel.\nClone or download GpABC.jl to your machine.\nRun jupyter from the examples directory of the local copy of GpABC.jl:$ cd GpABC.jl/examples\n$ jupyter notebookThe first line of the first cell, that contains something likeimport Pkg; Pkg.activate(\".\"); Pkg.instantiate();\nusing ...will download all the dependencies.All notebooks were tested under Julia 1.2"
+    "text": "A:Make sure that Jupyter is installed, along with Julia and its Jupyter Kernel.\nClone or download GpABC.jl to your machine.\nRun jupyter from the examples directory of the local copy of GpABC.jl:$ cd GpABC.jl/examples\n$ jupyter notebookThe first line of the first cell, that contains something likeimport Pkg; Pkg.activate(@__DIR__); Pkg.instantiate()\nusing ...will download all the dependencies.All notebooks were tested under Julia 1.2"
 },
 
 ]}
