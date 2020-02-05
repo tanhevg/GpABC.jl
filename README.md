@@ -26,23 +26,29 @@ pkg> add https://github.com/tanhevg/GpABC.jl
 ```
 ## Paper
 
-If you are using GpABC in research, please cite our paper (currently under review):
+If you are using GpABC in research, please cite our paper:
 
 **GpABC: a Julia package for approximate Bayesian computation with Gaussian process emulation**
 
 Evgeny Tankhilevich, Jonathan Ish-Horowicz, Tara Hameed, Elisabeth Roesch, Istvan Kleijn, Michael PH Stumpf, Fei He
 
-doi: https://doi.org/10.1101/769299
-
 https://www.biorxiv.org/content/10.1101/769299v1
 
+doi: [10.1093/bioinformatics/btaa078](https://doi.org/10.1093/bioinformatics/btaa078)
+
 ```
-@article{gpabc:2019,
-  author    = {Evgeny Tankhilevich, Jonathan Ish-Horowicz, Tara Hameed, Elisabeth Roesch, Istvan Kleijn, Michael PH Stumpf, Fei He},
-  title     = {GpABC: a Julia package for approximate Bayesian computation with Gaussian process emulation},
-  journal   = {BioRxiv},
-  year      = {2019},
-  doi       = {10.1101/769299},
+@article{10.1093/bioinformatics/btaa078,
+    author = {Tankhilevich, Evgeny and Ish-Horowicz, Jonathan and Hameed, Tara and Roesch, Elisabeth and Kleijn, Istvan and Stumpf, Michael P H and He, Fei},
+    title = "{GpABC: a Julia package for approximate Bayesian computation with Gaussian process emulation}",
+    journal = {Bioinformatics},
+    year = {2020},
+    month = {02},
+    abstract = "{Approximate Bayesian computation (ABC) is an important framework within which to infer the structure and parameters of a systems biology model. It is especially suitable for biological systems with stochastic and nonlinear dynamics, for which the likelihood functions are intractable. However, the associated computational cost often limits ABC to models that are relatively quick to simulate in practice.We here present a Julia package, GpABC, that implements parameter inference and model selection for deterministic or stochastic models using i) standard rejection ABC or ABC-SMC, or ii) ABC with Gaussian process emulation. The latter significantly reduces the computational cost.https://github.com/tanhevg/GpABC.jlSupplementary data are available at Bioinformatics online.}",
+    issn = {1367-4803},
+    doi = {10.1093/bioinformatics/btaa078},
+    url = {https://doi.org/10.1093/bioinformatics/btaa078},
+    note = {btaa078},
+    eprint = {https://academic.oup.com/bioinformatics/advance-article-pdf/doi/10.1093/bioinformatics/btaa078/32353462/btaa078.pdf},
 }
 ```
 
