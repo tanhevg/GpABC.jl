@@ -55,7 +55,7 @@ doi: [10.1093/bioinformatics/btaa078](https://doi.org/10.1093/bioinformatics/bta
 
 ## Examples
 ### ABC Parameter Inference
-  [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/tanhevg/GpABC.jl/master?filepath=examples%2Fabc-example.ipynb) [![NBViewer](https://img.shields.io/badge/render-nbviewer-orange.svg)](https://nbviewer.jupyter.org/github/tanhevg/GpABC.jl/blob/master/examples/abc-example.ipynb)
+[![Github](https://img.shields.io/badge/view-github-lightgrey?logo=github)](examples/abc-example.ipynb) [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/tanhevg/GpABC.jl/master?filepath=examples%2Fabc-example.ipynb) [![NBViewer](https://img.shields.io/badge/render-nbviewer-orange.svg)](https://nbviewer.jupyter.org/github/tanhevg/GpABC.jl/blob/master/examples/abc-example.ipynb)
 ### Gaussian Process Regression
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/tanhevg/GpABC.jl/master?filepath=examples%2Fgp-example.ipynb) [![NBViewer](https://img.shields.io/badge/render-nbviewer-orange.svg)](https://nbviewer.jupyter.org/github/tanhevg/GpABC.jl/blob/master/examples/gp-example.ipynb)
 ### Stochastic Inference (LNA)
