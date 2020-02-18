@@ -57,11 +57,11 @@ doi: [10.1093/bioinformatics/btaa078](https://doi.org/10.1093/bioinformatics/bta
 ### ABC Parameter Inference
 [![Github](https://img.shields.io/badge/view-github-lightgrey?logo=github)](examples/abc-example.ipynb) [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/tanhevg/GpABC.jl/master?filepath=examples%2Fabc-example.ipynb) [![NBViewer](https://img.shields.io/badge/render-nbviewer-orange.svg)](https://nbviewer.jupyter.org/github/tanhevg/GpABC.jl/blob/master/examples/abc-example.ipynb)
 ### Gaussian Process Regression
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/tanhevg/GpABC.jl/master?filepath=examples%2Fgp-example.ipynb) [![NBViewer](https://img.shields.io/badge/render-nbviewer-orange.svg)](https://nbviewer.jupyter.org/github/tanhevg/GpABC.jl/blob/master/examples/gp-example.ipynb)
+[![Github](https://img.shields.io/badge/view-github-lightgrey?logo=github)](examples/gp-example.ipynb) [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/tanhevg/GpABC.jl/master?filepath=examples%2Fgp-example.ipynb) [![NBViewer](https://img.shields.io/badge/render-nbviewer-orange.svg)](https://nbviewer.jupyter.org/github/tanhevg/GpABC.jl/blob/master/examples/gp-example.ipynb)
 ### Stochastic Inference (LNA)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/tanhevg/GpABC.jl/master?filepath=examples%2Flna-example.ipynb) [![NBViewer](https://img.shields.io/badge/render-nbviewer-orange.svg)](https://nbviewer.jupyter.org/github/tanhevg/GpABC.jl/blob/master/examples/lna-example.ipynb)
+[![Github](https://img.shields.io/badge/view-github-lightgrey?logo=github)](examples/lna-example.ipynb) [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/tanhevg/GpABC.jl/master?filepath=examples%2Flna-example.ipynb) [![NBViewer](https://img.shields.io/badge/render-nbviewer-orange.svg)](https://nbviewer.jupyter.org/github/tanhevg/GpABC.jl/blob/master/examples/lna-example.ipynb)
 ### Model Selection
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/tanhevg/GpABC.jl/master?filepath=examples%2Fmodel-selection-example.ipynb) [![NBViewer](https://img.shields.io/badge/render-nbviewer-orange.svg)](https://nbviewer.jupyter.org/github/tanhevg/GpABC.jl/blob/master/examples/model-selection-example.ipynb)
+[![Github](https://img.shields.io/badge/view-github-lightgrey?logo=github)](examples/model-selection-example.ipynb) [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/tanhevg/GpABC.jl/master?filepath=examples%2Fmodel-selection-example.ipynb) [![NBViewer](https://img.shields.io/badge/render-nbviewer-orange.svg)](https://nbviewer.jupyter.org/github/tanhevg/GpABC.jl/blob/master/examples/model-selection-example.ipynb)
 
 ## Dependencies
 -  [`Optim`](https://github.com/JuliaNLSolvers/Optim.jl) - for training Gaussian Process hyperparameters.
