@@ -6,7 +6,6 @@ language: julia
 julia:
   - 1.0
   - 1.4
-  - nightly
 codecov: true
 after_success:
   - julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()'
