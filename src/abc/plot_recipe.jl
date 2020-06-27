@@ -21,17 +21,17 @@ data = ... should be the last statement
       end
       legend --> false
       layout := length(params) ^ 2
-      if link_xaxes
-            link := :x
-      end
+      # if link_xaxes # https://github.com/JuliaPlots/Plots.jl/issues/2726
+      #       link := :x
+      # end
       for (i, par1) in enumerate(params)
             for (j, par2) in enumerate(params)
                   subplot := (i - 1) * length(params) + j
                   if i == j
                         @series begin
                               seriestype := :histogram
-                              ylabel := "Accepted"
-                              xlabel := "Parameter $(par1)"
+                              yguide := "Accepted"
+                              xguide := "Parameter $(par1)"
                               bins --> 50
                               if isa(abco.population, Vector)
                                     data = abco.population[end][:, par1]
@@ -45,8 +45,8 @@ data = ... should be the last statement
                         if isa(abco.population, Vector)
                               for r in runs
                                     @series begin
-                                          xlabel --> "Parameter $(par2)"
-                                          ylabel --> "Parameter $(par1)"
+                                          xguide --> "Parameter $(par2)"
+                                          yguide --> "Parameter $(par1)"
                                           if population_colors !== nothing
                                                 idx = r % length(population_colors)
                                                 if idx == 0
@@ -65,8 +65,8 @@ data = ... should be the last statement
                         end # if Vector
                   else
                         @series begin
-                              ylabel := ""
-                              xlabel := ""
+                              yguide := ""
+                              xguide := ""
                               grid := false
                               xaxis := false
                               yaxis := false
@@ -103,9 +103,9 @@ my_linspace(bounds::Tuple{Float64, Float64}, length::Int64) = range(bounds[1], s
       params = 1:emu_out.n_params
       legend --> false
       layout := length(params) ^ 2
-      if link_xaxes
-            link := :x
-      end
+      # if link_xaxes # https://github.com/JuliaPlots/Plots.jl/issues/2726
+      #       link := :x
+      # end
       for i in params
             for j in params
                   subplot := (i - 1) * length(params) + j
@@ -132,7 +132,7 @@ my_linspace(bounds::Tuple{Float64, Float64}, length::Int64) = range(bounds[1], s
                         contour_z = pdf(kde_joint, contour_x, contour_y)
                         @series begin
                               seriestype := :contour
-                              color := ColorGradient([:white, emulation_color])
+                              seriescolor := cgrad([:white, emulation_color])
                               levels := contour_levels
                               fill := true
                               (contour_x, contour_y, contour_z)
@@ -141,13 +141,13 @@ my_linspace(bounds::Tuple{Float64, Float64}, length::Int64) = range(bounds[1], s
                               seriestype := :scatter
                               markersize := 4
                               markershape := :x
-                              color := simulation_color
+                              seriescolor := simulation_color
                               (x_data_sim, y_data_sim)
                         end
                         if length(true_params) > 0
                               seriestype := :path
                               linestyle := :dash
-                              color := :black
+                              seriescolor := :black
                               markershape := :none
                               @series begin
                                     ([true_params[j], true_params[j], minimum(contour_x)],
@@ -169,7 +169,7 @@ my_linspace(bounds::Tuple{Float64, Float64}, length::Int64) = range(bounds[1], s
                         if length(true_params) > 0
                               seriestype := :path
                               linestyle := :dash
-                              color := :black
+                              seriescolor := :black
                               markershape := :none
                               @series begin
                                     ([true_params[j], true_params[j], minimum(emu_out.population[1][:,j])],
@@ -191,12 +191,12 @@ my_linspace(bounds::Tuple{Float64, Float64}, length::Int64) = range(bounds[1], s
                         y_sim_plot = pdf(kde_sim,x_plot)
                         @series begin
                               linestyle := :solid
-                              color := simulation_color
+                              seriescolor := simulation_color
                               (x_plot, y_sim_plot)
                         end
                         @series begin
                               linestyle := :solid
-                              color := emulation_color
+                              seriescolor := emulation_color
                               (x_plot, y_emu_plot)
                         end
                         if length(true_params) > 0
@@ -204,7 +204,7 @@ my_linspace(bounds::Tuple{Float64, Float64}, length::Int64) = range(bounds[1], s
                               max_pdf = max(pdf(kde_emu, true_param), pdf(kde_sim, true_param))
                               @series begin
                                     linestyle := :dash
-                                    color := :black
+                                    seriescolor := :black
                                     ([true_param, true_param], [0, max_pdf])
                               end
                         end
@@ -216,8 +216,8 @@ end
 # Plot recipe for mdoel selection output
 @recipe function modelselection_plotrecipe(::Type{ModelSelectionOutput}, mso::ModelSelectionOutput)
     seriestype := :line
-    xlabel --> "Population"
-    ylabel --> "Number of accepted particles"
-    labels --> reshape([string("Model ", m) for m in 1:mso.M], 1, :)
+    xguide --> "Population"
+    yguide --> "Number of accepted particles"
+    label --> reshape([string("Model ", m) for m in 1:mso.M], 1, :)
     data = [[mso.n_accepted[i][j] for i in 1:size(mso.n_accepted,1)] for j in 1:mso.M]
 end
