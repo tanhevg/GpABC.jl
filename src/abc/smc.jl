@@ -24,7 +24,7 @@ function generate_kernels(
     kernels = Matrix{ContinuousUnivariateDistribution}(undef, n_particles, n_params)
     for j in 1:n_params
         means = population[:, j]
-        kernels[:, j] = TruncatedNormal.(means, stds[j]*sqrt(2.0), lowers[j], uppers[j])
+        kernels[:, j] = truncated.(Normal.(means, stds[j]*sqrt(2.0)), lowers[j], uppers[j])
     end
 
     return kernels
