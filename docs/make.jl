@@ -42,11 +42,3 @@ gpabc_makedocs() = makedocs(
         "FAQ" => "faq.md"
     ]
 )
-
-if VERSION >= v"1.1" # do not build docs on Julia 1.0.x
-    gpabc_makedocs()
-
-    deploydocs(
-        repo = "github.com/tanhevg/GpABC.jl.git"
-    )
-end
