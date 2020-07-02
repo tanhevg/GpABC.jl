@@ -42,3 +42,9 @@ gpabc_makedocs() = makedocs(
         "FAQ" => "faq.md"
     ]
 )
+
+gpabc_makedocs()
+
+deploydocs(
+    repo = "github.com/tanhevg/GpABC.jl.git"
+)
