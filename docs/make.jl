@@ -43,7 +43,7 @@ gpabc_makedocs() = makedocs(
     ]
 )
 
-if VERSION == v"1.2.0"
+if VERSION >= v"1.1" # do not build docs on Julia 1.0.x
     gpabc_makedocs()
 
     deploydocs(
