@@ -21,7 +21,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "Installation",
     "category": "section",
-    "text": "GpABC can be installed using the Julia package manager. From the Julia REPL, type ] to enter the Pkg REPL mode and runpkg> add https://github.com/tanhevg/GpABC.jl"
+    "text": "GpABC can be installed using the Julia package manager. From the Julia REPL, type ] to enter the Pkg REPL mode and runpkg> add GpABC"
 },
 
 {
