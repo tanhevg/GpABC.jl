@@ -1,7 +1,7 @@
 # GpABC.jl
 
 [![Latest Documentation](https://img.shields.io/badge/docs-latest-blue.svg)](https://tanhevg.github.io/GpABC.jl/dev)
-[![Build Status](https://travis-ci.org/tanhevg/GpABC.jl.svg?branch=master)](https://travis-ci.org/tanhevg/GpABC.jl)
+[![Build Status](https://travis-ci.com/tanhevg/GpABC.jl.svg?branch=master)](https://travis-ci.com/tanhevg/GpABC.jl)
 [![codecov.io](http://codecov.io/github/tanhevg/GpABC.jl/coverage.svg?branch=master)](http://codecov.io/github/tanhevg/GpABC.jl?branch=master)
 [![DOI:10.1093/bioinformatics/btaa078](https://zenodo.org/badge/DOI/10.1093/bioinformatics/btaa078.svg)](https://doi.org/10.1093/bioinformatics/btaa078)
 
