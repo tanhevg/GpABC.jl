@@ -47,7 +47,7 @@ using Test, GpABC, OrdinaryDiffEq, Distances, Distributions
       prob = ODEProblem(ODE_3GeneReg, x0, Tspan, params)
       Obs = solve(prob, solver, saveat=saveat)
 
-      return Array{Float64, 2}(Obs)
+      return hcat(Obs.u...)
     end
 
     reference_data = GeneReg(true_params, Tspan, x0, solver, saveat)

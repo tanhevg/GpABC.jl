@@ -70,13 +70,17 @@ import Random
 
 	# Define simulator functions for each model
 
-	simulator1(params) = Array{Float64,2}(
-	    solve(ODEProblem(model1, ics[1], (times[1], times[end]), params), RK4(); saveat=times, force_dtmin=true))
+	function simulator1(params)
+		sol = solve(ODEProblem(model1, ics[1], (times[1], times[end]), params), RK4(); saveat=times, force_dtmin=true)
+		hcat(sol.u...)
+	end
 
 	# Model2 contains the species L, which is not measured - we remove it from the returned ODE solution
 	# so that it can be compared to the reference data "data", which only contains S, I and R
-	simulator2(params) = Array{Float64,2}(
-	    solve(ODEProblem(model2, ics[2], (times[1], times[end]), params), RK4(); saveat=times, force_dtmin=true))[[1,3,4],:]
+	function simulator2(params)
+		sol = solve(ODEProblem(model2, ics[2], (times[1], times[end]), params), RK4(); saveat=times, force_dtmin=true)
+		hcat(sol.u...)[[1,3,4],:]
+	end
 
 	# Model to test dead behaviour
 	simulator3(params) = rand(Float64, size(data))
@@ -179,14 +183,14 @@ import Random
 	ms_res = SimulatedModelSelection(data,
 		simulators,
 		priors,
-		[0.4, 0.2], # threshold_schedule,
+		[0.2, 0.1], # threshold_schedule,
 		n_particles)
 	@test !ms_res.completed_all_populations
 
 	ms_res = EmulatedModelSelection(data,
 		simulators,
 		priors,
-		[0.4, 0.2], # threshold_schedule,
+		[0.2, 0.1], # threshold_schedule,
 		n_particles,
 		n_design_points)
 	@test !ms_res.completed_all_populations
