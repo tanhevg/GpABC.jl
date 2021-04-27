@@ -569,7 +569,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "ref-lna/#GpABC.sample_LNA_trajectories-Tuple{LNA,Int64}",
+    "location": "ref-lna/#GpABC.sample_LNA_trajectories-Tuple{LNA, Int64}",
     "page": "Stochastic inference (LNA)",
     "title": "GpABC.sample_LNA_trajectories",
     "category": "method",
@@ -697,7 +697,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "ref-gp/#GpABC.gp_loglikelihood-Tuple{AbstractArray{Float64,1},GPModel}",
+    "location": "ref-gp/#GpABC.gp_loglikelihood-Tuple{AbstractVector{Float64}, GPModel}",
     "page": "Gaussian Processes",
     "title": "GpABC.gp_loglikelihood",
     "category": "method",
@@ -713,7 +713,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "ref-gp/#GpABC.gp_loglikelihood_grad-Tuple{AbstractArray{Float64,1},GPModel}",
+    "location": "ref-gp/#GpABC.gp_loglikelihood_grad-Tuple{AbstractVector{Float64}, GPModel}",
     "page": "Gaussian Processes",
     "title": "GpABC.gp_loglikelihood_grad",
     "category": "method",
@@ -721,11 +721,19 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "ref-gp/#GpABC.gp_loglikelihood_log-Tuple{AbstractArray{Float64,1},GPModel}",
+    "location": "ref-gp/#GpABC.gp_loglikelihood_log-Tuple{AbstractVector{Float64}, GPModel}",
     "page": "Gaussian Processes",
     "title": "GpABC.gp_loglikelihood_log",
     "category": "method",
     "text": "gp_loglikelihood_log(theta::AbstractArray{Float64, 1}, gpm::GPModel)\n\nLog likelihood function with log hyperparameters. This is the target function of the hyperparameters optimisation procedure. Its gradient is coputed by gp_loglikelihood_grad.\n\n\n\n\n\n"
+},
+
+{
+    "location": "ref-gp/#GpABC.gp_regression-Tuple{AbstractVecOrMat{Float64}, GPModel}",
+    "page": "Gaussian Processes",
+    "title": "GpABC.gp_regression",
+    "category": "method",
+    "text": "gp_regression(test_x::Union{AbstractArray{Float64, 1}, AbstractArray{Float64, 2}},\n    gpem::GPModel; <optional keyword arguments>)\n\n\n\n\n\n"
 },
 
 {
@@ -737,14 +745,6 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "ref-gp/#GpABC.gp_regression-Tuple{Union{AbstractArray{Float64,1}, AbstractArray{Float64,2}},GPModel}",
-    "page": "Gaussian Processes",
-    "title": "GpABC.gp_regression",
-    "category": "method",
-    "text": "gp_regression(test_x::Union{AbstractArray{Float64, 1}, AbstractArray{Float64, 2}},\n    gpem::GPModel; <optional keyword arguments>)\n\n\n\n\n\n"
-},
-
-{
     "location": "ref-gp/#GpABC.gp_regression_sample",
     "page": "Gaussian Processes",
     "title": "GpABC.gp_regression_sample",
@@ -753,7 +753,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "ref-gp/#GpABC.set_hyperparameters-Tuple{GPModel,AbstractArray{Float64,1}}",
+    "location": "ref-gp/#GpABC.set_hyperparameters-Tuple{GPModel, AbstractVector{Float64}}",
     "page": "Gaussian Processes",
     "title": "GpABC.set_hyperparameters",
     "category": "method",
@@ -809,7 +809,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "ref-kernels/#GpABC.covariance-Tuple{AbstractGPKernel,AbstractArray{Float64,1},AbstractArray{Float64,2},AbstractArray{Float64,2}}",
+    "location": "ref-kernels/#GpABC.covariance-Tuple{AbstractGPKernel, AbstractVector{Float64}, AbstractMatrix{Float64}, AbstractMatrix{Float64}}",
     "page": "Kernels",
     "title": "GpABC.covariance",
     "category": "method",
@@ -817,7 +817,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "ref-kernels/#GpABC.covariance_diagonal-Tuple{AbstractGPKernel,AbstractArray{Float64,1},AbstractArray{Float64,2}}",
+    "location": "ref-kernels/#GpABC.covariance_diagonal-Tuple{AbstractGPKernel, AbstractVector{Float64}, AbstractMatrix{Float64}}",
     "page": "Kernels",
     "title": "GpABC.covariance_diagonal",
     "category": "method",
@@ -825,7 +825,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "ref-kernels/#GpABC.covariance_grad-Tuple{AbstractGPKernel,AbstractArray{Float64,1},AbstractArray{Float64,2},AbstractArray{Float64,2}}",
+    "location": "ref-kernels/#GpABC.covariance_grad-Tuple{AbstractGPKernel, AbstractVector{Float64}, AbstractMatrix{Float64}, AbstractMatrix{Float64}}",
     "page": "Kernels",
     "title": "GpABC.covariance_grad",
     "category": "method",
@@ -833,7 +833,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "ref-kernels/#GpABC.covariance_training-Tuple{AbstractGPKernel,AbstractArray{Float64,1},AbstractArray{Float64,2}}",
+    "location": "ref-kernels/#GpABC.covariance_training-Tuple{AbstractGPKernel, AbstractVector{Float64}, AbstractMatrix{Float64}}",
     "page": "Kernels",
     "title": "GpABC.covariance_training",
     "category": "method",
@@ -841,7 +841,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "ref-kernels/#GpABC.get_hyperparameters_size-Tuple{AbstractGPKernel,AbstractArray{Float64,2}}",
+    "location": "ref-kernels/#GpABC.get_hyperparameters_size-Tuple{AbstractGPKernel, AbstractMatrix{Float64}}",
     "page": "Kernels",
     "title": "GpABC.get_hyperparameters_size",
     "category": "method",
@@ -897,7 +897,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "ref-kernels/#GpABC.scaled_squared_distance-Tuple{AbstractArray{Float64,1},AbstractArray{Float64,2},AbstractArray{Float64,2}}",
+    "location": "ref-kernels/#GpABC.scaled_squared_distance-Tuple{AbstractVector{Float64}, AbstractMatrix{Float64}, AbstractMatrix{Float64}}",
     "page": "Kernels",
     "title": "GpABC.scaled_squared_distance",
     "category": "method",
@@ -905,7 +905,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "ref-kernels/#GpABC.scaled_squared_distance_grad-Tuple{AbstractArray{Float64,1},AbstractArray{Float64,2},AbstractArray{Float64,2},AbstractArray{Float64,2}}",
+    "location": "ref-kernels/#GpABC.scaled_squared_distance_grad-Tuple{AbstractVector{Float64}, AbstractMatrix{Float64}, AbstractMatrix{Float64}, AbstractMatrix{Float64}}",
     "page": "Kernels",
     "title": "GpABC.scaled_squared_distance_grad",
     "category": "method",
