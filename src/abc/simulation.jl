@@ -27,7 +27,7 @@ See [ABC Overview](@ref abc-overview) for more details.
 
 # Optional keyword arguments
 - `summary_statistic::Union{String,AbstractArray{String,1},Function}`: Summary statistics that will be applied to the data before computing the distances. Defaults to `keep_all`. See [detailed documentation of summary statistics](@ref summary_stats).
-- `distance_function::Function`: A function that will be used to compute the distance between the summary statistic of the simulated data and that of reference data. Defaults to `Distances.euclidean`.
+- `distance_function::Union{Function,Metric}`: A function or metric that will be used to compute the distance between the summary statistic of the simulated data and that of reference data. Defaults to `Distances.euclidean`.
 - `max_iter::Int`: The maximum number of simulations that will be run. The default is `1000 * n_particles`.
 - `write_progress::Bool`: Whether algorithm progress should be printed on standard output. Defaults to `true`.
 - `progress_every::Int`: Number of iterations at which to print progress. Defaults to 1000.
@@ -41,7 +41,7 @@ function SimulatedABCRejection(reference_data::AbstractArray{AF,2},
     threshold::AF,
     n_particles::Int;
     summary_statistic::Union{String,AbstractArray{String,1},Function}="keep_all",
-    distance_function::Function=Distances.euclidean,
+    distance_function::Union{Function,Metric}=Distances.euclidean,
     max_iter::Int=10 * n_particles,
     kwargs...
     ) where {
@@ -94,7 +94,7 @@ See [ABC Overview](@ref abc-overview) for more details.
 
 # Optional keyword arguments
 - `summary_statistic::Union{String,AbstractArray{String,1},Function}`: Summary statistics that will be applied to the data before computing the distances. Defaults to `keep_all`. See [detailed documentation of summary statistics](@ref summary_stats).
-- `distance_function::Function`: A function that will be used to compute the distance between the summary statistic of the simulated data and that of reference data. Defaults to `Distances.euclidean`.
+- `distance_function::Union{Function,Metric}`: A function or metric that will be used to compute the distance between the summary statistic of the simulated data and that of reference data. Defaults to `Distances.euclidean`.
 - `max_iter::Int`: The maximum number of simulations that will be run. The default is `1000 * n_particles`.
 - `write_progress::Bool`: Whether algorithm progress should be printed on standard output. Defaults to `true`.
 - `progress_every::Int`: Number of iterations at which to print progress. Defaults to 1000.
@@ -108,7 +108,7 @@ function SimulatedABCSMC(reference_data::AbstractArray{AF,2},
     threshold_schedule::AbstractArray{AF,1},
     n_particles::Int;
     summary_statistic::Union{String,AbstractArray{String,1},Function} = "keep_all",
-    distance_function::Function=Distances.euclidean,
+    distance_function::Union{Function,Metric}=Distances.euclidean,
     max_iter::Int=10 * n_particles,
     kwargs...
     ) where {
@@ -141,7 +141,7 @@ Perform model selection using simulation-based ABC.
 - `summary_statistic::Union{String,AbstractArray{String,1},Function}`: Either: 1. A `String` or 1D Array of strings that Or 2. A function that outputs a 1D Array of Floats that summarises model output. Defaults to `keep_all`. See [detailed documentation of summary statistics](@ref summary_stats).
 - `simulator_functions::AbstractArray{Function,1}`: An array of functions that take a parameter vector as an argument and outputs model results (one per model).
 - 'model_prior::DiscreteUnivariateDistribution': The prior from which models are sampled. Default is a discrete, uniform distribution.
-- `distance_function::Function`: Any function that computes the distance between 2 1D Arrays. Optional argument (default is to use the Euclidean distance).
+- `distance_function::Union{Function,Metric}`: A function or metric that computes the distance between 2 1D Arrays. Optional argument (default is to use the Euclidean distance).
 - `max_iter::Int`: The maximum number of simulations that will be run. The default is 1000*`n_particles`. Each iteration samples a single model and performs ABC using a single particle.
 
 # Returns
@@ -155,7 +155,7 @@ function SimulatedModelSelection(
     n_particles::Int,
     model_prior::DiscreteUnivariateDistribution=Distributions.DiscreteUniform(1,length(parameter_priors));
     summary_statistic::Union{String,AbstractArray{String,1},Function}="keep_all",
-    distance_function::Function=Distances.euclidean,
+    distance_function::Union{Function,Metric}=Distances.euclidean,
     max_iter::Int=10000
     ) where {
     AF<:AbstractFloat,

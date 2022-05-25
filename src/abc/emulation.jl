@@ -32,7 +32,7 @@ See [ABC Overview](@ref abc-overview) for more details.
 
 # Optional keyword arguments
 - `summary_statistic::Union{String,AbstractArray{String,1},Function}`: Summary statistics that will be applied to the data before computing the distances. Defaults to `keep_all`. See [detailed documentation of summary statistics](@ref summary_stats).
-- `distance_function::Function`: A function that will be used to compute the distance between the summary statistic of the simulated data and that of reference data. Defaults to `Distances.euclidean`.
+- `distance_function::Union{Function,Metric}`: A function or metric that will be used to compute the distance between the summary statistic of the simulated data and that of reference data. Defaults to `Distances.euclidean`.
 - `batch_size::Int`: The number of particles that will be emulated on each iteration. Defaults to `1000 * n_particles`.
 - `max_iter::Int`: The maximum number of emulations that will be run. Defaults to 1000.
 - `emulator_training<:AbstractEmulatorTraining`: This determines how the emulator will be trained. See [`AbstractEmulatorTraining`](@ref) for more details.
@@ -49,7 +49,7 @@ function EmulatedABCRejection(reference_data::AbstractArray{AF,2},
     n_particles::Int,
     n_design_points::Int;
     summary_statistic::Union{String,AbstractArray{String,1},Function}="keep_all",
-    distance_function::Function=Distances.euclidean,
+    distance_function::Union{Function,Metric}=Distances.euclidean,
     emulation_type::AbstractEmulatorTraining = DefaultEmulatorTraining(),
     batch_size::Int=10*n_particles,
     max_iter::Int=1000,
@@ -114,7 +114,7 @@ See [ABC Overview](@ref abc-overview) for more details.
 
 # Optional keyword arguments
 - `summary_statistic::Union{String,AbstractArray{String,1},Function}`: Summary statistics that will be applied to the data before computing the distances. Defaults to `keep_all`. See [detailed documentation of summary statistics](@ref summary_stats).
-- `distance_function::Function`: A function that will be used to compute the distance between the summary statistic of the simulated data and that of reference data. Defaults to `Distances.euclidean`.
+- `distance_function::Union{Function,Metric}`: A function or metric that will be used to compute the distance between the summary statistic of the simulated data and that of reference data. Defaults to `Distances.euclidean`.
 - `batch_size::Int`: The number of particles that will be emulated on each iteration. Defaults to `1000 * n_particles`.
 - `max_iter::Int`: The maximum number of emulations that will be run. Defaults to 1000.
 - `emulator_training<:AbstractEmulatorTraining`: This determines how the emulator will be trained for each iteration. See [`AbstractEmulatorTraining`](@ref) for more details.
@@ -133,7 +133,7 @@ function EmulatedABCSMC(reference_data::AbstractArray{AF,2},
     n_design_points::Int;
     summary_statistic::Union{String,AbstractArray{String,1},Function}="keep_all",
     emulator_training::ET = DefaultEmulatorTraining(),
-    distance_metric::Function=Distances.euclidean,
+    distance_metric::Union{Function,Metric}=Distances.euclidean,
     batch_size::Int=10*n_particles,
     max_iter::Int=20,
     emulator_retraining::ER = NoopRetraining(),
@@ -174,7 +174,7 @@ Perform model selection using emulation-based ABC.
 - `summary_statistic::Union{String,AbstractArray{String,1},Function}`: Either: 1. A `String` or 1D Array of strings that Or 2. A function that outputs a 1D Array of Floats that summarises model output. Defaults to `keep_all`. See [detailed documentation of summary statistics](@ref summary_stats).
 - `simulator_functions::AbstractArray{Function,1}`: An array of functions that take a parameter vector as an argument and outputs model results (one per model).
 - 'model_prior::DiscreteUnivariateDistribution': The prior from which models are sampled. Default is a discrete, uniform distribution.
-- `distance_function::Function`: Any function that computes the distance between 2 1D Arrays. Optional argument (default is to use the Euclidean distance).
+- `distance_function::Union{Function,Metric}`: A function or metric that computes the distance between 2 1D Arrays. Optional argument (default is to use the Euclidean distance).
 - `max_iter::Int`: The maximum number of simulations that will be run. The default is 1000*`n_particles`. Each iteration samples a single model and performs ABC using a single particle.
 - `max_batch_size::Int`: The maximum batch size for the emulator when making predictions.
 
@@ -190,7 +190,7 @@ function EmulatedModelSelection(
     n_design_points::Int,
     model_prior::DiscreteUnivariateDistribution=Distributions.DiscreteUniform(1,length(parameter_priors));
     summary_statistic::Union{String,AbstractArray{String,1},Function}="keep_all",
-    distance_function::Function=Distances.euclidean,
+    distance_function::Union{Function,Metric}=Distances.euclidean,
     max_iter::Int=1000,
     max_batch_size::Int=1000,
     emulator_training::ET = DefaultEmulatorTraining(),

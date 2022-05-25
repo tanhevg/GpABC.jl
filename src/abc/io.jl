@@ -12,7 +12,7 @@ struct DistanceSimulationInput
     reference_summary_statistic::AbstractArray{Float64,1}
     simulator_function::Function
     summary_statistic::Function
-    distance_metric::Function
+    distance_metric::Union{Function,Metric}
 end
 
 """
