@@ -11,7 +11,7 @@ function model_selection(input::ModelSelectionInput)
 	tracker = initialise_modelselection(input)
 
 	if all_models_dead(tracker)
-		@warn "No particles were accepted in population 1 with threshold $(input.threshold_schedule[1])- terminating model selection algorithm"
+		@warn "No particles were accepted in population 1 with threshold $(input.threshold_schedule[1]) - terminating model selection algorithm"
 		return build_modelselection_output(tracker, false)
 	end
 
