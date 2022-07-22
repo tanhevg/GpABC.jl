@@ -47,7 +47,7 @@ end
         x::AbstractArray{Float64, 2}, z::AbstractArray{Float64, 2}, R::AbstractArray{Float64, 2})
 
 Return the gradient of the [`scaled_squared_distance`](@ref) function with respect to
-logarigthms of length scales, based on the provided direction matrix.
+logarithms of length scales, based on the provided direction matrix.
 
 # Arguments
 - `x, z`: Input data, reshaped into 2-d arrays.

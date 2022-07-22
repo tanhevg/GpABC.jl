@@ -33,7 +33,7 @@ end
 """
     SquaredExponentialArdKernel <: AbstractGPKernel
 
-Squared exponential kernel with distinct length scale for each dimention, ``l_k``.
+Squared exponential kernel with distinct length scale for each dimension, ``l_k``.
 ```math
 \\begin{aligned}
 K(r) & = \\sigma_f^2 e^{-r/2} \\\\

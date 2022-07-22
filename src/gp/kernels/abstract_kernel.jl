@@ -32,12 +32,12 @@ function covariance(ker::AbstractGPKernel, log_theta::AbstractArray{Float64, 1},
         training_x::AbstractArray{Float64, 2})
 
 This is a speedup version of [`covariance`](@ref), which is only called during
-traing sequence. Intermediate matrices computed
+training sequence. Intermediate matrices computed
 in this function for particular hyperparameters can be cached and reused subsequently, either
 in this function or in [`covariance_grad`](@ref)
 
 Default method just delegates to [`covariance`](@ref) with `x === z`. Kernel implementations can
-optionally override it for betrer performance.
+optionally override it for better performance.
 
 See [`covariance`](@ref) for description of arguments and return values.
 """
@@ -55,7 +55,7 @@ is not interested in the entire covariance matrix, but only needs the variance, 
 diagonal of the covariance matrix.
 
 Default method just returns `diag(covariance(...))`, with `x === z`. Kernel implementations can
-optionally override it to achieve betrer performance, by not computing the non diagonal
+optionally override it to achieve better performance, by not computing the non diagonal
 elements of covariance matrix.
 
 See [`covariance`](@ref) for description of arguments.
@@ -72,7 +72,7 @@ end
     covariance_grad(ker::AbstractGPKernel, log_theta::AbstractArray{Float64, 1},
         x::AbstractArray{Float64, 2}, R::AbstractArray{Float64, 2})
 
-Return the gradient of the covariance function with respect to logarigthms of hyperparameters,
+Return the gradient of the covariance function with respect to logarithms of hyperparameters,
 based on the provided direction matrix.
 
 This function can be optionally overridden by kernel implementations.

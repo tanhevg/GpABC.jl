@@ -54,7 +54,7 @@ ExponentialIsoKernel() = MaternIsoKernel(1)
 """
     MaternArdKernel <: AbstractGPKernel
 
-Matérn kernel with distinct length scale for each dimention, ``l_k``.
+Matérn kernel with distinct length scale for each dimension, ``l_k``.
 Parameter ``\\nu`` (nu) is passed in constructor. Currently, only values of
 ``\\nu=1``, ``\\nu=3`` and ``\\nu=5`` are supported.
 

@@ -150,7 +150,7 @@ end
     gp_loglikelihood_log(theta::AbstractArray{Float64, 1}, gpm::GPModel)
 
 Log likelihood function with log hyperparameters. This is the target function of the
-hyperparameters optimisation procedure. Its gradient is coputed by [`gp_loglikelihood_grad`](@ref).
+hyperparameters optimisation procedure. Its gradient is computed by [`gp_loglikelihood_grad`](@ref).
 """
 function gp_loglikelihood_log(theta::AbstractArray{Float64, 1}, gpem::GPModel)
     cache = gpem.cache

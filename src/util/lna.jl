@@ -5,7 +5,7 @@ This is a structure which holds the inputs needed for computing the Linear Noise
 
 # Arguments
 - `params::AbstractArray{Float64,1}`: The rate parameters of the stochastic model.
-- `S::AbstractArray{Float64,2}`: the stochiometry matrix of the system. Size: number of reactions x number of species.
+- `S::AbstractArray{Float64,2}`: the stoichiometry matrix of the system. Size: number of reactions x number of species.
 - `reaction_rate_function::Function,`: This is a function f(x, parameters) which should return an array of the reaction rates of the system, i.e. S*f would describe the ODE representation of the system.
 - `volume::Float64`: The volume of the reactants of the system.
 """
@@ -68,10 +68,10 @@ function compute_LNA(input::LNAInput,
 
 
     ###  the below ODE solves the ODE of the mean and the ODE of the covariance together.
-    ## this function is the mean variance decomposition of the LNA. The derviation of which can be
-    ## found in "Approximation  and  inference  methods  forstochastic  biochemical  kinetics—a  tutorial  review" (2017) by
+    ## this function is the mean variance decomposition of the LNA. The derivation of which can be
+    ## found in "Approximation  and  inference  methods  for stochastic  biochemical  kinetics—a  tutorial  review" (2017) by
     ## David  Schnoerr et al.
-    ## x is two matrices concatenated on top of each other: a diagonal matrix with the means on the diagonal follwed by the covariance matrix
+    ## x is two matrices concatenated on top of each other: a diagonal matrix with the means on the diagonal followed by the covariance matrix
     function Mean_ODE(dx, x, pars, t)
         mean_vec = diag(x)
         covar_mx = x[no_of_species+1:no_of_species*2,:]
@@ -99,11 +99,11 @@ end
 """
     sample_LNA_trajectories(lna::LNA, n_samples::Int64)
 
-A function which samples from the LNA to output sampled trajectories. The LNA gives the mean of the tracjectories and the covariance between them; hence a single trajectory can be sampled from a Multivariate Normal distribution. The user can also sample more than one trajectory; which are then averaged.
+A function which samples from the LNA to output sampled trajectories. The LNA gives the mean of the trajectories and the covariance between them; hence a single trajectory can be sampled from a Multivariate Normal distribution. The user can also sample more than one trajectory; which are then averaged.
 
 # Arguments
-- `lna::LNA`: LNA stucture.
-- `n_samples::Int64`: The number of sampled tracjectories to be sampled and then averaged.
+- `lna::LNA`: LNA structure.
+- `n_samples::Int64`: The number of sampled trajectories to be sampled and then averaged.
 
 #Returns
 -  A (number of species) x (number of time points) array which holds the averaged trajectory for each species on each row of the array.
@@ -126,8 +126,8 @@ A function which computes the LNA and then samples from the it to output sampled
 
 
 # Arguments
-- `input::LNAInput`: LNAInput stucture.
-- `n_samples::Int64`: The number of sampled tracjectories to be sampled and then averaged.
+- `input::LNAInput`: LNAInput structure.
+- `n_samples::Int64`: The number of sampled trajectories to be sampled and then averaged.
 - `x0::Tuple{AbstractArray{Float64,2},AbstractArray{Float64,2}}`: The initial conditions of the system. In the form of (the initial conditions of the species, the initial covariance matrix of the system).
 - `Tspan::Tuple{Float64,Float64}`: The start and end times of the simulation.
 - `saveat::Float64`: The number of time points the use wishes to solve the system for.
@@ -152,10 +152,10 @@ end
     #this function is the mean variance decomposition of the LNAS
     ##LNA_Mean_Var takes the inputs and then performs the simulating of the mean (ODE solution) and the covariance matrix which changes over time.
     ##x0 is the initial conditions of the DE and the covariance matrix
-    ##S is the stochiometry matrix
-    ##reaction_rate_function is a function of the rates - MUST be in the same order as the stochiometry matrix is laid out
+    ##S is the stoichiometry matrix
+    ##reaction_rate_function is a function of the rates - MUST be in the same order as the stoichiometry matrix is laid out
     ##volume is the volume of reactants
     #
     #
     #
-    #the maths for this can be found in UserManual_v28102013.pdf in the LNA folder in Gaussian Procceses Drop box, p2 equation (7) - the ODE of the covariance. A volume term has been added which can be seen in other sources - the particular source was linked as the layout is the similar to the one implemented.
+    #the maths for this can be found in UserManual_v28102013.pdf in the LNA folder in Gaussian Processes Drop box, p2 equation (7) - the ODE of the covariance. A volume term has been added which can be seen in other sources - the particular source was linked as the layout is the similar to the one implemented.
