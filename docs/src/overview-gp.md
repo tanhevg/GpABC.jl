@@ -28,7 +28,7 @@ K^{*\top} & K^{**}
 \end{matrix} \right] \right)
 ```
 
-The desired approximation of ``f`` in ``\mathbf{x^*}`` is the conditional distribution of ``\mathbf{y^*}``, given ``\mathbf{x}``, ``\mathbf{y}`` and ``\mathbf{x^*}``. This distrubution, referred to as *GP posterior*, can be derived from the GP prior and the properties of a multivariate Normal distribution:
+The desired approximation of ``f`` in ``\mathbf{x^*}`` is the conditional distribution of ``\mathbf{y^*}``, given ``\mathbf{x}``, ``\mathbf{y}`` and ``\mathbf{x^*}``. This distribution, referred to as *GP posterior*, can be derived from the GP prior and the properties of a multivariate Normal distribution:
 
 ```math
 \begin{align*}

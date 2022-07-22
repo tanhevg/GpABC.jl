@@ -18,7 +18,7 @@ end
     gp_train(gpm::GPModel; <optional keyword arguments>)
 
 Find Maximum Likelihood Estimate of Gaussian Process hyperparameters by maximising
-[`gp_loglikelihood`](@ref), using [`Optim`](http://julianlsolvers.github.io/Optim.jl/stable/) package. The optimisation target is [`gp_loglikelihood_log`](@ref), with gradient computed by [`gp_loglikelihood_grad`](@ref). Internally, this function optimises the MLE with respect to logarithms of hyperparameters. This is done for numerical stability. Logarithmisation and exponentiation is performed by this funtion, i.e. real hyperparameters, not logarithms, are taken in and returned back.
+[`gp_loglikelihood`](@ref), using [`Optim`](http://julianlsolvers.github.io/Optim.jl/stable/) package. The optimisation target is [`gp_loglikelihood_log`](@ref), with gradient computed by [`gp_loglikelihood_grad`](@ref). Internally, this function optimises the MLE with respect to logarithms of hyperparameters. This is done for numerical stability. Logarithmisation and exponentiation is performed by this function, i.e. real hyperparameters, not logarithms, are taken in and returned back.
 
 By default,
 [Conjugate Gradient](http://julianlsolvers.github.io/Optim.jl/stable/algo/cg/) bounded box optimisation is used, as long as the gradient

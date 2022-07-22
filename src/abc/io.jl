@@ -35,7 +35,7 @@ This emulator retraining strategy samples extra particles from the previous popu
 
 # Fields
 - `design_points`: number of design points to add on each iteration
-- `max_simulations`: maximum number of simulations to perform during re-trainging on each iteration
+- `max_simulations`: maximum number of simulations to perform during re-training on each iteration
 """
 struct IncrementalRetraining <: AbstractEmulatorRetraining
     design_points::Int
@@ -80,7 +80,7 @@ At the moment, only [`DefaultEmulatorTraining`](@ref) is shipped. Custom emulato
 can be implemented by creating new subtypes of this type and overriding [`train_emulator`](@ref) for them.
 
 A typical use case would be trying to control the behaviour of [`gp_train`](@ref) more tightly,
-or not using it altogeather (e.g. using another optimisation package).
+or not using it altogether (e.g. using another optimisation package).
 """
 abstract type AbstractEmulatorTraining end
 

@@ -19,7 +19,7 @@ and the reference data below the threshold (after taking summary statistics into
 See [ABC Overview](@ref abc-overview) for more details.
 
 # Mandatory arguments
-- `reference_data::AbstractArray{Float,2}`: Observed data to which the simulated model output will be compared. Array dimensions sould match that of the simulator function result.
+- `reference_data::AbstractArray{Float,2}`: Observed data to which the simulated model output will be compared. Array dimensions should match that of the simulator function result.
 - `simulator_function::Function`: A function that takes a parameter vector as an argument and outputs model results.
 - `priors::AbstractArray{ContinuousUnivariateDistribution,1}`: Continuous univariate distributions, from which candidate parameters will be sampled. Array size should match the number of parameters.
 - `threshold::Float`: The ``\\varepsilon`` threshold to be used in ABC algorithm. Only those particles that produce simulated results that are within this threshold from the reference data are included into the posterior.
@@ -86,7 +86,7 @@ For each subsequent threshold, the posterior from the previous iteration is used
 See [ABC Overview](@ref abc-overview) for more details.
 
 # Mandatory arguments
-- `reference_data::AbstractArray{Float,2}`: Observed data to which the simulated model output will be compared. Array dimensions sould match that of the simulator function result.
+- `reference_data::AbstractArray{Float,2}`: Observed data to which the simulated model output will be compared. Array dimensions should match that of the simulator function result.
 - `simulator_function::Function`: A function that takes a parameter vector as an argument and outputs model results.
 - `priors::AbstractArray{ContinuousUnivariateDistribution,1}`: Continuous univariate distributions, from which candidate parameters will be sampled during the first iteration. Array size should match the number of parameters.
 - `threshold_schedule::AbstractArray{Float,1}`: The threshold schedule to be used in ABC algorithm. An ABC iteration is executed for each threshold. It is assumed that thresholds are sorted in decreasing order.

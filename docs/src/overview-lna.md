@@ -1,6 +1,6 @@
 # [Stochastic Inference (LNA) Overview](@id lna-overview)
 
-Biochemical reactions are stochastic in nature, and the distribution of stochastic simulation trajectories is generally non-Gaussian. To meet the Gaussian noise assumption of a GP and to consider computational efficiency, we employ the linear noise approximation (LNA), a first-order expansion of the Chemical Master Equation (CME) by decomposing the stochastic process into two ordinary differential equations (ODEs); one describing the evolution of the mean and the other describing the evolution of the covaraince of the trajectories $\textbf{x}(t)$ (i.e. $\mathbf{x}(t)\sim \mathcal{N}(\phi(t),\Sigma(t))$):
+Biochemical reactions are stochastic in nature, and the distribution of stochastic simulation trajectories is generally non-Gaussian. To meet the Gaussian noise assumption of a GP and to consider computational efficiency, we employ the linear noise approximation (LNA), a first-order expansion of the Chemical Master Equation (CME) by decomposing the stochastic process into two ordinary differential equations (ODEs); one describing the evolution of the mean and the other describing the evolution of the covariance of the trajectories $\textbf{x}(t)$ (i.e. $\mathbf{x}(t)\sim \mathcal{N}(\phi(t),\Sigma(t))$):
 
 ```math
 \begin{align*}
@@ -10,9 +10,9 @@ Biochemical reactions are stochastic in nature, and the distribution of stochast
 \end{align*}
 ```
 
-Here $S$ is the stoichometry matrix of the system, $\textbf{a}$ is the reaction propensity vector. The $J(t)_{jk}=\partial a_j/\partial \phi_k$ is the Jacobian of the $j^{th}$ reaction with respect to the $k^{th}$ variable.
+Here $S$ is the stoichiometry matrix of the system, $\textbf{a}$ is the reaction propensity vector. The $J(t)_{jk}=\partial a_j/\partial \phi_k$ is the Jacobian of the $j^{th}$ reaction with respect to the $k^{th}$ variable.
 
-These can be solved by numerical methods to describe how $\phi(t)$ (the mean) and $\Sigma(t)$ (the covariance) evolve with time. We can then draw samples from the above (time-dependent) multivariate Gaussian distribution and obtain realizations of stochastic simulation trajectories. Those trajectories can therefore be used for stochastic simulaiton based ABC. Please see Examples Section for more details.
+These can be solved by numerical methods to describe how $\phi(t)$ (the mean) and $\Sigma(t)$ (the covariance) evolve with time. We can then draw samples from the above (time-dependent) multivariate Gaussian distribution and obtain realizations of stochastic simulation trajectories. Those trajectories can therefore be used for stochastic simulation based ABC. Please see Examples Section for more details.
 
 
 ### References

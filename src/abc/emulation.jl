@@ -23,12 +23,12 @@ of the workflow is similar to [`SimulatedABCRejection`](@ref).
 See [ABC Overview](@ref abc-overview) for more details.
 
 # Mandatory arguments
-- `reference_data::AbstractArray{Float,2}`: Observed data to which the simulated model output will be compared. Array dimensions sould match that of the simulator function result.
+- `reference_data::AbstractArray{Float,2}`: Observed data to which the simulated model output will be compared. Array dimensions should match that of the simulator function result.
 - `simulator_function::Function`: A function that takes a parameter vector as an argument and outputs model results.
 - `priors::AbstractArray{ContinuousUnivariateDistribution,1}`: Continuous univariate distributions, from which candidate parameters will be sampled. Array size should match the number of parameters.
 - `threshold::Float`: The ``\\varepsilon`` threshold to be used in ABC algorithm. Only those particles that produce emulated results that are within this threshold from the reference data are included into the posterior.
 - `n_particles::Int`: The number of parameter vectors (particles) that will be included in the posterior.
-- `n_design_points::Int`: The number of design particles that will be simulated to traing the emulator.
+- `n_design_points::Int`: The number of design particles that will be simulated to train the emulator.
 
 # Optional keyword arguments
 - `summary_statistic::Union{String,AbstractArray{String,1},Function}`: Summary statistics that will be applied to the data before computing the distances. Defaults to `keep_all`. See [detailed documentation of summary statistics](@ref summary_stats).
@@ -105,12 +105,12 @@ For each subsequent threshold, the posterior from the previous iteration is used
 See [ABC Overview](@ref abc-overview) for more details.
 
 # Mandatory arguments
-- `reference_data::AbstractArray{Float,2}`: Observed data to which the simulated model output will be compared. Array dimensions sould match that of the simulator function result.
+- `reference_data::AbstractArray{Float,2}`: Observed data to which the simulated model output will be compared. Array dimensions should match that of the simulator function result.
 - `simulator_function::Function`: A function that takes a parameter vector as an argument and outputs model results.
 - `priors::AbstractArray{ContinuousUnivariateDistribution,1}`: Continuous univariate distributions, from which candidate parameters will be sampled during the first iteration. Array size should match the number of parameters.
 - `threshold_schedule::AbstractArray{Float,1}`: The threshold schedule to be used in ABC algorithm. An ABC iteration is executed for each threshold. It is assumed that thresholds are sorted in decreasing order.
 - `n_particles::Int`: The number of parameter vectors (particles) that will be included in the posterior.
-- `n_design_points::Int`: The number of design particles that will be simulated to traing the emulator.
+- `n_design_points::Int`: The number of design particles that will be simulated to train the emulator.
 
 # Optional keyword arguments
 - `summary_statistic::Union{String,AbstractArray{String,1},Function}`: Summary statistics that will be applied to the data before computing the distances. Defaults to `keep_all`. See [detailed documentation of summary statistics](@ref summary_stats).
