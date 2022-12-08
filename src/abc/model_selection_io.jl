@@ -6,7 +6,7 @@ struct SimulatedModelSelectionInput{AF<:AbstractFloat, CUD<:ContinuousUnivariate
 	threshold_schedule::AbstractArray{AF,1}
 	model_prior::DiscreteUnivariateDistribution
 	parameter_priors::AbstractArray{Array{CUD, 1},1}
-	distance_simulation_input::AbstractArray{DistanceSimulationInput,1}
+	distance_simulation_input::AbstractArray{<:DistanceInput,1}
 	max_iter::Int
 end
 

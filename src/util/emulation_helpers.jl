@@ -1,6 +1,6 @@
 # not exported
 function simulate_distance(parameters::AbstractArray{Float64, 2},
-        distance_simulation_input::DistanceSimulationInput)
+        distance_simulation_input::DistanceInput)
     n_design_points = size(parameters, 1)
     y = zeros(n_design_points)
     for i in 1:n_design_points
