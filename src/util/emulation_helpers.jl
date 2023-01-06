@@ -20,6 +20,7 @@ function abc_train_emulator(priors::AbstractArray{CUD}, training_input::Emulator
     X .= rand.(priors)
     y = simulate_distance(X, training_input.distance_simulation_input)
     train_emulator(X, reshape(y, (length(y), 1)), training_input.emulator_training)
+    @debug "Emulator trained"
 end
 
 """
