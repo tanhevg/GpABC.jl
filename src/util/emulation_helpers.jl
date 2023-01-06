@@ -19,8 +19,9 @@ function abc_train_emulator(priors::AbstractArray{CUD}, training_input::Emulator
     X = zeros(training_input.design_points, n_dims)
     X .= rand.(priors)
     y = simulate_distance(X, training_input.distance_simulation_input)
-    train_emulator(X, reshape(y, (length(y), 1)), training_input.emulator_training)
+    emulator = train_emulator(X, reshape(y, (length(y), 1)), training_input.emulator_training)
     @debug "Emulator trained"
+    return emulator
 end
 
 """
