@@ -19,8 +19,8 @@ jobs:
       matrix:
         version:
           - '1.0'
-          - 'lts'
-          - 'stable'
+          - '1.6'
+          - '1.8'
         os:
           - ubuntu-latest
         arch:
