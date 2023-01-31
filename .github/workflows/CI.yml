@@ -18,7 +18,6 @@ jobs:
       fail-fast: false
       matrix:
         version:
-          - '1.0'
           - '1.6'
           - '1.8'
         os:
@@ -38,24 +37,3 @@ jobs:
       - uses: codecov/codecov-action@v2
         with:
           files: lcov.info
-  docs:
-    name: Documentation
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      statuses: write
-    steps:
-      - uses: actions/checkout@v2
-      - uses: julia-actions/setup-julia@v1
-        with:
-          version: '1'
-      - uses: julia-actions/julia-buildpkg@v1
-      - uses: julia-actions/julia-docdeploy@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - run: julia --project=docs docs/make.jl
-              #          julia --project=docs -e '
-              #using Documenter: DocMeta, doctest
-              #using GpABC
-              #DocMeta.setdocmeta!(GpABC, :DocTestSetup, :(using GpABC); recursive=true)
-              #doctest(GpABC)'
