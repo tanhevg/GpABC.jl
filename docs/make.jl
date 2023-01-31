@@ -45,6 +45,8 @@ gpabc_makedocs() = makedocs(
 
 gpabc_makedocs()
 
+println(ENV)
+
 deploydocs(
     repo = "github.com/tanhevg/GpABC.jl.git"
 )
