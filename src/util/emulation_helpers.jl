@@ -1,6 +1,6 @@
 # not exported
 function simulate_distance(parameters::AbstractArray{Float64, 2},
-        distance_simulation_input::DistanceSimulationInput)
+        distance_simulation_input::DistanceInput)
     n_design_points = size(parameters, 1)
     y = zeros(n_design_points)
     for i in 1:n_design_points
@@ -19,7 +19,9 @@ function abc_train_emulator(priors::AbstractArray{CUD}, training_input::Emulator
     X = zeros(training_input.design_points, n_dims)
     X .= rand.(priors)
     y = simulate_distance(X, training_input.distance_simulation_input)
-    train_emulator(X, reshape(y, (length(y), 1)), training_input.emulator_training)
+    emulator = train_emulator(X, reshape(y, (length(y), 1)), training_input.emulator_training)
+    @debug "Emulator trained"
+    return emulator
 end
 
 """

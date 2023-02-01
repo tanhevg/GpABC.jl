@@ -5,10 +5,15 @@ abstract type ABCInput end
 
 abstract type ABCRejectionInput <: ABCInput end
 
+
 RepetitiveTraining(; rt_iterations::Int64=0, rt_extra_training_points::Int64=1, rt_sample_size::Int64=1000) =
     RepetitiveTraining(rt_iterations, rt_extra_training_points, rt_sample_size)
 
-struct DistanceSimulationInput
+# DistanceInput must have the same fields as DistanceSimulationInput, but not necessarily the same types
+# This allows for summary statistics which are not 1D
+abstract type DistanceInput end
+
+struct DistanceSimulationInput <: DistanceInput
     reference_summary_statistic::AbstractArray{Float64,1}
     simulator_function::Function
     summary_statistic::Function
@@ -98,13 +103,13 @@ end
 DefaultEmulatorTraining() = DefaultEmulatorTraining(SquaredExponentialArdKernel())
 
 struct EmulatorTrainingInput{ET<:AbstractEmulatorTraining}
-    distance_simulation_input::DistanceSimulationInput
+    distance_simulation_input::DistanceInput
     design_points::Int64
     emulator_training::ET
 end
-EmulatorTrainingInput(dsi::DistanceSimulationInput) = EmulatorTrainingInput(dsi, DefaultEmulatorTraining())
+EmulatorTrainingInput(dsi::DistanceInput) = EmulatorTrainingInput(dsi, DefaultEmulatorTraining())
 EmulatorTrainingInput(n_design_points, reference_summary_statistic, simulator_function, summary_statistic, distance_metric, et=DefaultEmulatorTraining()) =
-    EmulatorTrainingInput(DistanceSimulationInput(
+    EmulatorTrainingInput(DistanceInput(
         reference_summary_statistic, simulator_function,
         build_summary_statistic(summary_statistic), distance_metric),
         n_design_points, et)
@@ -176,7 +181,7 @@ struct SimulatedABCRejectionInput <: ABCRejectionInput
     n_particles::Int64
     threshold::Float64
     priors::AbstractArray{ContinuousUnivariateDistribution,1}
-    distance_simulation_input::DistanceSimulationInput
+    distance_simulation_input::DistanceInput
     max_iter::Int
 end
 
@@ -198,7 +203,7 @@ struct SimulatedABCSMCInput <: ABCSMCInput
     n_particles::Int64
     threshold_schedule::AbstractArray{Float64,1}
     priors::AbstractArray{ContinuousUnivariateDistribution,1}
-    distance_simulation_input::DistanceSimulationInput
+    distance_simulation_input::DistanceInput
     max_iter::Int
 end
 
@@ -238,7 +243,7 @@ mutable struct SimulatedABCSMCTracker <: ABCSMCTracker
     distances::AbstractArray{AbstractArray{Float64,1},1}
     weights::AbstractArray{StatsBase.Weights,1}
     priors::AbstractArray{ContinuousUnivariateDistribution,1}
-    distance_simulation_input::DistanceSimulationInput
+    distance_simulation_input::DistanceInput
     max_iter::Int64
 end
 
