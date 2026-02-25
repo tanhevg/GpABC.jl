@@ -104,7 +104,7 @@ function normalise(
 end
 
 function normalise(weight_values::AbstractArray{F, 1}, tosum = 1.0) where F<:AbstractFloat
-    return StatsBase.Weights(weight_values .* (sum(weight_values) / tosum), tosum)
+    return StatsBase.Weights(weight_values .* (tosum / sum(weight_values)), tosum)
 end
 
 #
