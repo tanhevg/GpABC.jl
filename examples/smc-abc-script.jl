@@ -48,7 +48,7 @@ end
 #
 function GeneReg(params::AbstractArray{Float64,1},
     Tspan::Tuple{Float64,Float64}, x0::AbstractArray{Float64,1},
-    solver::OrdinaryDiffEq.OrdinaryDiffEqAlgorithm, saveat::Float64)
+    solver::SciMLBase.AbstractDEAlgorithm, saveat::Float64)
 
   prob = ODEProblem(ODE_3GeneReg, x0 ,Tspan, params)
   Obs = solve(prob, solver, saveat=saveat)

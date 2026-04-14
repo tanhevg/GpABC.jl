@@ -23,7 +23,7 @@ saveat = 0.1
 #
 GeneReg = function(params::AbstractArray{Float64,1},
     Tspan::Tuple{Float64,Float64}, x0::AbstractArray{Float64,1},
-    solver::OrdinaryDiffEq.OrdinaryDiffEqAlgorithm, saveat::Float64)
+    solver::SciMLBase.AbstractDEAlgorithm, saveat::Float64)
 
   if size(params,1) != 10
     throw(ArgumentError("GeneReg needs 10 parameters, $(size(params,1)) were provided"))

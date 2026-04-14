@@ -38,7 +38,7 @@ end
         x0::Tuple{AbstractArray{Float64,1},AbstractArray{Float64,2}},
         Tspan::Tuple{Float64,Float64},
         saveat::Float64,
-        solver::OrdinaryDiffEq.OrdinaryDiffEqAlgorithm=RK4();
+        solver::SciMLBase.AbstractDEAlgorithm=RK4();
         kwargs...)
 
 The function computes the linear noise approximation to system through construction of two ODEs: one describing the trajectories of the mean of the LNA and the other describing the change the covariance between the variables. These outputs are held in a LNA structure.
@@ -56,7 +56,7 @@ function compute_LNA(input::LNAInput,
     x0::Tuple{AbstractArray{Float64,1},AbstractArray{Float64,2}},
     Tspan::Tuple{Float64,Float64},
     saveat::Float64,
-    solver::OrdinaryDiffEq.OrdinaryDiffEqAlgorithm=RK4();
+    solver::SciMLBase.AbstractDEAlgorithm=RK4();
     kwargs...)
 
     if input.volume <= 0.0
@@ -118,7 +118,7 @@ end
         x0::Tuple{AbstractArray{Float64,1},AbstractArray{Float64,2}},
         Tspan::Tuple{Float64,Float64},
         saveat::Float64,
-        solver::OrdinaryDiffEq.OrdinaryDiffEqAlgorithm=RK4();
+        solver::SciMLBase.AbstractDEAlgorithm=RK4();
         kwargs...)
 
 
@@ -140,7 +140,7 @@ function get_LNA_trajectories(input::LNAInput, n_samples::Int64,
     x0::Tuple{AbstractArray{Float64,1},AbstractArray{Float64,2}},
     Tspan::Tuple{Float64,Float64},
     saveat::Float64,
-    solver::OrdinaryDiffEq.OrdinaryDiffEqAlgorithm=RK4();
+    solver::SciMLBase.AbstractDEAlgorithm=RK4();
     kwargs...)
 
     lna = compute_LNA(input, x0, Tspan, saveat, solver; kwargs...)
